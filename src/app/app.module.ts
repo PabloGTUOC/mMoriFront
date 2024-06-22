@@ -1,18 +1,29 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-
-import { AppRoutingModule } from './app-routing.module';
+import { CommonModule } from '@angular/common';
 import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { FirstTimeComponent } from './first-time/first-time.component';
+import { DisplayDailyComponent } from './display-daily/display-daily.component';
+import { RouterOutlet } from '@angular/router';
+import { FIREBASE_OPTIONS } from '@angular/fire/compat';
+import { environment } from '../enviroments/environment';
+import { BrowserModule } from '@angular/platform-browser';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
+    CommonModule,
     BrowserModule,
-    AppRoutingModule
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+    RouterOutlet,
+    HeaderComponent,
+    FirstTimeComponent,
+    DisplayDailyComponent,  ],
+  bootstrap: [AppComponent],
+  providers: [
+            { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig }
+        ],
 })
 export class AppModule { }
+
