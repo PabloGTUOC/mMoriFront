@@ -1,0 +1,15 @@
+
+
+
+<ng-container *ngIf="isUserLogged">
+    <p>The user is logged</p>
+    <app-first-time></app-first-time>
+<app-display-daily></app-display-daily>
+</ng-container>
+
+<ng-container *ngIf="!isUserLogged">
+    <p>Please, log in </p>
+</ng-container>
+
+
+
