@@ -10,6 +10,7 @@ import { environment } from '../enviroments/environment';
 import { BrowserModule } from '@angular/platform-browser';
 import { MainPageComponent } from './main-page/main-page.component';
 import { AppRoutingModule } from './app-routing.module';
+import { LogInComponent } from './log-in/log-in.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,9 @@ import { AppRoutingModule } from './app-routing.module';
     AppRoutingModule,
     HeaderComponent,
     FirstTimeComponent,
-    DisplayDailyComponent,  ],
+    DisplayDailyComponent,
+    LogInComponent,
+  ],
   bootstrap: [AppComponent],
   providers: [
             { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig }
