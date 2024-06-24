@@ -1,7 +1,28 @@
 header {
-    background-color: #333;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  width: 80%;
+  margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e); /* Dark gradient mimicking a night sky */
+  border-bottom: 5px solid #08f; /* Neon line to mimic the grid */
 }
-  
+
+h1, h2 {
+  font-family: 'Roboto Mono', monospace; /* Modern monospace to mimic digital style */
+  text-shadow: 0 0 5px #ff08f8, 0 0 15px #ff08f8; /* Pink neon glow */
+}
+
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  font-size: 48px;
+  margin-top: 0;
+}
+
+

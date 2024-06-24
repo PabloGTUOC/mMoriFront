@@ -1,0 +1,30 @@
+.info-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns of equal width */
+  grid-gap: 20px; /* Space between grid items */
+  max-width: 80%;
+  margin: 20px auto; /* Center the block */
+  font-family: 'Roboto Mono', monospace; /* Consistent font family */
+}
+
+.info-block h2 {
+  background: #333; /* Dark background for each heading */
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  margin: 0; /* Remove default margins */
+  text-shadow: 0 0 5px rgba(255, 0, 120, 0.75); /* Neon glow for text */
+}
+
+.weeks-left {
+  max-width: 80%;
+  margin: 0 auto 20px; /* Center and space below */
+  font-size: 1.5em; /* Larger font size for emphasis */
+  text-align: center; /* Center the text */
+}
+
+.weeks-left h2 {
+  color: #ff0077; /* Bright color for importance */
+  text-shadow: 0 0 10px #ff0077; /* Glow effect for emphasis */
+}
