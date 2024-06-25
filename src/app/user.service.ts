@@ -12,13 +12,15 @@ export class UserService {
   private userInfoSource: BehaviorSubject<any> = new BehaviorSubject(null);
   userInfo = this.userInfoSource.asObservable();
   private  apiUrl = 'http://localhost:3000';
+  isUserNew: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
 
   constructor(private http: HttpClient) { }
   getUserInfo(){
     return this.userInfo;
   }
   setUserInfo(userInfo: any){
-    this.userInfoSource.next(userInfo);
+    this.userInfoSource.next(userInfo.user);
+    this.isUserNew.next(userInfo?.isNew);
   }
 
   sendUserEmail(email: string) {

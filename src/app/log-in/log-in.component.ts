@@ -11,17 +11,21 @@ import {user} from "@angular/fire/auth";
   providers: [AuthService]
 })
 export class LogInComponent {
-
+  isNewUser = false;
   constructor(private authService: AuthService, private userService: UserService) { }
 
-  signInwithGoogle() {
+  signInwithGoogle(isNew: boolean) {
     console.log('Sign in with Google');
+    this.isNewUser = isNew;
     this.authService.googleSignIn().then(result => {
-      if (result?.user) {  // Check if user object exists
+      if (result && result?.user) {  // Check if user object exists
         console.log('Signed with Google', result);
+        const isNewUser = result.additionalUserInfo?.isNewUser;
         this.userService.logged.next(true);
-        this.userService.setUserInfo(result.user);  // Assuming setUserInfo expects a user object
-
+        this.userService.setUserInfo({
+          user: result.user,
+          isNew: isNewUser
+        });  // Assuming setUserInfo expects a user object
         const userEmail = result.user.email;
         if (userEmail) {
           console.log('User Email:', userEmail);

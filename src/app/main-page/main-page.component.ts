@@ -5,26 +5,31 @@ import {Subscription} from "rxjs";
 @Component({
   selector: 'app-main-page',
   templateUrl: './main-page.component.html',
-  styleUrl: './main-page.component.scss'
-})
+  styleUrl: './main-page.component.scss',
+  })
 export class MainPageComponent implements OnInit, OnDestroy {
 
   isUserLogged = false;
-  private subscription!: Subscription;
+  isUserNew = false;
+  private subscriptions = new Subscription(); // Manage multiple subscriptions
 
   constructor(public userService: UserService) {}
 
   ngOnInit(): void {
-    this.subscription = this.userService.logged.subscribe(logged => {
+    this.subscriptions = this.userService.logged.subscribe(logged => {
       console.log('user is logged:', logged);
       this.isUserLogged = logged;
     });
-    console.log('User Info:', this.userService.getUserInfo());
+
+    this.subscriptions.add(this.userService.isUserNew.subscribe(isNew => {
+      console.log('user is new', isNew);
+      this.isUserNew = isNew;
+    }));
   }
 
   ngOnDestroy() {
-    if(this.subscription) {
-      this.subscription.unsubscribe();
+    if(this.subscriptions) {
+      this.subscriptions.unsubscribe();
     }
   }
 }

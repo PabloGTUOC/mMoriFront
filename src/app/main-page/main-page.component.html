@@ -1,13 +1,17 @@
-
 <ng-container *ngIf="isUserLogged">
-    <app-log-out></app-log-out>
+  <app-log-out></app-log-out>
+  <ng-container *ngIf="isUserNew">
     <app-first-time></app-first-time>
-<app-display-daily></app-display-daily>
+  </ng-container>
+  <ng-container *ngIf="!isUserNew">
+    <app-display-daily></app-display-daily>
+  </ng-container>
+</ng-container>
+<ng-container *ngIf="!isUserLogged">
+  <app-log-in></app-log-in>
 </ng-container>
 
-<ng-container *ngIf="!isUserLogged">
-    <app-log-in></app-log-in>
-</ng-container>
+
 
 
 
