@@ -13,6 +13,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { LogInComponent } from './log-in/log-in.component';
 import { LogOutComponent} from "./log-out/log-out.component";
 import { HttpClientModule } from '@angular/common/http';
+import { ReactiveFormsModule} from "@angular/forms";
+import { InputDailyComponent } from './input-daily/input-daily.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +31,9 @@ import { HttpClientModule } from '@angular/common/http';
     DisplayDailyComponent,
     LogInComponent,
     LogOutComponent,
-    HttpClientModule
+    HttpClientModule,
+    ReactiveFormsModule,
+    InputDailyComponent
   ],
   bootstrap: [AppComponent],
   providers: [

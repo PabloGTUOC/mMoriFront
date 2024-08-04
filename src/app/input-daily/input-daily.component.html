@@ -1,0 +1,13 @@
+<div class="input-block">
+  <h2>Input Daily Data</h2>
+  <form [formGroup]="dailyForm" (ngSubmit)="submitData()">
+    <label for="trainingSelect">Have you trained today?</label>
+    <select id="trainingSelect" formControlName="training" required>
+      <option value="" disabled>Select training</option>
+      <option value="Training A">Training A</option>
+      <option value="Training B">Training B</option>
+      <option value="Training C">Training C</option>
+    </select>
+    <button type="submit" [disabled]="dailyForm.invalid">Submit</button>
+  </form>
+</div>

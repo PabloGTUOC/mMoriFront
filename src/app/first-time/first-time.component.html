@@ -1,28 +1,29 @@
-<form>
-    <label for="dob">Date of Birth:</label>
-    <input type="date" id="dob" name="dob" required>
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <label for="dob">Date of Birth:</label>
+  <input type="date" id="dob" formControlName="dob" required>
 
-    <label for="gender">Gender:</label>
-    <select id="gender" name="gender" required>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="other">Other</option>
-    </select>
+  <label for="gender">Gender:</label>
+  <select id="gender" formControlName="gender" required>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+    <option value="other">Other</option>
+  </select>
 
-    <label for="height">Height (cm):</label>
-    <input type="number" id="height" name="height" required>
+  <label for="height">Height (cm):</label>
+  <input type="number" id="height" formControlName="height" required>
 
-    <label for="weight">Weight (kg):</label>
-    <input type="number" id="weight" name="weight" required>
+  <label for="weight">Weight (kg):</label>
+  <input type="number" id="weight" formControlName="weight" required>
 
-    <label for="training-frequency">Training Frequency (times per week):</label>
-    <input type="number" id="training-frequency" name="training-frequency" required>
+  <label for="trainingFrequency">Training Frequency (times per week):</label>
+  <input type="number" id="trainingFrequency" formControlName="trainingFrequency" required>
 
-    <label for="smoker">Do you smoke?</label>
-    <input type="checkbox" id="smoker" name="smoker">
+  <label for="smoker">Do you smoke?</label>
+  <input type="checkbox" id="smoker" formControlName="smoker">
 
-    <label for="drinker">Do you drink?</label>
-    <input type="checkbox" id="drinker" name="drinker">
+  <label for="drinker">Do you drink?</label>
+  <input type="checkbox" id="drinker" formControlName="drinker">
 
-    <button type="submit">Submit</button>
+  <button type="submit" [disabled]="userForm.invalid">Submit</button>
 </form>
+
