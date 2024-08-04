@@ -12,14 +12,17 @@ import { MainPageComponent } from './main-page/main-page.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LogInComponent } from './log-in/log-in.component';
 import { LogOutComponent} from "./log-out/log-out.component";
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule} from "@angular/forms";
 import { InputDailyComponent } from './input-daily/input-daily.component';
+import { HttpInterceptorService } from './interceptor/http-interceptor.service';
+import { SpinnerComponent } from './components/spinner.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainPageComponent,
+  SpinnerComponent
   ],
   imports: [
     CommonModule,
@@ -37,7 +40,8 @@ import { InputDailyComponent } from './input-daily/input-daily.component';
   ],
   bootstrap: [AppComponent],
   providers: [
-            { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig }
+            { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
+            { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorService }
         ],
 })
 export class AppModule { }
