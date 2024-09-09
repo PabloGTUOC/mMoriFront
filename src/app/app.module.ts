@@ -17,12 +17,21 @@ import { ReactiveFormsModule} from "@angular/forms";
 import { InputDailyComponent } from './input-daily/input-daily.component';
 import { HttpInterceptorService } from './interceptor/http-interceptor.service';
 import { SpinnerComponent } from './components/spinner.component';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { LifeExpectancyChartComponent } from './life-expectancy-chart/life-expectancy-chart.component';
+import {NavigationMenuComponent} from "./navigation-menu/navigation-menu.component";
+import {TrainingRepositoryComponent} from "./training-repository/training-repository.component";
+import {StretchRepositoryComponent} from "./stretch-repository/stretch-repository.component";
+import {ThoughtsComponent} from "./thoughts/thoughts.component";
+
 
 @NgModule({
   declarations: [
     AppComponent,
     MainPageComponent,
-  SpinnerComponent
+    SpinnerComponent,
   ],
   imports: [
     CommonModule,
@@ -36,12 +45,20 @@ import { SpinnerComponent } from './components/spinner.component';
     LogOutComponent,
     HttpClientModule,
     ReactiveFormsModule,
-    InputDailyComponent
+    InputDailyComponent,
+    MatFormFieldModule,
+    MatSelectModule,
+    LifeExpectancyChartComponent,
+    NavigationMenuComponent,
+    TrainingRepositoryComponent,
+    StretchRepositoryComponent,
+    ThoughtsComponent
   ],
   bootstrap: [AppComponent],
   providers: [
             { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
-            { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorService }
+            { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorService, multi: true },
+            provideAnimationsAsync()
         ],
 })
 export class AppModule { }

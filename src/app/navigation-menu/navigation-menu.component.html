@@ -1,0 +1,21 @@
+<div class="menu-container">
+  <div class="menu-bar">
+    <button (click)="navigate('daily')">Today</button>
+    <button (click)="navigate('trainings')">Trainings</button>
+    <button (click)="navigate('stretches')">Stretches</button>
+    <button (click)="navigate('thoughts')">Thoughts of the Day</button>
+    <button (click)="signOut()">Log Out</button>
+  </div>
+
+  <!-- Dropdown Menu for Smaller Screens -->
+  <div class="dropdown-menu">
+    <button class="dropdown-btn" (click)="toggleDropdown()">☰ Menu</button>
+    <div class="dropdown-content" [class.show]="dropdownOpen">
+      <button (click)="navigate('daily')">Today</button>
+      <button (click)="navigate('trainings')">Trainings</button>
+      <button (click)="navigate('stretches')">Stretches</button>
+      <button (click)="navigate('thoughts')">Thoughts of the Day</button>
+      <button (click)="signOut()">Log Out</button>
+    </div>
+  </div>
+</div>

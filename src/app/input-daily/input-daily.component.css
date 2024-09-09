@@ -1,9 +1,7 @@
 /* input-daily.component.css */
 .input-block {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Two columns of equal width */
-  grid-gap: 20px; /* Space between grid items */
-  max-width: 80%;
+  max-width: 1400px; /* Maximum width of 1400px */
+  width: 80%; /* 80% of the available screen width */
   margin: 20px auto; /* Center the container */
   font-family: 'Roboto Mono', monospace; /* Consistent font family */
 }
@@ -21,18 +19,31 @@
 }
 
 form {
-  display: grid;
-  grid-template-columns: 1fr; /* Single column */
-  grid-gap: 20px; /* Space between form elements */
-  grid-column: span 2; /* Span both columns */
+  align-items: center;
 }
 
-label {
+.form-container {
+  padding-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Two columns: labels and inputs */
+  grid-gap: 10px; /* Space between form elements */
+  grid-column: span 2; /* Span both columns */
+  align-items: center;
+}
+.weightInput {
+  width: 97% !important;
+}
+
+.input-block label {
   color: #333;
   font-weight: bold;
 }
 
-select, input[type="text"], input[type="date"], input[type="number"], input[type="checkbox"] {
+.input-block select,
+.input-block input[type="number"],
+.input-block input[type="text"],
+.input-block input[type="date"],
+.input-block input[type="checkbox"] {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
@@ -57,4 +68,29 @@ button {
 button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* Adjustments for mobile screens */
+@media (max-width: 768px) {
+  .form-container {
+    grid-template-columns: 1fr; /* Stack labels and inputs vertically on small screens */
+  }
+
+  .input-block select,
+  .input-block input[type="number"],
+  .input-block input[type="text"],
+  .input-block input[type="date"],
+  .input-block input[type="checkbox"] {
+    font-size: 1.2em; /* Increase font size for better readability */
+    padding: 12px; /* Add more padding for touch targets */
+  }
+
+  .input-block label {
+    font-size: 1.1em; /* Slightly larger labels for readability */
+  }
+
+  button {
+    font-size: 1.2em; /* Increase button size for mobile screens */
+    padding: 12px 24px; /* Increase padding for better touch targets */
+  }
 }

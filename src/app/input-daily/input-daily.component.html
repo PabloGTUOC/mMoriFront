@@ -1,13 +1,18 @@
 <div class="input-block">
   <h2>Input Daily Data</h2>
   <form [formGroup]="dailyForm" (ngSubmit)="submitData()">
-    <label for="trainingSelect">Have you trained today?</label>
-    <select id="trainingSelect" formControlName="training" required>
-      <option value="" disabled>Select training</option>
-      <option value="Training A">Training A</option>
-      <option value="Training B">Training B</option>
-      <option value="Training C">Training C</option>
-    </select>
-    <button type="submit" [disabled]="dailyForm.invalid">Submit</button>
+    <div class="form-container">
+        <label for="trainingSelect">Have you trained today?</label>
+          <select id="trainingSelect" formControlName="training" required>
+            <option value="" disabled>Select training</option>
+            <!-- Dynamically populate trainings from the DB -->
+            <option *ngFor="let training of trainings" [value]="training.training_name">
+              {{ training.training_name }} - {{ training.type }}
+            </option>
+          </select>
+        <label for="weightInput">Current Weight (kg):</label>
+        <input type="number" id="weightInput" class="weightInput" formControlName="weight" required min="0">
+      <button type="submit" [disabled]="dailyForm.invalid">Submit</button>
+    </div>
   </form>
 </div>

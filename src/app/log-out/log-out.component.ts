@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import {AuthService} from "../auth.service";
-import {UserService} from "../user.service";
+import {AuthService} from "../services/auth.service";
+import {UserService} from "../services/user.service";
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-log-out',
@@ -10,13 +11,16 @@ import {UserService} from "../user.service";
   providers: [AuthService]
 })
 export class LogOutComponent {
-  constructor(private authService: AuthService, private userService: UserService) { }
+  constructor(private authService: AuthService,
+              private userService: UserService,
+              private router: Router
+              ) { }
 
   signOut() {
     this.authService.signOut().then(() => {
       console.log('Sign out successful');
-      this.userService.logged.next(false);
-      this.userService.setUserInfo(null);
+      this.userService.setUserInfo(null); // Reset user info and related states
+      this.router.navigate(['/']);
     }).catch(error => {
       console.error('Sign out failed', error);
     });

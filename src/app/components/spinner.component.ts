@@ -12,6 +12,11 @@ import { HttpProgressState, HttpStateService, IHttpState } from "../interceptor/
   selector: "app-spinner",
   template: `<div class="preloader loading" *ngIf="isSpinnerVisible">
     <div class="spinner">
+      <div class="sand-watch">
+        <div class="hourglass-top"></div>
+        <div class="hourglass-bottom"></div>
+        <div class="sand"></div>
+      </div>
       <div>
         <h1
           class="font-weight-bold text-center"
@@ -19,8 +24,6 @@ import { HttpProgressState, HttpStateService, IHttpState } from "../interceptor/
           Loading...
         </h1>
       </div>
-      <div class="double-bounce1"></div>
-      <div class="double-bounce2"></div>
     </div>
   </div>`,
   encapsulation: ViewEncapsulation.None,

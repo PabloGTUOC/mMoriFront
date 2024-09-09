@@ -1,0 +1,20 @@
+<div class="thoughts-container">
+  <h2>How are you feeling today?</h2>
+  <div class="mood-options">
+    <button *ngFor="let mood of moods"
+            class="mood-button"
+            (click)="selectMood(mood.mood)">
+      <span class="emoji">{{ mood.emoji }}</span>
+      {{ mood.label }}
+    </button>
+  </div>
+
+  <div *ngIf="selectedMood" class="selected-mood">
+    <h3>You are feeling: {{ selectedMood | titlecase }}</h3>
+  </div>
+
+  <div *ngIf="recommendation" class="recommendation">
+    <h3>Today's Recommendation</h3>
+    <p [innerHTML]="recommendation"></p>
+  </div>
+</div>

@@ -1,0 +1,30 @@
+/* src/app/stretch-item/stretch-item.component.scss */
+.stretch-item {
+  background: #333;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: 'Roboto Mono', monospace;
+  text-align: center;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.stretch-item h3 {
+  color: #ff0077; /* Use the same pink highlight */
+  text-shadow: 0 0 10px #ff0077;
+  margin-bottom: 10px;
+}
+
+.stretch-item p {
+  margin: 5px 0;
+  font-size: 1.1em;
+}
+
+.stretch-item iframe {
+  width: 100%; /* Make the video responsive */
+  height: 315px;
+  border-radius: 10px;
+  border: none;
+  margin-top: 10px;
+}

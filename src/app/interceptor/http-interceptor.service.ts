@@ -26,7 +26,8 @@ export class HttpInterceptorService implements HttpInterceptor {
     if (request.url.includes("json")) {
       return next.handle(request);
     }
-    const httpRequest = this.cloneRequest(request);   
+    console.log ("Calling interceptor")
+    const httpRequest = this.cloneRequest(request);
 
     this.httpStateService.state.next({
       url: httpRequest.url,
