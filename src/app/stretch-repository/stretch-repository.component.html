@@ -1,0 +1,25 @@
+<div class="stretch-repository-container">
+  <h2>Stretches</h2>
+
+  <div class="stretch-grid">
+    <app-stretch-item
+      *ngFor="let stretch of stretches"
+      [stretch]="stretch"
+    ></app-stretch-item>
+  </div>
+
+  <button (click)="toggleAddStretchForm()">
+    {{ showAddStretchForm ? 'Cancel' : 'Add New Stretch' }}
+  </button>
+
+  <form *ngIf="showAddStretchForm" [formGroup]="addStretchForm" (ngSubmit)="submitStretch()">
+    <label for="stretch_name">Stretch Name</label>
+    <input id="stretch_name" formControlName="stretch_name" />
+    <label for="description">Description</label>
+    <input id="description" formControlName="description" />
+    <label for="video_link">YouTube Link</label>
+    <input id="video_link" formControlName="video_link" />
+
+    <button type="submit" [disabled]="!addStretchForm.valid">Submit</button>
+  </form>
+</div>

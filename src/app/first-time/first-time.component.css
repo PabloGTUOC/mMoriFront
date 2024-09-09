@@ -3,7 +3,8 @@ form {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-  width: 80%;
+  max-width: 1400px; /* Maximum width of 1400px */
+  width: 80%; /* 80% of the available screen width */
   margin: 20px auto;
   color: white;
   font-family: 'Roboto Mono', monospace;

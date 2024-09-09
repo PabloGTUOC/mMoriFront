@@ -1,0 +1,49 @@
+.chart-container {
+  max-width: 1400px; /* Maximum width of 1400px */
+  width: 80%; /* 80% of the available screen width */
+  margin: 20px auto;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  font-family: 'Roboto Mono', monospace;
+  border: 2px solid #08f;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e); /* Dark gradient mimicking a night sky */
+}
+
+.chart-container svg {
+  max-width: 90%; /* Changed from 80% to allow full width if needed */
+  display: block; /* Ensure the SVG takes the full container space */
+  margin: 0 auto; /* Center the SVG within the container */
+  overflow: visible;
+}
+
+.chart-title {
+  color: #ff0077; /* Bright neon pink color matching weeks-left h2 */
+  text-shadow: 0 0 10px #ff0077, 0 0 20px #ff0077; /* Stronger glow effect */
+  font-size: 2em; /* Larger font size for the title */
+  margin-bottom: 15px; /* Space between title and chart */
+  letter-spacing: 2px; /* Slightly spaced letters for a retro look */
+}
+
+.chart-container .dot {
+  stroke-width: 1.5;
+  stroke: #ff0077; /* Bright neon border for each dot */
+}
+
+.chart-container .lived-dot {
+  fill: #ff0077; /* Neon pink for lived dots */
+  opacity: 0.8; /* Slight transparency for a glowing effect */
+}
+
+.chart-container .remaining-dot {
+  fill: whitesmoke; /* Bright neon green for remaining dots */
+  opacity: 0.8; /* Slight transparency for a glowing effect */
+}
+
+.chart-container .dot:hover {
+  fill: #fff; /* White hover effect to highlight the dot */
+  cursor: pointer;
+  opacity: 1;
+}

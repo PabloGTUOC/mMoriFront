@@ -1,12 +1,32 @@
-
-<ng-container *ngIf="isUserLogged">
-    <app-first-time></app-first-time>
-<app-display-daily></app-display-daily>
-</ng-container>
-
-<ng-container *ngIf="!isUserLogged">
+  <ng-container *ngIf="!isUserLogged">
     <app-log-in></app-log-in>
-</ng-container>
+  </ng-container>
+  <ng-container *ngIf="isUserLogged">
+    <app-navigation-menu (viewChange)="changeView($event)"></app-navigation-menu>
+    <ng-container *ngIf="isUserNew">
+      <app-first-time></app-first-time>
+    </ng-container>
+    <ng-container *ngIf="!isUserNew">
+      <ng-container *ngIf="currentView === 'daily'">
+        <app-display-daily></app-display-daily>
+        <app-input-daily></app-input-daily>
+      </ng-container>
+      <ng-container *ngIf="currentView === 'trainings'">
+        <app-training-repository></app-training-repository>
+      </ng-container>
+      <ng-container *ngIf="currentView === 'stretches'">
+        <app-stretch-repository></app-stretch-repository>
+      </ng-container>
+      <ng-container *ngIf="currentView === 'thoughts'">
+        <app-thoughts></app-thoughts>
+      </ng-container>
+      </ng-container>
+    </ng-container>
+
+
+
+
+
 
 
 

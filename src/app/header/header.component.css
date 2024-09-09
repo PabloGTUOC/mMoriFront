@@ -3,7 +3,8 @@ header {
   padding: 20px;
   text-align: center;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  width: 80%;
+  max-width: 1400px; /* Maximum width of 1400px */
+  width: 80%; /* 80% of the available screen width */
   margin: 0 auto;
   border-radius: 10px;
   overflow: hidden;

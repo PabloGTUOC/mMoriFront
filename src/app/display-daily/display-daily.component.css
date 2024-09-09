@@ -2,9 +2,12 @@
   display: grid;
   grid-template-columns: 1fr 1fr; /* Two columns of equal width */
   grid-gap: 20px; /* Space between grid items */
-  max-width: 80%;
+  max-width: 1400px; /* Maximum width of 1400px */
+  width: 80%; /* 80% of the available screen width */
   margin: 20px auto; /* Center the block */
   font-family: 'Roboto Mono', monospace; /* Consistent font family */
+  box-sizing: border-box; /* Ensure padding is included in the width */
+
 }
 
 .info-block h2 {
@@ -17,14 +20,78 @@
   text-shadow: 0 0 5px rgba(255, 0, 120, 0.75); /* Neon glow for text */
 }
 
+.info-block h3 {
+  background: #333; /* Dark background for each heading */
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  margin: 0; /* Remove default margins */
+  text-shadow: 0 0 5px rgba(255, 0, 120, 0.75); /* Neon glow for text */
+  text-align: center;
+}
+.info-block .value {
+  font-size: 2em;
+  color: #ff0077; /* Pink neon color for the value */
+  text-shadow: 0 0 5px rgba(255, 0, 120, 0.75); /* Glow effect matching the labels */
+  margin-top: 5px; /* Space between label and value */
+  padding: 5px;
+  background-color: #222; /* Background behind the value to highlight it */
+  border-radius: 4px;
+  text-align: center;
+}
+
 .weeks-left {
-  max-width: 80%;
+  max-width: 1400px; /* Maximum width of 1400px */
+  width: 80%; /* 80% of the available screen width */
+  border-radius: 4px;
   margin: 0 auto 20px; /* Center and space below */
   font-size: 1.5em; /* Larger font size for emphasis */
   text-align: center; /* Center the text */
+  background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e); /* Dark gradient mimicking a night sky */
 }
 
 .weeks-left h2 {
   color: #ff0077; /* Bright color for importance */
   text-shadow: 0 0 10px #ff0077; /* Glow effect for emphasis */
+}
+/* Modal container */
+.modal {
+  display: block; /* Hidden by default */
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4); /* Black background with transparency */
+}
+
+/* Modal content */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+/* Close button */
+.close-btn {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
