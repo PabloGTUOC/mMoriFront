@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+
 import {AuthService} from "../services/auth.service";
 import {UserService} from "../services/user.service";
 import { Router } from '@angular/router';
 import {response} from "express";
+
 
 @Component({
   selector: 'app-log-in',
@@ -12,6 +14,7 @@ import {response} from "express";
   providers: [AuthService]
 })
 export class LogInComponent {
+
   constructor(
     private authService: AuthService,
     private userService: UserService,
@@ -21,6 +24,7 @@ export class LogInComponent {
   signInwithGoogle() {
     console.log('Sign in with Google');
     this.authService.googleSignIn().then(result => {
+
       if (result?.user) {
         console.log('Signed in with Google', result);
         this.userService.handleUserLogin(result.user);
