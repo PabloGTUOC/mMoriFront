@@ -6,7 +6,7 @@ import { FirstTimeComponent } from './first-time/first-time.component';
 import { DisplayDailyComponent } from './display-daily/display-daily.component';
 import { RouterOutlet } from '@angular/router';
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
-import { environment } from '../enviroments/environment';
+import { environment } from '../environments/environment';
 import { BrowserModule } from '@angular/platform-browser';
 import { MainPageComponent } from './main-page/main-page.component';
 import { AppRoutingModule } from './app-routing.module';

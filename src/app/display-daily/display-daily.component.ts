@@ -19,7 +19,7 @@ export class DisplayDailyComponent implements OnInit {
   totalDaysTrained: number = 0;
   percentageDaysTrained: number = 0;
   IBM: number = 0;
-  fatStatus: string = "You are FAT";
+  bmiStatus: string = "Normal Weight";
   weaksLeft: number = 0;
   isChartVisible: boolean = false;
 
@@ -68,7 +68,7 @@ export class DisplayDailyComponent implements OnInit {
     this.totalDaysTrained = trainingStats.training_count; // You can update this with actual data if available
     this.weeksLeftToLive = this.calculateWeeksLeftToLive(adjustedLifeExpectancy, this.currentAge);
     this.IBM = this.calculateBMI(this.weight, userData.height);
-    this.fatStatus = this.determineFatStatus(this.IBM)
+    this.bmiStatus = this.determineBMIStatus(this.IBM)
     const totalDaysSinceJoining = trainingStats.total_days_since_joining;
     this.percentageDaysTrained = this.calculatePercentage(this.totalDaysTrained, totalDaysSinceJoining);
     this.weaksLeft = this.calculateWeeksGone(this.currentAge);
@@ -102,15 +102,15 @@ export class DisplayDailyComponent implements OnInit {
     return parseFloat(IBM.toFixed(2)); // Round to 2 decimal places and convert back to number
   }
 
-  determineFatStatus(IBM: number): string {
+  determineBMIStatus(IBM: number): string {
     if (IBM < 18.5) {
-      return 'Shitty Skinny';
+      return 'Underweight';
     } else if (IBM >= 18.5 && IBM < 24.9) {
-      return 'OKishhhhh';
+      return 'Normal Weight';
     } else if (IBM >= 25 && IBM < 29.9) {
-      return 'FAAAAT';
+      return 'Overweight';
     } else {
-      return 'MORBID';
+      return 'Obese';
     }
   }
 
