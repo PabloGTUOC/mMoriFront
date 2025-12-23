@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, isDevMode } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
@@ -25,6 +25,7 @@ import {NavigationMenuComponent} from "./navigation-menu/navigation-menu.compone
 import {TrainingRepositoryComponent} from "./training-repository/training-repository.component";
 import {StretchRepositoryComponent} from "./stretch-repository/stretch-repository.component";
 import {ThoughtsComponent} from "./thoughts/thoughts.component";
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 
 @NgModule({
@@ -52,7 +53,13 @@ import {ThoughtsComponent} from "./thoughts/thoughts.component";
     NavigationMenuComponent,
     TrainingRepositoryComponent,
     StretchRepositoryComponent,
-    ThoughtsComponent
+    ThoughtsComponent,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ],
   bootstrap: [AppComponent],
   providers: [
