@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {HttpClient, HttpParams} from "@angular/common/http";
+import { environment } from '../../environments/environment';
 
 
 
@@ -11,7 +12,7 @@ export class UserService {
   logged: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private userInfoSource: BehaviorSubject<any> = new BehaviorSubject(null);
   userInfo = this.userInfoSource.asObservable();
-  private  apiUrl = 'http://localhost:3000';
+  private  apiUrl = environment.apiUrl;
   isUserNew: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   // New BehaviorSubject for userId
   private userIdSource: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
