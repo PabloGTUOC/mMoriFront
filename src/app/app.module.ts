@@ -1,4 +1,4 @@
-import { NgModule, isDevMode } from '@angular/core';
+import { NgModule, isDevMode, ErrorHandler } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
@@ -26,6 +26,7 @@ import {TrainingRepositoryComponent} from "./training-repository/training-reposi
 import {StretchRepositoryComponent} from "./stretch-repository/stretch-repository.component";
 import {ThoughtsComponent} from "./thoughts/thoughts.component";
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { GlobalErrorHandler } from './services/error-handler.service';
 
 
 @NgModule({
@@ -65,6 +66,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
   providers: [
             { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
             { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorService, multi: true },
+            { provide: ErrorHandler, useClass: GlobalErrorHandler },
             provideAnimationsAsync()
         ],
 })
