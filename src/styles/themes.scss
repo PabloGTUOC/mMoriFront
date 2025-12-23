@@ -1,0 +1,112 @@
+// Light Theme Variables
+:root,
+.light-theme {
+  --primary-color: #1976d2;
+  --primary-dark: #115293;
+  --primary-light: #4791db;
+
+  --background-color: #ffffff;
+  --surface-color: #f5f5f5;
+  --card-background: #ffffff;
+
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  --text-disabled: #9e9e9e;
+
+  --border-color: #e0e0e0;
+  --divider-color: #bdbdbd;
+
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --error-color: #f44336;
+  --info-color: #2196f3;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+// Dark Theme Variables
+.dark-theme {
+  --primary-color: #90caf9;
+  --primary-dark: #5d99c6;
+  --primary-light: #b3dff9;
+
+  --background-color: #121212;
+  --surface-color: #1e1e1e;
+  --card-background: #2c2c2c;
+
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-disabled: #666666;
+
+  --border-color: #3a3a3a;
+  --divider-color: #4a4a4a;
+
+  --success-color: #66bb6a;
+  --warning-color: #ffa726;
+  --error-color: #ef5350;
+  --info-color: #42a5f5;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+// Apply theme colors globally
+body {
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// Card styling
+.card,
+.info-block,
+.modal-content {
+  background-color: var(--card-background);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+// Input and form elements
+input,
+textarea,
+select,
+.mat-mdc-form-field {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+// Links
+a {
+  color: var(--primary-color);
+
+  &:hover {
+    color: var(--primary-light);
+  }
+}
+
+// Buttons
+button {
+  &.primary {
+    background-color: var(--primary-color);
+    color: var(--text-primary);
+
+    &:hover {
+      background-color: var(--primary-dark);
+    }
+  }
+}
+
+// Headers
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+// Dividers
+hr {
+  border-color: var(--divider-color);
+}
