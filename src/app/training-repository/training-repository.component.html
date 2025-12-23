@@ -1,7 +1,7 @@
 <!-- src/app/training-repository/training-repository.component.html -->
 <div class="training-repository-container">
   <h2>Training Repository</h2>
-  <div *ngIf="trainings.length; else noTrainings" class="training-grid">
+  <div *ngIf="trainings?.length; else noTrainings" class="training-grid">
     <app-training-item *ngFor="let training of trainings" [training]="training"></app-training-item>
   </div>
   <ng-template #noTrainings>

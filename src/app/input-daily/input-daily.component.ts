@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import { UserService} from "../services/user.service";
-import { UserDataService} from "../services/user-data.service";
-import {response} from "express";
-import {forkJoin} from "rxjs";
-import {TrainingRepositoryService} from "../services/training-repository.service";
-import {CommonModule} from "@angular/common";
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import { UserService } from "../services/user.service";
+import { UserDataService } from "../services/user-data.service";
+import { response } from "express";
+import { forkJoin } from "rxjs";
+import { TrainingRepositoryService } from "../services/training-repository.service";
+import { CommonModule } from "@angular/common";
 
 
 @Component({
@@ -18,15 +18,15 @@ import {CommonModule} from "@angular/common";
     CommonModule
   ]
 })
-export class InputDailyComponent implements OnInit{
+export class InputDailyComponent implements OnInit {
   dailyForm!: FormGroup;
   userId!: string | null;
-  trainings: any [] = [];
+  trainings: any[] = [];
 
   constructor(private fb: FormBuilder,
-              private userDataService: UserDataService,
-              private userService: UserService,
-              private trainingRepositoryService: TrainingRepositoryService) {}
+    private userDataService: UserDataService,
+    private userService: UserService,
+    private trainingRepositoryService: TrainingRepositoryService) { }
 
   ngOnInit(): void {
     this.userService.userId$.subscribe(userId => {
@@ -46,7 +46,12 @@ export class InputDailyComponent implements OnInit{
   fetchTrainings(): void {
     this.trainingRepositoryService.getTrainingRepository().subscribe({
       next: (response) => {
-        if (response.success) {
+        console.log('Daily input fetched trainings:', response);
+        if (Array.isArray(response)) {
+          this.trainings = response;
+        } else if (response.success && Array.isArray(response.data)) {
+          this.trainings = response.data;
+        } else if (response.success && Array.isArray(response.trainings)) {
           this.trainings = response.trainings;
         }
       }, error: (error) => {

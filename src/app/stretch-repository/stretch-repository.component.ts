@@ -1,8 +1,8 @@
-import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StretchRepositoryService } from '../services/stretch-repository.service';
-import {CommonModule} from "@angular/common";
-import {StretchItemComponent} from "../stretch-item/stretch-item.component";
+import { CommonModule } from "@angular/common";
+import { StretchItemComponent } from "../stretch-item/stretch-item.component";
 
 @Component({
   selector: 'app-stretch-repository',
@@ -19,7 +19,7 @@ export class StretchRepositoryComponent implements OnInit {
   constructor(
     private stretchService: StretchRepositoryService,
     private fb: FormBuilder
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.fetchStretches();
@@ -29,7 +29,12 @@ export class StretchRepositoryComponent implements OnInit {
   fetchStretches() {
     this.stretchService.getStretches().subscribe({
       next: (response) => {
-        if (response.success) {
+        console.log('Fetched stretches:', response);
+        if (Array.isArray(response)) {
+          this.stretches = response;
+        } else if (response.success && Array.isArray(response.data)) {
+          this.stretches = response.data;
+        } else if (response.success && Array.isArray(response.stretches)) {
           this.stretches = response.stretches;
         }
       }, error: (error) => {

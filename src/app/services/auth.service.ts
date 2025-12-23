@@ -9,21 +9,21 @@ export class AuthService {
 
   constructor(private afAuth: AngularFireAuth) { }
 
-  async googleSignIn(): Promise<firebase.auth.UserCredential| void > {
+  googleSignIn(): Promise<firebase.auth.UserCredential | void> {
     const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      const result = await this.afAuth.signInWithPopup(provider);
-      return result;
-    } catch (error) {
-      console.error('Auth Service: Google sign in failed', error);
-    }
+    return this.afAuth.signInWithPopup(provider)
+      .then(result => {
+        return result;
+      })
+      .catch(error => {
+        console.error('Auth Service: Google sign in failed', error);
+      });
   }
 
-  async signOut(): Promise<void> {
-    try {
-      await this.afAuth.signOut();
-    } catch (error) {
-      console.error('Auth Service: Sign out failed', error);
-    }
+  signOut(): Promise<void> {
+    return this.afAuth.signOut()
+      .catch(error => {
+        console.error('Auth Service: Sign out failed', error);
+      });
   }
 }

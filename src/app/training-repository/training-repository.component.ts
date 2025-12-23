@@ -1,9 +1,9 @@
 // src/app/training-repository/training-repository.component.ts
 import { Component, OnInit } from '@angular/core';
-import {CommonModule} from "@angular/common";
+import { CommonModule } from "@angular/common";
 import { TrainingRepositoryService } from '../services/training-repository.service';
-import {TrainingItemComponent} from "../training-item/training-item.component";
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import { TrainingItemComponent } from "../training-item/training-item.component";
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 
 
 @Component({
@@ -18,7 +18,7 @@ export class TrainingRepositoryComponent implements OnInit {
   showAddTrainingForm = false;
   addTrainingForm!: FormGroup;
 
-  constructor(private trainingRepositoryService: TrainingRepositoryService, private fb: FormBuilder) {}
+  constructor(private trainingRepositoryService: TrainingRepositoryService, private fb: FormBuilder) { }
 
   ngOnInit(): void {
     this.fetchTrainings();
@@ -29,7 +29,12 @@ export class TrainingRepositoryComponent implements OnInit {
   fetchTrainings() {
     this.trainingRepositoryService.getTrainingRepository().subscribe({
       next: (response) => {
-        if (response.success) {
+        console.log('Fetched trainings:', response);
+        if (Array.isArray(response)) {
+          this.trainings = response;
+        } else if (response.success && Array.isArray(response.data)) {
+          this.trainings = response.data;
+        } else if (response.success && Array.isArray(response.trainings)) {
           this.trainings = response.trainings;
         }
       },
@@ -55,23 +60,24 @@ export class TrainingRepositoryComponent implements OnInit {
 
   submitTraining() {
     if (this.showAddTrainingForm) {
-      const newTrainingData = {training: this.addTrainingForm.value};
+      const newTrainingData = { training: this.addTrainingForm.value };
       // Log the data being submitted
       console.log('Submitting new training data:', newTrainingData);
       this.trainingRepositoryService.addNewTraining(newTrainingData).subscribe({
-          next: (response) => {
-            console.log('Response from server:', response);
-            if (response.success) {
-              this.showAddTrainingForm = false;
-              this.addTrainingForm.reset();
-              console.log('Training added successfully. Fetching updated training list...');
-              this.fetchTrainings();
-            }
-          },
-          error: (error) => {
-            console.error('Error adding new training', error);
+        next: (response) => {
+          console.log('Response from server:', response);
+          // Accept 200/201 responses or explicit success flag
+          if (response || response.success) {
+            this.showAddTrainingForm = false;
+            this.addTrainingForm.reset();
+            console.log('Training added successfully. Fetching updated training list...');
+            this.fetchTrainings();
           }
-        });
+        },
+        error: (error) => {
+          console.error('Error adding new training', error);
+        }
+      });
     }
   }
 }

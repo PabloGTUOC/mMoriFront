@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {HttpClient, HttpParams} from "@angular/common/http";
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
 
@@ -12,13 +13,13 @@ export class UserService {
   logged: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private userInfoSource: BehaviorSubject<any> = new BehaviorSubject(null);
   userInfo = this.userInfoSource.asObservable();
-  private  apiUrl = environment.apiUrl;
+  private apiUrl = environment.apiUrl;
   isUserNew: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   // New BehaviorSubject for userId
   private userIdSource: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
   userId$ = this.userIdSource.asObservable();
   private refreshTrigger = new Subject<void>();
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
   setUserInfo(userInfo: any) {
     if (userInfo) {
       this.userInfoSource.next(userInfo.user);
@@ -48,7 +49,7 @@ export class UserService {
     let params = new HttpParams().set('user_id', userId);
     return this.http.get(`${this.apiUrl}/user_data/user_data`, { params });
   }
-  getTrainingStats(userId: string ): Observable<any> {
+  getTrainingStats(userId: string): Observable<any> {
     let params = new HttpParams().set('user_id', userId);
     return this.http.get(`${this.apiUrl}/trainings/training-stats`, { params });
   }
@@ -61,22 +62,28 @@ export class UserService {
   }
   // Method to trigger a refresh
   triggerRefresh() {
-      this.refreshTrigger.next();
+    this.refreshTrigger.next();
   }
   //Handle user login
-  handleUserLogin(user:any): void {
+  handleUserLogin(user: any): void {
     const userId = user.uid;
     console.log('handleUserLogin called');
     console.log('Received user:', user);
     console.log('Extracted userId:', userId);
-    if(userId) {
+    if (userId) {
       this.checkUserData(userId).subscribe({
         next: (response: any) => {
           console.log('checkUserData response:', response);
           const isNewUser = !response.success;
           console.log('Is new user:', isNewUser);
-          this.setUserInfo({user, isNew: isNewUser});
+          this.setUserInfo({ user, isNew: isNewUser });
           console.log('User info set with:', { user, isNew: isNewUser });
+          // Redirect based on user status
+          if (isNewUser) {
+            this.router.navigate(['/first-time']);
+          } else {
+            this.router.navigate(['/home']);
+          }
         },
         error: (error) => {
           console.log('Error checking user data', error);
