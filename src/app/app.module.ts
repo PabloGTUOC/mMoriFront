@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, isDevMode, ErrorHandler } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
@@ -6,7 +6,7 @@ import { FirstTimeComponent } from './first-time/first-time.component';
 import { DisplayDailyComponent } from './display-daily/display-daily.component';
 import { RouterOutlet } from '@angular/router';
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
-import { environment } from '../enviroments/environment';
+import { environment } from '../environments/environment';
 import { BrowserModule } from '@angular/platform-browser';
 import { MainPageComponent } from './main-page/main-page.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -25,6 +25,8 @@ import {NavigationMenuComponent} from "./navigation-menu/navigation-menu.compone
 import {TrainingRepositoryComponent} from "./training-repository/training-repository.component";
 import {StretchRepositoryComponent} from "./stretch-repository/stretch-repository.component";
 import {ThoughtsComponent} from "./thoughts/thoughts.component";
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { GlobalErrorHandler } from './services/error-handler.service';
 
 
 @NgModule({
@@ -52,12 +54,19 @@ import {ThoughtsComponent} from "./thoughts/thoughts.component";
     NavigationMenuComponent,
     TrainingRepositoryComponent,
     StretchRepositoryComponent,
-    ThoughtsComponent
+    ThoughtsComponent,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ],
   bootstrap: [AppComponent],
   providers: [
             { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
             { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorService, multi: true },
+            { provide: ErrorHandler, useClass: GlobalErrorHandler },
             provideAnimationsAsync()
         ],
 })

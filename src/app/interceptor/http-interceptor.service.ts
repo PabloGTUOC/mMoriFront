@@ -6,9 +6,8 @@ import {
 } from "@angular/common/http";
 import { Inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { catchError, delay, finalize, retry, timeout,  } from "rxjs/operators";
+import { catchError, finalize, retry, timeout } from "rxjs/operators";
 import { HttpProgressState, HttpStateService } from "./http-state.service";
-import { time } from "console";
 
 @Injectable({
   providedIn: "root",
@@ -35,7 +34,6 @@ export class HttpInterceptorService implements HttpInterceptor {
     });
 
     return next.handle(httpRequest).pipe(
-       delay(1000),
        timeout(30000),
        retry(2),
        catchError((error) => {
