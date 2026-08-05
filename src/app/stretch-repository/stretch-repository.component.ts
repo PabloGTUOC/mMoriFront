@@ -1,70 +1,49 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { StretchRepositoryService } from '../services/stretch-repository.service';
-import { Stretch } from '../models';
-import { CommonModule } from "@angular/common";
-import { StretchItemComponent } from "../stretch-item/stretch-item.component";
+import { StretchItemComponent } from '../stretch-item/stretch-item.component';
+import { CatalogueComponent } from '../shared/catalogue.component';
+import { Stretch, StretchPayload } from '../models';
 
+/**
+ * The shared stretch catalogue. See `CatalogueComponent` for the behaviour this inherits.
+ *
+ * The video link pattern only checks the shape of the URL; the real check — that it is a
+ * YouTube link — happens in `youtube.ts` and again on the server, since the catalogue is
+ * global and a link saved here is framed for every user.
+ */
 @Component({
   selector: 'app-stretch-repository',
   standalone: true,
   templateUrl: './stretch-repository.component.html',
   styleUrl: './stretch-repository.component.scss',
-  imports: [CommonModule, StretchItemComponent, ReactiveFormsModule]
+  imports: [CommonModule, StretchItemComponent, ReactiveFormsModule],
 })
-export class StretchRepositoryComponent implements OnInit {
-  stretches: Stretch[] = [];
-  showAddStretchForm = false;
-  addStretchForm!: FormGroup;
+export class StretchRepositoryComponent extends CatalogueComponent<Stretch, StretchPayload> {
+  override readonly itemLabel = 'stretches';
 
   constructor(
     private stretchService: StretchRepositoryService,
     private fb: FormBuilder
-  ) { }
-
-  ngOnInit() {
-    this.fetchStretches();
-    this.initializeForm();
+  ) {
+    super();
   }
 
-  fetchStretches() {
-    this.stretchService.getStretches().subscribe({
-      next: (stretches) => (this.stretches = stretches),
-      error: (error) => {
-        console.error('Error fetching stretches', error);
-      },
-    });
+  protected override fetch(): Observable<Stretch[]> {
+    return this.stretchService.getStretches();
   }
 
-  initializeForm() {
-    this.addStretchForm = this.fb.group({
+  protected override create(payload: StretchPayload): Observable<unknown> {
+    return this.stretchService.addNewStretch(payload);
+  }
+
+  protected override buildForm(): FormGroup {
+    return this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
       video_link: ['', [Validators.required, Validators.pattern('https?://.+')]],
     });
-  }
-
-  toggleAddStretchForm() {
-    this.showAddStretchForm = !this.showAddStretchForm;
-  }
-
-  submitStretch() {
-    if (this.addStretchForm.valid) {
-      this.stretchService.addNewStretch(this.addStretchForm.value).subscribe({
-        next: () => {
-          this.showAddStretchForm = false;
-          this.addStretchForm.reset();
-          this.fetchStretches();
-        },
-        error: (error) => {
-          console.error('Error adding new stretch:', error);
-        },
-      });
-    }
-  }
-
-  /** Keeps DOM nodes stable across refetches instead of rebuilding the whole list. */
-  trackById(_index: number, item: { _id?: { $oid: string }; name?: string }): string {
-    return item._id?.$oid ?? item.name ?? String(_index);
   }
 }

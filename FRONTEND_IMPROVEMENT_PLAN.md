@@ -395,7 +395,7 @@ reach it can read and write any user's data by guessing a `uid`.
 
 ### Phase 5 — Architecture — 🟡 **PARTLY DONE**
 
-**Done: 5.1, 5.2, 5.4, 5.6.** The four views are lazily-loaded child routes under `/home`, which
+**Done: 5.1, 5.2, 5.3, 5.4, 5.6.** The four views are lazily-loaded child routes under `/home`, which
 took the initial bundle from 926.68 kB to **860.04 kB** and made every view a real URL —
 verified in a browser: `/home/trainings` now redirects to
 `/log-in?returnUrl=%2Fhome%2Ftrainings`, so a deep link survives login. `MetricsService`
@@ -407,8 +407,12 @@ list.
 provider lives in `app.config.ts`. Initial bundle **860.04 kB → 844.49 kB**; routing verified
 unchanged in a browser afterwards.
 
-**Still open: 5.3** (shared catalogue component — training and stretch repositories are
-still near-identical), **5.5** (`OnPush` and signals).
+**5.3 done:** both catalogues now extend `CatalogueComponent`, which owns the fetch /
+toggle / submit / refetch cycle plus loading and error state. Each subclass is down to three
+members — what to fetch, what to create, and the form — so a change to the cycle happens
+once instead of twice.
+
+**Still open: 5.5** (`OnPush` and signals).
 
 #### Original scope (~4–6 days)
 

@@ -1,36 +1,39 @@
-<!-- src/app/training-repository/training-repository.component.html -->
 <div class="training-repository-container">
   <h2>Training Repository</h2>
-  <div *ngIf="trainings?.length; else noTrainings" class="training-grid">
-    <app-training-item *ngFor="let training of trainings; trackBy: trackById" [training]="training"></app-training-item>
+
+  <p *ngIf="loading">Loading trainings…</p>
+  <p *ngIf="error" class="catalogue-error" role="alert">{{ error }}</p>
+
+  <div *ngIf="items.length; else noTrainings" class="training-grid">
+    <app-training-item
+      *ngFor="let training of items; trackBy: trackById"
+      [training]="training"
+    ></app-training-item>
   </div>
   <ng-template #noTrainings>
-    <p>No trainings available.</p>
+    <p *ngIf="!loading">No trainings available.</p>
   </ng-template>
 
-  <!-- Button to toggle the form -->
-  <button (click)="toggleAddTrainingForm()">
-    {{ showAddTrainingForm ? 'Cancel' : 'Add New Training' }}
+  <button type="button" (click)="toggleAddForm()">
+    {{ showAddForm ? 'Cancel' : 'Add New Training' }}
   </button>
-  <!-- Form for adding new training -->
-  <div *ngIf="showAddTrainingForm">
-    <form [formGroup]="addTrainingForm" (ngSubmit)="submitTraining()">
-      <label for="trainingName">Training Name:</label>
-      <input type="text" id="trainingName" formControlName="name" required>
 
-      <label for="type">Type:</label>
-      <input type="text" id="type" formControlName="type" required>
+  <form *ngIf="showAddForm" [formGroup]="form" (ngSubmit)="submit()">
+    <label for="trainingName">Training Name:</label>
+    <input type="text" id="trainingName" formControlName="name" required>
 
-      <label for="duration">Duration (mins):</label>
-      <input type="number" id="duration" formControlName="duration" required min="1">
+    <label for="type">Type:</label>
+    <input type="text" id="type" formControlName="type" required>
 
-      <label for="calories">Calories Burned:</label>
-      <input type="number" id="calories" formControlName="calories" required min="1">
+    <label for="duration">Duration (mins):</label>
+    <input type="number" id="duration" formControlName="duration" required min="1">
 
-      <label for="description">Description:</label>
-      <textarea id="description" formControlName="description" required></textarea>
+    <label for="calories">Calories Burned:</label>
+    <input type="number" id="calories" formControlName="calories" required min="1">
 
-      <button type="submit" [disabled]="addTrainingForm.invalid">Submit</button>
-    </form>
-  </div>
+    <label for="description">Description:</label>
+    <textarea id="description" formControlName="description" required></textarea>
+
+    <button type="submit" [disabled]="form.invalid">Submit</button>
+  </form>
 </div>

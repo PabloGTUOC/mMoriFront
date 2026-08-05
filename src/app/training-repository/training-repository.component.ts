@@ -1,74 +1,51 @@
-// src/app/training-repository/training-repository.component.ts
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from "@angular/common";
-import { TrainingRepositoryService } from '../services/training-repository.service';
-import { TrainingItemComponent } from "../training-item/training-item.component";
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TrainingRepositoryEntry } from '../models';
+import { Observable } from 'rxjs';
+import { TrainingRepositoryService } from '../services/training-repository.service';
+import { TrainingItemComponent } from '../training-item/training-item.component';
+import { CatalogueComponent } from '../shared/catalogue.component';
+import { TrainingRepositoryEntry, TrainingRepositoryPayload } from '../models';
 
-
+/**
+ * The shared training catalogue. Fetching, form toggling, submitting and refetching all
+ * come from `CatalogueComponent`; only the three abstract members below are specific.
+ */
 @Component({
   selector: 'app-training-repository',
   standalone: true,
   templateUrl: './training-repository.component.html',
   styleUrls: ['./training-repository.component.scss'],
-  imports: [CommonModule, TrainingItemComponent, ReactiveFormsModule]
+  imports: [CommonModule, TrainingItemComponent, ReactiveFormsModule],
 })
-export class TrainingRepositoryComponent implements OnInit {
-  trainings: TrainingRepositoryEntry[] = [];
-  showAddTrainingForm = false;
-  addTrainingForm!: FormGroup;
+export class TrainingRepositoryComponent extends CatalogueComponent<
+  TrainingRepositoryEntry,
+  TrainingRepositoryPayload
+> {
+  override readonly itemLabel = 'trainings';
 
-  constructor(private trainingRepositoryService: TrainingRepositoryService, private fb: FormBuilder) { }
-
-  ngOnInit(): void {
-    this.fetchTrainings();
-    this.initializeForm();
+  constructor(
+    private trainingRepositoryService: TrainingRepositoryService,
+    private fb: FormBuilder
+  ) {
+    super();
   }
 
-  // Fetch the training repository data from the service
-  fetchTrainings() {
-    this.trainingRepositoryService.getTrainingRepository().subscribe({
-      // The service unwraps the envelope, so this is already a plain array. The old
-      // three-branch shape guessing existed because the contract was unknown; it is not.
-      next: (trainings) => (this.trainings = trainings),
-      error: (error) => {
-        console.error('Error fetching training repository:', error);
-      }
-    });
+  protected override fetch(): Observable<TrainingRepositoryEntry[]> {
+    return this.trainingRepositoryService.getTrainingRepository();
   }
 
-  initializeForm() {
-    this.addTrainingForm = this.fb.group({
+  protected override create(payload: TrainingRepositoryPayload): Observable<unknown> {
+    return this.trainingRepositoryService.addNewTraining(payload);
+  }
+
+  protected override buildForm(): FormGroup {
+    return this.fb.group({
       name: ['', Validators.required],
       type: ['', Validators.required],
       duration: ['', [Validators.required, Validators.min(1)]],
       calories: ['', [Validators.required, Validators.min(1)]],
       description: ['', Validators.required],
     });
-  }
-
-  toggleAddTrainingForm() {
-    this.showAddTrainingForm = !this.showAddTrainingForm;
-  }
-
-  submitTraining() {
-    if (this.showAddTrainingForm) {
-      this.trainingRepositoryService.addNewTraining(this.addTrainingForm.value).subscribe({
-        next: () => {
-          this.showAddTrainingForm = false;
-          this.addTrainingForm.reset();
-          this.fetchTrainings();
-        },
-        error: (error) => {
-          console.error('Error adding new training', error);
-        }
-      });
-    }
-  }
-
-  /** Keeps DOM nodes stable across refetches instead of rebuilding the whole list. */
-  trackById(_index: number, item: { _id?: { $oid: string }; name?: string }): string {
-    return item._id?.$oid ?? item.name ?? String(_index);
   }
 }

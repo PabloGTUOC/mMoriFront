@@ -1,18 +1,24 @@
 <div class="stretch-repository-container">
   <h2>Stretches</h2>
 
-  <div class="stretch-grid">
+  <p *ngIf="loading">Loading stretches…</p>
+  <p *ngIf="error" class="catalogue-error" role="alert">{{ error }}</p>
+
+  <div *ngIf="items.length; else noStretches" class="stretch-grid">
     <app-stretch-item
-      *ngFor="let stretch of stretches; trackBy: trackById"
+      *ngFor="let stretch of items; trackBy: trackById"
       [stretch]="stretch"
     ></app-stretch-item>
   </div>
+  <ng-template #noStretches>
+    <p *ngIf="!loading">No stretches available.</p>
+  </ng-template>
 
-  <button (click)="toggleAddStretchForm()">
-    {{ showAddStretchForm ? 'Cancel' : 'Add New Stretch' }}
+  <button type="button" (click)="toggleAddForm()">
+    {{ showAddForm ? 'Cancel' : 'Add New Stretch' }}
   </button>
 
-  <form *ngIf="showAddStretchForm" [formGroup]="addStretchForm" (ngSubmit)="submitStretch()">
+  <form *ngIf="showAddForm" [formGroup]="form" (ngSubmit)="submit()">
     <label for="stretch_name">Stretch Name</label>
     <input id="stretch_name" formControlName="name" />
     <label for="description">Description</label>
@@ -20,6 +26,6 @@
     <label for="video_link">YouTube Link</label>
     <input id="video_link" formControlName="video_link" />
 
-    <button type="submit" [disabled]="!addStretchForm.valid">Submit</button>
+    <button type="submit" [disabled]="form.invalid">Submit</button>
   </form>
 </div>
