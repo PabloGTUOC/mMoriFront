@@ -1,42 +1,40 @@
-import {Component, EventEmitter, Output} from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from "../services/auth.service";
-import { UserService } from "../services/user.service";
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-navigation-menu',
   standalone: true,
   templateUrl: './navigation-menu.component.html',
   styleUrls: ['./navigation-menu.component.scss'],
-  providers: [AuthService]
 })
 export class NavigationMenuComponent {
-  @Output() viewChange = new EventEmitter<string>(); // Emit view change event
-  constructor(
-    private authService: AuthService,
-    private userService: UserService,
-    private router: Router
-  ) {}
+  @Output() viewChange = new EventEmitter<string>();
 
   dropdownOpen = false;
 
-  toggleDropdown() {
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  toggleDropdown(): void {
     this.dropdownOpen = !this.dropdownOpen;
   }
 
-  // Method for sign out
-  signOut() {
-    this.authService.signOut().then(() => {
-      console.log('Sign out successful');
-      this.userService.setUserInfo(null); // Reset user info and states
-      this.router.navigate(['/']); // Redirect to home after sign-out
-    }).catch(error => {
-      console.error('Sign out failed', error);
-    });
+  /**
+   * Signing out of Firebase is enough to clear the session: `UserService` watches auth
+   * state, so it resets itself. Clearing session fields here as well would be a second
+   * source of truth, which is what made the old auth handling unreliable.
+   */
+  signOut(): void {
+    this.authService
+      .signOut()
+      .then(() => this.router.navigate(['/log-in']))
+      .catch((error) => console.error('Sign out failed', error));
   }
 
-  // Navigation actions for other buttons
-  navigate(view: string) {
+  navigate(view: string): void {
     this.viewChange.emit(view);
     this.dropdownOpen = false;
   }

@@ -1,4 +1,5 @@
-import { NgModule, isDevMode, ErrorHandler } from '@angular/core';
+import { NgModule, isDevMode, ErrorHandler, APP_INITIALIZER } from '@angular/core';
+import { UserService } from './services/user.service';
 import { CommonModule } from '@angular/common';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
@@ -67,6 +68,14 @@ import { GlobalErrorHandler } from './services/error-handler.service';
             { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
             { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorService, multi: true },
             { provide: ErrorHandler, useClass: GlobalErrorHandler },
+            // Resolve the Firebase session before the router evaluates a single guard,
+            // so a reload restores the signed-in user instead of redirecting to /log-in.
+            {
+              provide: APP_INITIALIZER,
+              useFactory: (userService: UserService) => () => userService.initializeSession(),
+              deps: [UserService],
+              multi: true
+            },
             provideAnimationsAsync()
         ],
 })

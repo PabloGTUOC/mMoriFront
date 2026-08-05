@@ -1,14 +1,28 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+} from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
 
 /**
- * Auth Guard to protect routes that require authentication
+ * Protects routes that require a signed-in user.
+ *
+ * Waits for `sessionReady$` rather than reading session state immediately. The previous
+ * version took the current value of a subject that started as `false`, so a reload — which
+ * evaluates guards long before Firebase has restored the session — always redirected to
+ * /log-in even though the user was signed in.
+ *
+ * Returns a `UrlTree` instead of navigating imperatively, so the router performs a single
+ * redirect rather than racing a rejected navigation against a manual one.
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
   constructor(
@@ -19,20 +33,16 @@ export class AuthGuard implements CanActivate {
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): Observable<boolean> | Promise<boolean> | boolean {
-    return this.userService.logged.pipe(
+  ): Observable<boolean | UrlTree> {
+    return this.userService.sessionReady$.pipe(
       take(1),
-      map(isLogged => {
-        if (isLogged) {
-          return true;
-        } else {
-          // Redirect to login if not authenticated
-          this.router.navigate(['/log-in'], {
-            queryParams: { returnUrl: state.url }
-          });
-          return false;
-        }
-      })
+      map((session) =>
+        session.status === 'authenticated'
+          ? true
+          : this.router.createUrlTree(['/log-in'], {
+              queryParams: { returnUrl: state.url },
+            })
+      )
     );
   }
 }

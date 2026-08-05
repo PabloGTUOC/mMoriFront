@@ -234,9 +234,10 @@ export class FirstTimeComponent implements OnInit {
       if (this.userForm.valid) {
           this.userDataService.submitUserData(this.userForm.value).subscribe({
             next: (response) => {
-              console.log('user data subbmited OK', response);
+              console.log('user data submitted OK', response);
               this.userService.setUserNewStatus(false);
-              this.router.navigate(['/main']);
+              // Was '/main', which is not a route — onboarding dead-ended here.
+              this.router.navigate(['/home']);
             },
             error: (error) => {
               console.error('Error submitting user data', error);

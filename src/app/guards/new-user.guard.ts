@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { CanActivate, Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
 
 /**
- * Guard to redirect new users to the first-time setup page
+ * Sends users who have no profile yet to the onboarding form.
+ *
+ * Like `AuthGuard`, this waits for the session to resolve first — `isNew` is only
+ * meaningful once the profile lookup in `UserService.initializeSession` has completed.
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NewUserGuard implements CanActivate {
   constructor(
@@ -16,21 +19,10 @@ export class NewUserGuard implements CanActivate {
     private router: Router
   ) {}
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean> | Promise<boolean> | boolean {
-    return this.userService.isUserNew.pipe(
+  canActivate(): Observable<boolean | UrlTree> {
+    return this.userService.sessionReady$.pipe(
       take(1),
-      map(isNew => {
-        if (isNew) {
-          // New users must complete first-time setup
-          this.router.navigate(['/first-time']);
-          return false;
-        } else {
-          return true;
-        }
-      })
+      map((session) => (session.isNew ? this.router.createUrlTree(['/first-time']) : true))
     );
   }
 }

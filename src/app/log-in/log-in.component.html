@@ -1,6 +1,9 @@
 <div class="logIn">
 
-  <button (click)="signInwithGoogle()">Log in with Google</button>
+  <button (click)="signInwithGoogle()" [disabled]="signingIn">
+    {{ signingIn ? 'Signing in…' : 'Log in with Google' }}
+  </button>
+
+  <p class="log-in-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
 </div>
-

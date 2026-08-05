@@ -1,28 +1,24 @@
 import { Component } from '@angular/core';
-import {AuthService} from "../services/auth.service";
-import {UserService} from "../services/user.service";
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-log-out',
-  standalone:true,
+  standalone: true,
   templateUrl: './log-out.component.html',
   styleUrl: './log-out.component.scss',
-  providers: [AuthService]
 })
 export class LogOutComponent {
-  constructor(private authService: AuthService,
-              private userService: UserService,
-              private router: Router
-              ) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  signOut() {
-    this.authService.signOut().then(() => {
-      console.log('Sign out successful');
-      this.userService.setUserInfo(null); // Reset user info and related states
-      this.router.navigate(['/']);
-    }).catch(error => {
-      console.error('Sign out failed', error);
-    });
+  /** See `NavigationMenuComponent.signOut` — Firebase auth state is the only source of truth. */
+  signOut(): void {
+    this.authService
+      .signOut()
+      .then(() => this.router.navigate(['/log-in']))
+      .catch((error) => console.error('Sign out failed', error));
   }
 }

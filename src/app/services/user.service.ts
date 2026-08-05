@@ -1,96 +1,159 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
+import { catchError, distinctUntilChanged, filter, map, take, tap } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import firebase from 'firebase/compat/app';
 import { environment } from '../../environments/environment';
 
+/**
+ * Whether the app yet knows if anyone is signed in.
+ *
+ * `pending` is the state that used to be missing. Session state previously started as
+ * "logged out" and was only corrected after an interactive sign-in, so on every reload the
+ * guards saw `false` and bounced a perfectly valid Firebase session to /log-in.
+ */
+export type SessionStatus = 'pending' | 'authenticated' | 'anonymous';
 
+export interface Session {
+  status: SessionStatus;
+  userId: string | null;
+  /** True when the user has no profile yet and must complete /first-time. */
+  isNew: boolean;
+}
+
+const PENDING_SESSION: Session = { status: 'pending', userId: null, isNew: false };
+const ANONYMOUS_SESSION: Session = { status: 'anonymous', userId: null, isNew: false };
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
-  logged: BehaviorSubject<boolean> = new BehaviorSubject(false);
-  private userInfoSource: BehaviorSubject<any> = new BehaviorSubject(null);
-  userInfo = this.userInfoSource.asObservable();
-  private apiUrl = environment.apiUrl;
-  isUserNew: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  // New BehaviorSubject for userId
-  private userIdSource: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
-  userId$ = this.userIdSource.asObservable();
-  private refreshTrigger = new Subject<void>();
-  constructor(private http: HttpClient, private router: Router) { }
-  setUserInfo(userInfo: any) {
-    if (userInfo) {
-      this.userInfoSource.next(userInfo.user);
-      this.isUserNew.next(userInfo.isNew || false);
-      this.setUserId(userInfo.user?.uid || null);
-      this.logged.next(true); // Ensure logged status is set to true
-    } else {
-      this.userInfoSource.next(null);
-      this.isUserNew.next(false);
-      this.setUserId(null);
-      this.logged.next(false); // Ensure logged status is set to false on logout
-    }
+  private readonly sessionSource = new BehaviorSubject<Session>(PENDING_SESSION);
+
+  /** The single source of truth for who is signed in. */
+  readonly session$ = this.sessionSource.asObservable();
+
+  /** Emits once the first Firebase auth state has been resolved. Guards wait on this. */
+  readonly sessionReady$: Observable<Session> = this.session$.pipe(
+    filter((session) => session.status !== 'pending'),
+    take(1)
+  );
+
+  readonly logged: Observable<boolean> = this.session$.pipe(
+    map((session) => session.status === 'authenticated'),
+    distinctUntilChanged()
+  );
+
+  readonly isUserNew: Observable<boolean> = this.session$.pipe(
+    map((session) => session.isNew),
+    distinctUntilChanged()
+  );
+
+  readonly userId$: Observable<string | null> = this.session$.pipe(
+    map((session) => session.userId),
+    distinctUntilChanged()
+  );
+
+  private readonly apiUrl = environment.apiUrl;
+  private readonly refreshTrigger = new Subject<void>();
+  private initialization?: Promise<void>;
+
+  constructor(
+    private http: HttpClient,
+    private afAuth: AngularFireAuth
+  ) {}
+
+  /**
+   * Subscribes to Firebase auth state and resolves once the first value arrives.
+   *
+   * Wired to APP_INITIALIZER so no route is ever evaluated while the session is still
+   * `pending`. The subscription then stays live, so a sign-out — from anywhere, including
+   * another tab — flows back into `session$` without any component having to notice.
+   */
+  initializeSession(): Promise<void> {
+    if (this.initialization) return this.initialization;
+
+    this.initialization = new Promise<void>((resolve) => {
+      let settled = false;
+      const settle = () => {
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+      };
+
+      this.afAuth.authState.subscribe({
+        next: (user) => this.applyFirebaseUser(user).subscribe({ next: settle, error: settle }),
+        error: (error) => {
+          console.error('Could not resolve Firebase auth state', error);
+          this.sessionSource.next(ANONYMOUS_SESSION);
+          settle();
+        },
+      });
+    });
+
+    return this.initialization;
   }
-  // Setter for userId
-  setUserId(userId: string | null) {
-    this.userIdSource.next(userId);
+
+  getUserId(): string | null {
+    return this.sessionSource.value.userId;
   }
-  // Getter for userId
-  getUserId() {
-    return this.userIdSource.value;
-  }
+
+  /** Called by the onboarding form once a profile has been created. */
   setUserNewStatus(isNew: boolean): void {
-    this.isUserNew.next(isNew);
+    this.sessionSource.next({ ...this.sessionSource.value, isNew });
   }
-  //API Calls:
-  checkUserData(userId: string) {
-    let params = new HttpParams().set('user_id', userId);
+
+  // API calls
+
+  checkUserData(userId: string): Observable<any> {
+    const params = new HttpParams().set('user_id', userId);
     return this.http.get(`${this.apiUrl}/user_data/user_data`, { params });
   }
+
   getTrainingStats(userId: string): Observable<any> {
-    let params = new HttpParams().set('user_id', userId);
+    const params = new HttpParams().set('user_id', userId);
     return this.http.get(`${this.apiUrl}/trainings/training-stats`, { params });
   }
+
   getLatestWeight(userId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/weight_updates/latest_weight`, { params: { user_id: userId } });
+    const params = new HttpParams().set('user_id', userId);
+    return this.http.get(`${this.apiUrl}/weight_updates/latest_weight`, { params });
   }
-  // Expose the trigger as an observable
-  get refreshTrigger$() {
+
+  get refreshTrigger$(): Observable<void> {
     return this.refreshTrigger.asObservable();
   }
-  // Method to trigger a refresh
-  triggerRefresh() {
+
+  /** Asks the dashboard to reload after the user logs something. */
+  triggerRefresh(): void {
     this.refreshTrigger.next();
   }
-  //Handle user login
-  handleUserLogin(user: any): void {
-    const userId = user.uid;
-    console.log('handleUserLogin called');
-    console.log('Received user:', user);
-    console.log('Extracted userId:', userId);
-    if (userId) {
-      this.checkUserData(userId).subscribe({
-        next: (response: any) => {
-          console.log('checkUserData response:', response);
-          const isNewUser = !response.success;
-          console.log('Is new user:', isNewUser);
-          this.setUserInfo({ user, isNew: isNewUser });
-          console.log('User info set with:', { user, isNew: isNewUser });
-          // Redirect based on user status
-          if (isNewUser) {
-            this.router.navigate(['/first-time']);
-          } else {
-            this.router.navigate(['/home']);
-          }
-        },
-        error: (error) => {
-          console.log('Error checking user data', error);
-        }
-      });
-    } else {
-      console.log('user ID is missing');
+
+  /**
+   * Turns a Firebase user into a resolved session, looking up whether they have a profile.
+   *
+   * A failed lookup resolves to `isNew: false` on purpose: treating an unreachable API as
+   * "new user" would send an existing user back through onboarding and create a duplicate
+   * profile snapshot. Showing an empty dashboard is the recoverable failure.
+   */
+  private applyFirebaseUser(user: firebase.User | null): Observable<void> {
+    if (!user) {
+      this.sessionSource.next(ANONYMOUS_SESSION);
+      return of(undefined);
     }
+
+    const userId = user.uid;
+
+    return this.checkUserData(userId).pipe(
+      map((response: any) => !response?.success),
+      catchError((error) => {
+        console.error('Could not check user profile; assuming an existing user', error);
+        return of(false);
+      }),
+      tap((isNew) => this.sessionSource.next({ status: 'authenticated', userId, isNew })),
+      map(() => undefined)
+    );
   }
 }

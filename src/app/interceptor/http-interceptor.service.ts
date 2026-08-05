@@ -25,8 +25,16 @@ export class HttpInterceptorService implements HttpInterceptor {
     if (request.url.includes("json")) {
       return next.handle(request);
     }
-    console.log ("Calling interceptor")
     const httpRequest = this.cloneRequest(request);
+
+    /**
+     * Only retry requests that are safe to repeat.
+     *
+     * This used to retry everything. A POST that succeeded slowly — or whose response was
+     * lost — was sent up to three times, so one weigh-in could become three rows and one
+     * logged session could inflate `training_count` threefold.
+     */
+    const retryCount = this.isIdempotent(httpRequest.method) ? 2 : 0;
 
     this.httpStateService.state.next({
       url: httpRequest.url,
@@ -35,7 +43,7 @@ export class HttpInterceptorService implements HttpInterceptor {
 
     return next.handle(httpRequest).pipe(
        timeout(30000),
-       retry(2),
+       retry(retryCount),
        catchError((error) => {
         this.httpStateService.state.next({
           url: httpRequest.url,
@@ -56,5 +64,10 @@ export class HttpInterceptorService implements HttpInterceptor {
 
   cloneRequest(request: HttpRequest<any>) {
     return request.clone();
+  }
+
+  /** GET and HEAD can be repeated without changing server state; the write verbs cannot. */
+  private isIdempotent(method: string): boolean {
+    return method === 'GET' || method === 'HEAD';
   }
 }

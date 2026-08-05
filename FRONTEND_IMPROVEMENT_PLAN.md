@@ -157,9 +157,18 @@ everything after that is a judgement call about how far to take the app.
 
 Effort is rough, assuming one developer working in focused sessions.
 
-### Phase 1 — Stop the bleeding (~1–2 days)
+### Phase 1 — Stop the bleeding (~1–2 days) — ✅ **DONE**
 
 Small, surgical, high-value. No refactoring.
+
+**Verified** with a headless-browser smoke test against `ng serve`: an anonymous user is
+redirected `/` → `/log-in?returnUrl=%2Fhome` and `/first-time` → `/log-in?returnUrl=%2Ffirst-time`,
+with `/log-in` staying put — so the app bootstraps, `APP_INITIALIZER` resolves rather than
+hanging, and the guards agree with each other. Both `ng build` configurations compile.
+
+One item is only partly closed: **1.6 still points `environment.ts` at localhost**, because
+the deployed API URL isn't known. The file-replacement plumbing is in place and the file
+carries a `TODO`; set the real URL before a production build.
 
 | # | Task | Files |
 |---|---|---|
