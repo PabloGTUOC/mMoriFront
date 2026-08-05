@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { DisplayDailyComponent } from './display-daily.component';
+import { testingProviders } from '../../testing/testing-providers';
 
 describe('DisplayDailyComponent', () => {
   let component: DisplayDailyComponent;
@@ -8,9 +8,9 @@ describe('DisplayDailyComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DisplayDailyComponent]
-    })
-    .compileComponents();
+      imports: [DisplayDailyComponent],
+      providers: testingProviders(),
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DisplayDailyComponent);
     component = fixture.componentInstance;

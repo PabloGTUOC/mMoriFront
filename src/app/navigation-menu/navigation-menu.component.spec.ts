@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { NavigationMenuComponent } from './navigation-menu.component';
+import { testingProviders } from '../../testing/testing-providers';
 
 describe('NavigationMenuComponent', () => {
   let component: NavigationMenuComponent;
@@ -8,9 +8,9 @@ describe('NavigationMenuComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavigationMenuComponent]
-    })
-    .compileComponents();
+      imports: [NavigationMenuComponent],
+      providers: testingProviders(),
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NavigationMenuComponent);
     component = fixture.componentInstance;

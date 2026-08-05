@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { StretchItemComponent } from './stretch-item.component';
+import { testingProviders } from '../../testing/testing-providers';
 
 describe('StretchItemComponent', () => {
   let component: StretchItemComponent;
@@ -8,12 +8,13 @@ describe('StretchItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StretchItemComponent]
-    })
-    .compileComponents();
+      imports: [StretchItemComponent],
+      providers: testingProviders(),
+    }).compileComponents();
 
     fixture = TestBed.createComponent(StretchItemComponent);
     component = fixture.componentInstance;
+    component.stretch = { stretch_name: 'Hamstring', description: 'Hold', video_link: 'https://www.youtube.com/watch?v=abc' };
     fixture.detectChanges();
   });
 
