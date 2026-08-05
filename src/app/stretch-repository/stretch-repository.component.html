@@ -14,7 +14,7 @@
 
   <form *ngIf="showAddStretchForm" [formGroup]="addStretchForm" (ngSubmit)="submitStretch()">
     <label for="stretch_name">Stretch Name</label>
-    <input id="stretch_name" formControlName="stretch_name" />
+    <input id="stretch_name" formControlName="name" />
     <label for="description">Description</label>
     <input id="description" formControlName="description" />
     <label for="video_link">YouTube Link</label>

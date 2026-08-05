@@ -1,20 +1,30 @@
 import { Injectable } from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { MoodPayload, MoodResponse, RecommendationResponse } from '../models';
 
+/**
+ * Mood logging and the AI recommendation (BACKEND_SPEC §4.14–§4.15).
+ *
+ * Both endpoints take the payload under `mood_data` — not `mood` — and the wrapper is
+ * applied here so callers pass a plain typed payload.
+ */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ThoughtsService {
-  private  apiUrl = environment.apiUrl;
+  private readonly apiUrl = environment.apiUrl;
+
   constructor(private http: HttpClient) {}
 
-  saveMood(moodData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/moods`, moodData);
+  saveMood(moodData: MoodPayload): Observable<MoodResponse> {
+    return this.http.post<MoodResponse>(`${this.apiUrl}/moods`, { mood_data: moodData });
   }
 
-  getRecomendation(moodData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/generate_recommendation`, moodData);
+  getRecommendation(moodData: MoodPayload): Observable<RecommendationResponse> {
+    return this.http.post<RecommendationResponse>(`${this.apiUrl}/generate_recommendation`, {
+      mood_data: moodData,
+    });
   }
 }

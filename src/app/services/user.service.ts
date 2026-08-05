@@ -5,6 +5,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import firebase from 'firebase/compat/app';
 import { environment } from '../../environments/environment';
+import { TrainingStatsResponse, UserDataResponse, WeightResponse } from '../models';
 
 /**
  * Whether the app yet knows if anyone is signed in.
@@ -107,19 +108,19 @@ export class UserService {
 
   // API calls
 
-  checkUserData(userId: string): Observable<any> {
+  checkUserData(userId: string): Observable<UserDataResponse> {
     const params = new HttpParams().set('user_id', userId);
-    return this.http.get(`${this.apiUrl}/user_data/user_data`, { params });
+    return this.http.get<UserDataResponse>(`${this.apiUrl}/user_data/user_data`, { params });
   }
 
-  getTrainingStats(userId: string): Observable<any> {
+  getTrainingStats(userId: string): Observable<TrainingStatsResponse> {
     const params = new HttpParams().set('user_id', userId);
-    return this.http.get(`${this.apiUrl}/trainings/training-stats`, { params });
+    return this.http.get<TrainingStatsResponse>(`${this.apiUrl}/trainings/training-stats`, { params });
   }
 
-  getLatestWeight(userId: string): Observable<any> {
+  getLatestWeight(userId: string): Observable<WeightResponse> {
     const params = new HttpParams().set('user_id', userId);
-    return this.http.get(`${this.apiUrl}/weight_updates/latest_weight`, { params });
+    return this.http.get<WeightResponse>(`${this.apiUrl}/weight_updates/latest_weight`, { params });
   }
 
   get refreshTrigger$(): Observable<void> {
@@ -147,7 +148,7 @@ export class UserService {
     const userId = user.uid;
 
     return this.checkUserData(userId).pipe(
-      map((response: any) => !response?.success),
+      map((response) => !response.success),
       catchError((error) => {
         console.error('Could not check user profile; assuming an existing user', error);
         return of(false);

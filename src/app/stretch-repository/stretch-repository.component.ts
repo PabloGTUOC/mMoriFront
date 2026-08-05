@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StretchRepositoryService } from '../services/stretch-repository.service';
+import { Stretch } from '../models';
 import { CommonModule } from "@angular/common";
 import { StretchItemComponent } from "../stretch-item/stretch-item.component";
 
@@ -12,7 +13,7 @@ import { StretchItemComponent } from "../stretch-item/stretch-item.component";
   imports: [CommonModule, StretchItemComponent, ReactiveFormsModule]
 })
 export class StretchRepositoryComponent implements OnInit {
-  stretches: any[] = [];
+  stretches: Stretch[] = [];
   showAddStretchForm = false;
   addStretchForm!: FormGroup;
 
@@ -28,16 +29,8 @@ export class StretchRepositoryComponent implements OnInit {
 
   fetchStretches() {
     this.stretchService.getStretches().subscribe({
-      next: (response) => {
-        console.log('Fetched stretches:', response);
-        if (Array.isArray(response)) {
-          this.stretches = response;
-        } else if (response.success && Array.isArray(response.data)) {
-          this.stretches = response.data;
-        } else if (response.success && Array.isArray(response.stretches)) {
-          this.stretches = response.stretches;
-        }
-      }, error: (error) => {
+      next: (stretches) => (this.stretches = stretches),
+      error: (error) => {
         console.error('Error fetching stretches', error);
       },
     });
@@ -45,7 +38,7 @@ export class StretchRepositoryComponent implements OnInit {
 
   initializeForm() {
     this.addStretchForm = this.fb.group({
-      stretch_name: ['', Validators.required],
+      name: ['', Validators.required],
       description: ['', Validators.required],
       video_link: ['', [Validators.required, Validators.pattern('https?://.+')]],
     });
@@ -57,15 +50,13 @@ export class StretchRepositoryComponent implements OnInit {
 
   submitStretch() {
     if (this.addStretchForm.valid) {
-      const newStretchData = this.addStretchForm.value;
-      this.stretchService.addNewStretch(newStretchData).subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.showAddStretchForm = false;
-            this.addStretchForm.reset();
-            this.fetchStretches();
-          }
-        }, error: (error) => {
+      this.stretchService.addNewStretch(this.addStretchForm.value).subscribe({
+        next: () => {
+          this.showAddStretchForm = false;
+          this.addStretchForm.reset();
+          this.fetchStretches();
+        },
+        error: (error) => {
           console.error('Error adding new stretch:', error);
         },
       });

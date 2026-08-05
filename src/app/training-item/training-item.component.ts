@@ -1,5 +1,6 @@
 // src/app/training-item/training-item.component.ts
 import { Component, Input } from '@angular/core';
+import { TrainingRepositoryEntry } from '../models';
 
 @Component({
   selector: 'app-training-item',
@@ -8,5 +9,5 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./training-item.component.scss'],
 })
 export class TrainingItemComponent {
-  @Input() training: any;
+  @Input({ required: true }) training!: TrainingRepositoryEntry;
 }

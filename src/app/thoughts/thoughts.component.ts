@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import {CommonModule, TitleCasePipe} from "@angular/common";
 import {ThoughtsService} from "../services/thoughts.service";
-import {UserService} from "../services/user.service";
-import {response} from "express";
+import { UserService } from '../services/user.service';
+import { MoodOption, MoodType } from '../models';
 
 @Component({
   selector: 'app-thoughts',
@@ -15,11 +15,11 @@ import {response} from "express";
   styleUrls: ['./thoughts.component.scss']
 })
 export class ThoughtsComponent {
-  selectedMood: string | null = null;
+  selectedMood: MoodType | null = null;
   recommendation: string | null = null;
 
 
-  moods = [
+  moods: MoodOption[] = [
     { label: 'Optimistic & Social', emoji: '😄', mood: 'optimistic' },
     { label: 'Angry & Moody', emoji: '😡', mood: 'angry' },
     { label: 'Calm & Analytic', emoji: '🤔', mood: 'calm' },
@@ -31,7 +31,7 @@ export class ThoughtsComponent {
     private userService: UserService
   ) {}
 
-  selectMood(mood: string) {
+  selectMood(mood: MoodType) {
     this.selectedMood = mood;
     this.saveMood();
     this.requestRecommendation();
@@ -42,18 +42,10 @@ export class ThoughtsComponent {
     const currentDate = new Date().toISOString().split('T')[0]; // Get the current date
 
     if (this.selectedMood && userId) {
-      const moodData = {
-        mood_data: {
-          user_id: userId,
-          mood: this.selectedMood,
-          date: currentDate
-        }
-      };
+      const moodData = { user_id: userId, mood: this.selectedMood, date: currentDate };
       this.thoughtsService.saveMood(moodData)
         .subscribe({
-          next: (response) => {
-            console.log('Mood saved successfully', response);
-          },
+          next: () => undefined,
           error: (error) => {
             console.error('Error saving mood', error);
           }
@@ -68,19 +60,12 @@ export class ThoughtsComponent {
     const currentDate = new Date().toISOString().split('T')[0]; // Get the current date
 
     if (this.selectedMood && userId) {
-      const moodData = {
-        mood_data: {
-          user_id: userId,
-          mood: this.selectedMood,
-          date: currentDate
-        }
-      };
-      this.thoughtsService.getRecomendation(moodData)
+      const moodData = { user_id: userId, mood: this.selectedMood, date: currentDate };
+      this.thoughtsService.getRecommendation(moodData)
         .subscribe({
           next: (response) => {
-            console.log('Recommendation successfully', response);
-            if (response.success) {
-              this.recommendation =this.formatRecommendation(response.recommendation);
+            if (response.success && response.recommendation) {
+              this.recommendation = this.formatRecommendation(response.recommendation);
             }
           },
           error: (error) => {

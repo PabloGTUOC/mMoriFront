@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import { UserDataService} from "../services/user-data.service";
 import { UserService} from "../services/user.service";
-import {response} from "express";
 import { Router} from "@angular/router";
 import { MatFormFieldModule} from "@angular/material/form-field";
 import { MatSelectModule} from "@angular/material/select";
 import { CommonModule } from '@angular/common';  // Import CommonModule here
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { UserDataPayload } from '../models';
 
 @Component({
   selector: 'app-first-time',
@@ -231,8 +231,23 @@ export class FirstTimeComponent implements OnInit {
   }
 
     onSubmit(): void {
-      if (this.userForm.valid) {
-          this.userDataService.submitUserData(this.userForm.value).subscribe({
+      if (this.userForm.valid && this.userId) {
+          const form = this.userForm.value;
+          // The form's control names are its own; these are the backend's. Sending the
+          // form value verbatim meant training_frequency, smoking_status, drinking_status
+          // and country were all dropped, so signup failed its presence validations.
+          const payload: UserDataPayload = {
+            user_id: this.userId,
+            dob: form.dob,
+            gender: form.gender,
+            height: Number(form.height),
+            weight: Number(form.weight),
+            training_frequency: Number(form.trainingFrequency),
+            smoking_status: !!form.smoker,
+            drinking_status: !!form.drinker,
+            country: form.country_code,
+          };
+          this.userDataService.submitUserData(payload).subscribe({
             next: (response) => {
               console.log('user data submitted OK', response);
               this.userService.setUserNewStatus(false);

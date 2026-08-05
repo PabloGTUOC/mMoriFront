@@ -1,20 +1,20 @@
 /**
- * Weight model interfaces
+ * Weight models. `WeightUpdate` carries no timestamps on the backend — see
+ * BACKEND_SPEC §3.3 for why the date ordering needs an _id tiebreaker.
  */
 
-export interface WeightUpdate {
-  id?: number;
+export interface WeightPayload {
   user_id: string;
   weight: number;
   date: string;
-  created_at?: string;
 }
 
+/** `GET /weight_updates/latest_weight`. Absent history is a 200 with success: false. */
 export interface WeightResponse {
   success: boolean;
   weight?: number;
   date?: string;
-  message?: string;
+  error?: string;
 }
 
 export interface WeightHistory {

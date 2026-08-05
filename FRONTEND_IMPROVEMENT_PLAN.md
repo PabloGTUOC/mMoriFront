@@ -213,9 +213,22 @@ is what lowers the number; until then this at least stops the bundle getting qui
 
 **Exit criteria:** `npm run lint`, `npm test` and `npm run build` all pass locally and in CI.
 
-### Phase 3 — A typed, honest API layer (~2–3 days)
+### Phase 3 — A typed, honest API layer (~2–3 days) — ✅ **DONE**
 
 The backend contract is now written down and owned in this repo. Encode it once.
+
+**Outcome:** no `any` left in `src/app/services/`; lint warnings fell from 68 to 26; 43
+tests and the build stay green.
+
+**Deviation from 3.2 as written.** The task said to add `training_name` and `stretch_name`
+to the models. Instead the *frontend* moved to the backend's canonical `name`, because this
+repo owns both halves and the API already returns canonical fields. Same for the write path:
+the app now sends `training_date`/`training_type`, `training_frequency`, `country`,
+`smoking_status`, `drinking_status`, and wraps `mood_data`/`stretch` correctly.
+
+**This makes the backend's compatibility aliases removable** — the frontend no longer relies
+on a single one. They are still in place (harmless, and they keep any older client working);
+deleting them is a tidy follow-up, not urgent.
 
 | # | Task |
 |---|---|

@@ -12,7 +12,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { MainPageComponent } from './main-page/main-page.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LogInComponent } from './log-in/log-in.component';
-import { LogOutComponent} from "./log-out/log-out.component";
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule} from "@angular/forms";
 import { InputDailyComponent } from './input-daily/input-daily.component';
@@ -45,7 +44,6 @@ import { GlobalErrorHandler } from './services/error-handler.service';
     FirstTimeComponent,
     DisplayDailyComponent,
     LogInComponent,
-    LogOutComponent,
     HttpClientModule,
     ReactiveFormsModule,
     InputDailyComponent,

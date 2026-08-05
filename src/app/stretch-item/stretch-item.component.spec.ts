@@ -14,7 +14,7 @@ describe('StretchItemComponent', () => {
 
     fixture = TestBed.createComponent(StretchItemComponent);
     component = fixture.componentInstance;
-    component.stretch = { stretch_name: 'Hamstring', description: 'Hold', video_link: 'https://www.youtube.com/watch?v=abc' };
+    component.stretch = { name: 'Hamstring', description: 'Hold', video_link: 'https://www.youtube.com/watch?v=abc' };
     fixture.detectChanges();
   });
 

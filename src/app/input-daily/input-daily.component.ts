@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { UserService } from "../services/user.service";
 import { UserDataService } from "../services/user-data.service";
-import { response } from "express";
 import { forkJoin } from "rxjs";
 import { TrainingRepositoryService } from "../services/training-repository.service";
-import { CommonModule } from "@angular/common";
+import { CommonModule } from '@angular/common';
+import { TrainingRepositoryEntry } from '../models';
 
 
 @Component({
@@ -21,7 +21,7 @@ import { CommonModule } from "@angular/common";
 export class InputDailyComponent implements OnInit {
   dailyForm!: FormGroup;
   userId!: string | null;
-  trainings: any[] = [];
+  trainings: TrainingRepositoryEntry[] = [];
 
   constructor(private fb: FormBuilder,
     private userDataService: UserDataService,
@@ -45,48 +45,38 @@ export class InputDailyComponent implements OnInit {
 
   fetchTrainings(): void {
     this.trainingRepositoryService.getTrainingRepository().subscribe({
-      next: (response) => {
-        console.log('Daily input fetched trainings:', response);
-        if (Array.isArray(response)) {
-          this.trainings = response;
-        } else if (response.success && Array.isArray(response.data)) {
-          this.trainings = response.data;
-        } else if (response.success && Array.isArray(response.trainings)) {
-          this.trainings = response.trainings;
-        }
-      }, error: (error) => {
+      next: (trainings) => (this.trainings = trainings),
+      error: (error) => {
         console.error('Error fetching trainings', error);
       }
     });
   }
 
   submitData(): void {
-    if (this.dailyForm.valid) {
+    if (this.dailyForm.valid && this.userId) {
       const formData = this.dailyForm.value;
+      const today = new Date().toISOString().split('T')[0];
+      // Canonical backend field names. This used to send `date` and `training`, which the
+      // API does not permit, so the row saved with nulls and the session's type was lost.
       const training_data = {
         user_id: this.userId,
-        date: new Date().toISOString().split('T')[0], // Current date
-        training: formData.training,
+        training_date: today,
+        training_type: formData.training,
       };
       const weight_data = {
         user_id: this.userId,
-        date: new Date().toISOString().split('T')[0],
-        weight: formData.weight
+        date: today,
+        weight: Number(formData.weight),
       };
       forkJoin([
         this.userDataService.submitTrainingData(training_data),
         this.userDataService.submitWeightUpdate(weight_data)
       ]).subscribe({
-        next: ([trainingResponse, weightResponse]) => {
-          console.log('Training data submitted ok', trainingResponse);
-          console.log('Weight data submitted ok', weightResponse);
-          this.userService.triggerRefresh();
-        }, error: (error) => {
-          console.log('Error submitting data', error);
-        }
+        next: () => this.userService.triggerRefresh(),
+        error: (error) => console.error('Error submitting data', error),
       });
     } else {
-      console.log('Form is invalid');
+      console.warn('Form is invalid or the user is not signed in');
     }
   }
 }

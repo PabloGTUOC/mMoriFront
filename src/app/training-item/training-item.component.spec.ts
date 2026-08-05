@@ -14,7 +14,7 @@ describe('TrainingItemComponent', () => {
 
     fixture = TestBed.createComponent(TrainingItemComponent);
     component = fixture.componentInstance;
-    component.training = { training_name: 'HIIT', type: 'Cardio', duration: 30, calories: 350, description: 'Test' };
+    component.training = { name: 'HIIT', type: 'Cardio', duration: 30, calories: 350, description: 'Test' };
     fixture.detectChanges();
   });
 

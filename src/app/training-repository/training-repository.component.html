@@ -16,7 +16,7 @@
   <div *ngIf="showAddTrainingForm">
     <form [formGroup]="addTrainingForm" (ngSubmit)="submitTraining()">
       <label for="trainingName">Training Name:</label>
-      <input type="text" id="trainingName" formControlName="training_name" required>
+      <input type="text" id="trainingName" formControlName="name" required>
 
       <label for="type">Type:</label>
       <input type="text" id="type" formControlName="type" required>
