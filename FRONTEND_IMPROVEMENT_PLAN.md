@@ -31,6 +31,10 @@ Verified by running each command against a clean `npm install`:
 So there is no working quality gate of any kind right now. That shapes the plan below: the
 first refactor without a safety net is the one that silently breaks something.
 
+> **Update:** the table above is the state at assessment time, kept as the record that
+> motivated this plan. All four rows are resolved as of Phase 2 — lint runs (0 errors),
+> 44 tests pass, the budget is a deliberate ratchet, and CI runs all of it.
+
 ---
 
 ## 2. Findings
@@ -183,9 +187,21 @@ carries a `TODO`; set the real URL before a production build.
 **Exit criteria:** reload on `/home` keeps you logged in; signup lands on the dashboard;
 logging a training fires exactly one set of requests.
 
-### Phase 2 — A working quality gate (~1–2 days)
+### Phase 2 — A working quality gate (~1–2 days) — ✅ **DONE**
 
 Nothing below this line is safe to attempt until the suite is green and runnable.
+
+**Outcome:** `npm run lint` runs for the first time (0 errors, 68 warnings of known Phase 3
+debt); the suite went from 22 failures out of 23 to **44 passing**; and CI runs lint, test
+and build for the frontend plus typecheck, test and build for `backend/` — with a MongoDB
+service container, so the 31 backend integration tests execute instead of skipping.
+
+**Task 2.5 decision — the budget is now a ratchet, not an aspiration.** The initial bundle
+is 924 kB against a 512 kB budget, so every build warned and the warning had stopped meaning
+anything. Rather than delete the budget or leave it permanently red, the threshold is set
+just above current size (`maximumWarning: 950kB`, `maximumError: 1.1MB`). Today's build
+passes clean, and *any growth from here trips it* — which is what a budget is for. Phase 6.6
+is what lowers the number; until then this at least stops the bundle getting quietly worse.
 
 | # | Task |
 |---|---|

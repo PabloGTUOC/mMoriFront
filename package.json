@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,html,css,scss,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,html,css,scss,json}\""
+    "format:check": "prettier --check \"src/**/*.{ts,html,css,scss,json}\"",
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadlessNoSandbox"
   },
   "private": true,
   "dependencies": {
