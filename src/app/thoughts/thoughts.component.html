@@ -13,8 +13,27 @@
     <h3>You are feeling: {{ selectedMood | titlecase }}</h3>
   </div>
 
-  <div *ngIf="recommendation" class="recommendation">
+  <!--
+    Rendered as data, not markup: no [innerHTML], so there is no HTML to sanitise even
+    though the text comes from a model whose output nobody controls.
+  -->
+  <div *ngIf="recommendationBlocks.length" class="recommendation">
     <h3>Today's Recommendation</h3>
-    <p [innerHTML]="recommendation"></p>
+    <ng-container *ngFor="let block of recommendationBlocks">
+      <p *ngIf="block.kind === 'paragraph'">
+        <ng-container *ngFor="let segment of block.segments">
+          <strong *ngIf="segment.bold">{{ segment.text }}</strong>
+          <ng-container *ngIf="!segment.bold">{{ segment.text }}</ng-container>
+        </ng-container>
+      </p>
+      <ul *ngIf="block.kind === 'list'">
+        <li *ngFor="let item of block.items">
+          <ng-container *ngFor="let segment of item">
+            <strong *ngIf="segment.bold">{{ segment.text }}</strong>
+            <ng-container *ngIf="!segment.bold">{{ segment.text }}</ng-container>
+          </ng-container>
+        </li>
+      </ul>
+    </ng-container>
   </div>
 </div>

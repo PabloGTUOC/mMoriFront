@@ -3,6 +3,7 @@ import {CommonModule, TitleCasePipe} from "@angular/common";
 import {ThoughtsService} from "../services/thoughts.service";
 import { UserService } from '../services/user.service';
 import { MoodOption, MoodType } from '../models';
+import { RecommendationBlock, parseRecommendation } from '../shared/recommendation';
 
 @Component({
   selector: 'app-thoughts',
@@ -16,7 +17,7 @@ import { MoodOption, MoodType } from '../models';
 })
 export class ThoughtsComponent {
   selectedMood: MoodType | null = null;
-  recommendation: string | null = null;
+  recommendationBlocks: RecommendationBlock[] = [];
 
 
   moods: MoodOption[] = [
@@ -65,7 +66,7 @@ export class ThoughtsComponent {
         .subscribe({
           next: (response) => {
             if (response.success && response.recommendation) {
-              this.recommendation = this.formatRecommendation(response.recommendation);
+              this.recommendationBlocks = parseRecommendation(response.recommendation);
             }
           },
           error: (error) => {
@@ -75,15 +76,6 @@ export class ThoughtsComponent {
     } else {
       console.error('User ID is missing or mood not selected');
     }
-  }
-
-  formatRecommendation(recommendation: string): string {
-    return recommendation
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
-      .replace(/\n\n/g, '<br><br>') // Paragraph breaks
-      .replace(/^\d+\.\s(.*?)(?=\n|$)/gm, '<li>$1</li>') // Convert numbered points to list items
-      .replace(/<li>/g, '<ul><li>') // Wrap in <ul> tag
-      .replace(/<\/li>(?!<li>)/g, '</li></ul>'); // Close </ul> tag
   }
 
 }

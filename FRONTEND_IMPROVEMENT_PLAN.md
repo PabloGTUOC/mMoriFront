@@ -258,9 +258,12 @@ builds need no setup) and the frontend half of 4.5 (5 interceptor specs — toke
 our API, *not* attached to other hosts, absent when signed out, one forced-refresh retry on
 401, and no retry loop).
 
-**Still open:** 4.2.5 (rate limiting `/generate_recommendation`) and 4.3 (YouTube URL
-validation, Markdown rendering — `bypassSecurityTrustResourceUrl` is unchanged, so P1.3
-remains open).
+**4.3 done.** P1.2 and P1.3 are closed. The iframe source is now built from a validated
+11-character video id, so nothing a user types reaches it, and the link is validated on the
+server too. The recommendation renders as structured data with no `[innerHTML]` anywhere.
+
+**Still open:** 4.2.5 (rate limiting `/generate_recommendation`) and 4.3.3 (optional
+`created_by` on catalogue entries).
 
 **4.1.6 is deliberately blocked, not forgotten.** Removing `user_id` from client payloads is
 rollout step 5 and the deployment is at step 1. With `AUTH_MODE=optional` and no Firebase

@@ -3,6 +3,7 @@ import { StretchRepository } from '../models/stretch-repository.model.js';
 import { failWithErrors, HTTP, isValidationError, ok, validationMessages } from '../lib/http.js';
 import { optionalWrapper, pick, toIntegerOrUndefined, toStringOrUndefined } from '../lib/params.js';
 import { serializeDocument, serializeDocuments } from '../lib/serialize.js';
+import { isValidYouTubeUrl } from '../lib/youtube.js';
 
 /**
  * Adds the `stretch_name` key the frontend reads.
@@ -46,12 +47,23 @@ export async function listStretches(_req: Request, res: Response): Promise<Respo
 export async function createStretch(req: Request, res: Response): Promise<Response> {
   const params = optionalWrapper(req.body, 'stretch', 'stretch_repository');
 
+  /**
+   * The catalogue is shared, so a link saved here is framed for every user. Validate on the
+   * server too — a browser-side check is a UX affordance, not a control, since anyone can
+   * POST directly. Uses this endpoint's documented failure shape (200 with success:false),
+   * not a 422, because that is the convention callers already branch on (§4.11).
+   */
+  const videoLink = toStringOrUndefined(pick(params, 'video_link'));
+  if (videoLink && !isValidYouTubeUrl(videoLink)) {
+    return failWithErrors(res, HTTP.ok, ['Video link must be a YouTube URL']);
+  }
+
   const document = new StretchRepository({
     name: toStringOrUndefined(pick(params, 'name', 'stretch_name')),
     type: toStringOrUndefined(pick(params, 'type')),
     duration: toIntegerOrUndefined(pick(params, 'duration')),
     description: toStringOrUndefined(pick(params, 'description')),
-    video_link: toStringOrUndefined(pick(params, 'video_link')),
+    video_link: videoLink,
   });
 
   try {
