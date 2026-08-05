@@ -210,10 +210,19 @@ spec's behaviour without the data leak. Covered by tests.
 ### 7. Not changed: authentication
 
 There still isn't any. §9.3 is right that any caller can read or write any user's data by
-guessing a `user_id`, which is a client-supplied string trusted verbatim. Fixing that means
-verifying the Firebase ID token the frontend already has and deriving `user_id` from it —
-a change to both halves of the app, out of scope for a port. **Do not expose this service
-to the internet as-is.**
+guessing a `user_id`, which is a client-supplied string trusted verbatim. Changing that means
+touching both halves of the app, so it was out of scope for a port that had to stay
+wire-compatible.
+
+It is designed, though: **[`../FRONTEND_IMPROVEMENT_PLAN.md`](../FRONTEND_IMPROVEMENT_PLAN.md)
+§Phase 4** specifies the end-to-end fix — a `requireAuth` middleware built on `firebase-admin`
+that verifies the ID token the frontend already holds, `user_id` derived from the verified
+`uid` instead of the request body, the per-route policy, a staged `AUTH_MODE=optional →
+required` rollout that avoids breaking the live client, and the test coverage it needs.
+Existing documents already store the Firebase `uid` in `user_id`, so no data migration is
+involved.
+
+**Until that ships, do not expose this service beyond localhost.**
 
 ---
 

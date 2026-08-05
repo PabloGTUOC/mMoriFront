@@ -65,10 +65,12 @@ or router/Firebase providers.
 
 ### P1 — Security
 
-**P1.1 The API trusts a client-supplied `user_id`.** The frontend holds a Firebase ID token
-and never sends it; every request identifies the user by a string in the query or body.
-Anyone can read or write any user's data by guessing a uid. This is `BACKEND_SPEC.md` §9.3,
-still unresolved — but now that the backend is in this repo, it is fixable end to end.
+**P1.1 The API trusts a client-supplied `user_id`.** Firebase authenticates the user in the
+browser and then nothing downstream uses it: the ID token is never attached to a request, and
+every call identifies the caller by a string in the query or body. Anyone who can reach the
+API can read or write any user's data by guessing a uid. Authentication exists;
+**authorization does not.** This is `BACKEND_SPEC.md` §9.3, still unresolved — but now that
+the backend is in this repo it is fixable end to end. **Phase 4 below is the full design.**
 
 **P1.2 Unsanitised `[innerHTML]` on model output.** `ThoughtsComponent.formatRecommendation`
 builds HTML with regex replaces and binds it via `[innerHTML]`
@@ -201,17 +203,127 @@ The backend contract is now written down and owned in this repo. Encode it once.
 
 **Exit criteria:** no `any` in `src/app/services/`; `strictTemplates` passes with real types.
 
-### Phase 4 — Close the security gaps (~2–3 days, spans both halves of the repo)
+### Phase 4 — End-to-end Firebase authentication (~4–6 days, spans both halves of the repo)
+
+The largest correctness gap in the product, and the only phase that changes the frontend and
+the backend together.
+
+#### 4.0 What exists and what doesn't
+
+Today Firebase is a **login screen**, not a security boundary:
+
+- `AuthService` signs in with `firebase.auth.GoogleAuthProvider` via
+  `afAuth.signInWithPopup()`. Google is the only provider.
+- Firebase mints an ID token on sign-in. **The app never reads it.** There is no
+  `Authorization` header anywhere in the codebase — `HttpInterceptorService` only clones the
+  request and adds timeout/retry.
+- The API identifies the caller by a `user_id` **string in the query or body**, trusted
+  verbatim. Change the string, read another user's profile, weight history and moods.
+- `AuthGuard` reads an in-memory `BehaviorSubject`, not `AngularFireAuth.authState`, so the
+  client's own notion of "logged in" is not anchored to Firebase either.
+
+So authentication is Firebase; **authorization does not exist**. The goal of this phase is
+that the server derives identity from a cryptographically verified token and stops trusting
+the client entirely.
+
+One piece of good news for the migration: `user_id` already holds the Firebase `uid`, on
+every existing document. **No data migration is required** — the values are already correct,
+they are simply unverified.
+
+#### 4.1 Frontend — obtain and attach the token
+
+| # | Task | Files |
+|---|---|---|
+| 4.1.1 | Expose the token as a stream. `AngularFireAuth` gives `idToken: Observable<string \| null>`; prefer `currentUser.getIdToken()` per request, which returns a cached token and **auto-refreshes when within ~5 minutes of the 1-hour expiry**. Do not cache the token yourself | new `services/auth-token.service.ts` |
+| 4.1.2 | Add an `AuthInterceptor` that attaches `Authorization: Bearer <idToken>`. **Scope it to `environment.apiUrl` only** — never attach the token to third-party hosts | new `interceptor/auth.interceptor.ts` |
+| 4.1.3 | Handle expiry: on a `401`, call `getIdToken(true)` to force-refresh and retry **once**. If the retry also 401s, sign out and route to `/log-in` with `returnUrl`. Guard against retry loops | `interceptor/auth.interceptor.ts` |
+| 4.1.4 | Requests that fire before auth resolves must wait, not go out bare. Gate the interceptor on the first settled `authState` emission | `auth-token.service.ts` |
+| 4.1.5 | Delete the three `providers: [AuthService]` declarations so there is one auth instance, not four | `log-in`, `log-out`, `navigation-menu` |
+| 4.1.6 | Stop sending `user_id` in request bodies and query params once the server derives it (staged — see 4.4) | all services in `services/` |
+| 4.1.7 | Move the Firebase config out of the committed `environment*.ts` into build-time substitution. Web API keys are public by design, so this is hygiene rather than a vulnerability — but the project ID and auth domain should not be a code change to rotate | `environments/` |
+
+**Dependency:** 4.1 requires **Phase 1.1** (subscribe to `authState`). Until session state
+survives a reload, there is no reliable token to attach.
+
+#### 4.2 Backend — verify the token
+
+| # | Task | Files |
+|---|---|---|
+| 4.2.1 | Add `firebase-admin`. Initialise from a service account: `FIREBASE_SERVICE_ACCOUNT_JSON` (inline JSON) or `GOOGLE_APPLICATION_CREDENTIALS` (path). **This is a real secret** — unlike the frontend config — so it must never be committed | new `backend/src/config/firebase.ts` |
+| 4.2.2 | Write `requireAuth` middleware: parse `Authorization: Bearer`, call `admin.auth().verifyIdToken(token)`, attach `req.auth = { uid, email }`. Reject with the existing envelope — `401 { success: false, error: 'Unauthorized' }` — so clients keep one error shape | new `backend/src/middleware/require-auth.ts` |
+| 4.2.3 | **Derive `user_id` from `req.auth.uid`** in every controller. If the body also carries a `user_id` and it differs, answer `403`, don't silently prefer one — a mismatch means either a bug or an attempt | all files in `backend/src/controllers/` |
+| 4.2.4 | Decide `checkRevoked`. `verifyIdToken(token, true)` catches sign-out-everywhere and disabled accounts, at the cost of a network round trip per request. Recommendation: leave it off for reads, enable for writes | `require-auth.ts` |
+| 4.2.5 | Add rate limiting on `POST /generate_recommendation` — it spends real money per call and is currently callable in a loop by anyone | `backend/src/app.ts` |
+
+**Route policy.** Everything except the health check requires a verified token:
+
+| Route | Policy | Why |
+|---|---|---|
+| `GET /up` | public | Health checks must not need credentials |
+| `/user_data`, `/user_data/user_data` | **auth, uid-scoped** | Personal profile data |
+| `/trainings/*`, `/weight_updates/*` | **auth, uid-scoped** | Personal history |
+| `/moods`, `/generate_recommendation` | **auth, uid-scoped** | Personal + costs money per call |
+| `GET /training-repository`, `GET /stretches` | **auth** | Global catalogues; the app requires login anyway |
+| `POST /training-repository`, `POST /stretches` | **auth** | Global *write* surface — see below |
+
+The catalogue writes deserve emphasis: they are global, and `POST /stretches` accepts a URL
+that `StretchItemComponent` renders in an iframe for **every** user. Unauthenticated write
+access to that is the most exploitable thing in the app today. Authentication narrows it;
+task 4.3 closes it.
+
+#### 4.3 Remaining input-trust issues
 
 | # | Task |
 |---|---|
-| 4.1 | **Send the Firebase ID token.** Add an interceptor that attaches `Authorization: Bearer <idToken>`; verify it in the backend with the Firebase Admin SDK and derive `user_id` from the verified token instead of trusting the request body. Resolves `BACKEND_SPEC.md` §9.3 |
-| 4.2 | Replace `bypassSecurityTrustResourceUrl` with real validation — parse the URL, require a YouTube host, extract the video ID, and build the embed URL from the ID. Reject anything else |
-| 4.3 | Render the recommendation as structured data (or a real Markdown renderer) instead of regex-built HTML; or run it through `SanitizationService` and keep that service, having finally given it a purpose |
-| 4.4 | Move the Firebase config to build-time environment substitution |
+| 4.3.1 | Replace `bypassSecurityTrustResourceUrl` with real validation — parse the URL, require a YouTube host, extract the video ID, rebuild the embed URL from the ID. Reject anything else. Validate on the **server** too; a client-side check is a UX affordance, not a control. Rename the method, which currently claims to sanitise while doing the opposite |
+| 4.3.2 | Render the AI recommendation as structured data or via a real Markdown renderer, instead of regex-built HTML bound with `[innerHTML]`. Angular's sanitiser makes this survivable today, but the string is model output that nobody controls |
+| 4.3.3 | Consider recording `created_by: uid` on catalogue entries, so a bad entry can be traced and removed |
 
-**Note:** 4.1 is the only item in this plan that requires coordinated frontend + backend
-changes. Ship it as one PR across both.
+#### 4.4 Rollout — how to ship this without breaking the live app
+
+Verification cannot be switched on in one commit: the moment the server requires a token, any
+client that isn't sending one breaks. Stage it.
+
+1. **Backend, permissive.** Ship `requireAuth` behind `AUTH_MODE=optional` (default). Verify
+   the token when present, attach `req.auth`, but do not reject. Log how many requests arrive
+   unauthenticated.
+2. **Frontend, attach.** Ship 4.1. Every request now carries a token. Watch the log from
+   step 1 fall to zero.
+3. **Backend, enforce.** Flip to `AUTH_MODE=required`. Unauthenticated requests now 401.
+4. **Backend, stop trusting the body.** Derive `user_id` from the token; 403 on mismatch.
+5. **Frontend, stop sending it.** Remove `user_id` from bodies and query strings (4.1.6).
+6. **Clean up.** Delete `AUTH_MODE` and the permissive path.
+
+Steps 1–2 are independently revertible, which is the point of the split.
+
+#### 4.5 Test coverage this phase must add
+
+Backend, with `verifyIdToken` mocked — no network, no real credentials in CI:
+
+- valid token → `req.auth.uid` populated, request proceeds
+- missing header, malformed header, expired token, token from another Firebase project → `401`
+- body `user_id` ≠ token `uid` → `403`
+- each user-scoped route reads and writes only the token's `uid` — the direct test for the
+  vulnerability being fixed
+- `AUTH_MODE=optional` lets an unauthenticated request through; `required` does not
+
+Frontend:
+
+- interceptor attaches the header to `apiUrl` requests and **not** to other hosts
+- a `401` triggers exactly one force-refresh and retry
+- a second `401` signs out and redirects
+- requests issued before auth resolves wait rather than going out bare
+
+#### 4.6 Explicitly out of scope
+
+- Additional sign-in providers. Google-only is a product decision, not a security gap.
+- Custom claims / roles. There is one kind of user.
+- Session cookies. Bearer tokens fit a SPA talking to a JSON API; cookies would add CSRF
+  surface for no gain here.
+- Refresh-token handling. The Firebase SDK owns that; reimplementing it would be a regression.
+
+**Until this phase ships, do not expose the backend beyond localhost.** Any caller who can
+reach it can read and write any user's data by guessing a `uid`.
 
 ### Phase 5 — Architecture (~4–6 days)
 
@@ -243,18 +355,29 @@ The largest phase, and the most optional. Do it if the app is going to keep grow
 ## 4. Suggested sequencing
 
 ```
-Phase 1 (bugs)  →  Phase 2 (quality gate)  →  Phase 3 (types)  →  Phase 4 (security)
-                                                                        │
-                                              Phase 5 (architecture)  ──┤
-                                              Phase 6 (features/perf) ──┘
+Phase 1 (bugs) ──┬─→ Phase 2 (quality gate) ──→ Phase 3 (types) ──┐
+                 │                                                │
+                 └─────────────→ Phase 4 (Firebase auth) ←────────┘
+                                                   │
+                             Phase 5 (architecture) ┤
+                             Phase 6 (features/perf)┘
 ```
 
-Phases 1 and 2 are the ones I would not skip: today the app logs users out on refresh, and
-there is no test or lint run that could tell you if that got worse. Phases 5 and 6 are
-independent of each other and can be interleaved or dropped.
+**Phase 4 depends only on Phase 1.1**, not on the whole of Phases 2–3. If the app is going
+to be deployed anywhere reachable, do Phase 1 and then go straight to Phase 4 — Phases 2 and
+3 make the work more pleasant, not more correct. If it stays on localhost, the ordering left
+to right is the comfortable one.
 
-If time is very limited, **Phase 1.1 alone** (auth persistence) is the highest-value change
-in this document — it is the difference between an app you can use and one you cannot.
+Phases 1 and 2 are the ones I would not skip on any path: today the app logs users out on
+refresh, and there is no test or lint run that could tell you if that got worse. Phases 5 and
+6 are independent of each other and can be interleaved or dropped.
+
+Two "if time is very limited" answers, depending on the goal:
+
+- **To make the app usable:** Phase 1.1 alone (auth persistence). It is the difference
+  between an app you can reload and one you cannot.
+- **To make it safe to deploy:** Phase 1.1 → Phase 4. Nothing else on this list matters if
+  any caller can read any user's data by guessing a uid.
 
 ## 5. Deliberately not proposed
 
