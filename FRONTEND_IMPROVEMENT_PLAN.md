@@ -252,10 +252,21 @@ switch), the §4.2 route policy, 4.4 (`AUTH_MODE` staged rollout) and the backen
 but nothing is rejected. **Set `AUTH_MODE=required` to actually enforce**, once the frontend
 is deployed and the unauthenticated-request warnings stop.
 
-**Still open:** 4.2.5 (rate limiting `/generate_recommendation`), 4.3 (YouTube URL
-validation, Markdown rendering), 4.1.6 (removing `user_id` from client payloads — safe now
-that the server overwrites it), 4.1.7 (Firebase config to build-time substitution), and the
-frontend half of 4.5 (interceptor specs).
+**Also done since:** 4.1.7 (`npm run config:env` regenerates `environment.ts` from
+`FIREBASE_*` / `API_URL`; opt-in, so an unset key leaves the committed file alone and local
+builds need no setup) and the frontend half of 4.5 (5 interceptor specs — token attached to
+our API, *not* attached to other hosts, absent when signed out, one forced-refresh retry on
+401, and no retry loop).
+
+**Still open:** 4.2.5 (rate limiting `/generate_recommendation`) and 4.3 (YouTube URL
+validation, Markdown rendering — `bypassSecurityTrustResourceUrl` is unchanged, so P1.3
+remains open).
+
+**4.1.6 is deliberately blocked, not forgotten.** Removing `user_id` from client payloads is
+rollout step 5 and the deployment is at step 1. With `AUTH_MODE=optional` and no Firebase
+Admin credentials configured, `requireAuth` calls `next()` without setting a uid — so
+stripping `user_id` today would leave every request with no user at all. Do it *after*
+credentials are in place and the mode is `required`.
 
 #### Original scope (~4–6 days, spans both halves of the repo)
 
