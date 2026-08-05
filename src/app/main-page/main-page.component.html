@@ -1,14 +1,4 @@
-<app-navigation-menu (viewChange)="changeView($event)"></app-navigation-menu>
+<app-navigation-menu></app-navigation-menu>
 
-<ng-container [ngSwitch]="currentView">
-  <ng-container *ngSwitchCase="'daily'">
-    <app-display-daily></app-display-daily>
-    <app-input-daily></app-input-daily>
-  </ng-container>
-
-  <app-training-repository *ngSwitchCase="'trainings'"></app-training-repository>
-
-  <app-stretch-repository *ngSwitchCase="'stretches'"></app-stretch-repository>
-
-  <app-thoughts *ngSwitchCase="'thoughts'"></app-thoughts>
-</ng-container>
+<!-- The four views are child routes now; see app-routing.module.ts. -->
+<router-outlet></router-outlet>

@@ -1,25 +1,15 @@
 import { Component } from '@angular/core';
 
 /**
- * Shell for the signed-in area.
+ * Shell for the signed-in area: the nav bar plus a router outlet.
  *
- * The route is protected by `AuthGuard` and `NewUserGuard`, so this component no longer
- * re-checks whether the user is signed in or new. It previously subscribed to both and
- * mirrored them into `*ngIf`s, which meant auth state had two sources of truth that could —
- * and did — disagree.
- *
- * View switching is still a local string rather than child routes; replacing it is Phase 5.1
- * of FRONTEND_IMPROVEMENT_PLAN.md.
+ * It used to hold a `currentView` string and swap four components with `*ngIf`, and to
+ * re-check auth state that the route guards already guarantee. Both are gone — the views
+ * are child routes and access is decided once, on the parent route.
  */
 @Component({
   selector: 'app-main-page',
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
 })
-export class MainPageComponent {
-  currentView = 'daily';
-
-  changeView(view: string): void {
-    this.currentView = view;
-  }
-}
+export class MainPageComponent {}

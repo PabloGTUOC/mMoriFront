@@ -66,4 +66,9 @@ export class TrainingRepositoryComponent implements OnInit {
       });
     }
   }
+
+  /** Keeps DOM nodes stable across refetches instead of rebuilding the whole list. */
+  trackById(_index: number, item: { _id?: { $oid: string }; name?: string }): string {
+    return item._id?.$oid ?? item.name ?? String(_index);
+  }
 }

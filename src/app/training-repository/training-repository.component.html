@@ -2,7 +2,7 @@
 <div class="training-repository-container">
   <h2>Training Repository</h2>
   <div *ngIf="trainings?.length; else noTrainings" class="training-grid">
-    <app-training-item *ngFor="let training of trainings" [training]="training"></app-training-item>
+    <app-training-item *ngFor="let training of trainings; trackBy: trackById" [training]="training"></app-training-item>
   </div>
   <ng-template #noTrainings>
     <p>No trainings available.</p>

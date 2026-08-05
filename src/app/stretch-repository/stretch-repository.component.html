@@ -3,7 +3,7 @@
 
   <div class="stretch-grid">
     <app-stretch-item
-      *ngFor="let stretch of stretches"
+      *ngFor="let stretch of stretches; trackBy: trackById"
       [stretch]="stretch"
     ></app-stretch-item>
   </div>

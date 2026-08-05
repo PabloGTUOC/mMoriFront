@@ -393,7 +393,20 @@ Frontend:
 **Until this phase ships, do not expose the backend beyond localhost.** Any caller who can
 reach it can read and write any user's data by guessing a `uid`.
 
-### Phase 5 — Architecture (~4–6 days)
+### Phase 5 — Architecture — 🟡 **PARTLY DONE**
+
+**Done: 5.1, 5.4, 5.6.** The four views are lazily-loaded child routes under `/home`, which
+took the initial bundle from 926.68 kB to **860.04 kB** and made every view a real URL —
+verified in a browser: `/home/trainings` now redirects to
+`/log-in?returnUrl=%2Fhome%2Ftrainings`, so a deep link survives login. `MetricsService`
+holds the age/BMI/weeks logic with its tests moved alongside it, and `trackBy` is on every
+list.
+
+**Still open: 5.2** (full standalone / `bootstrapApplication`), **5.3** (shared catalogue
+component — training and stretch repositories are still near-identical), **5.5** (`OnPush`
+and signals).
+
+#### Original scope (~4–6 days)
 
 The largest phase, and the most optional. Do it if the app is going to keep growing.
 

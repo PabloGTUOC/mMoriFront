@@ -79,4 +79,9 @@ export class InputDailyComponent implements OnInit {
       console.warn('Form is invalid or the user is not signed in');
     }
   }
+
+  /** Keeps DOM nodes stable across refetches instead of rebuilding the whole list. */
+  trackById(_index: number, item: { _id?: { $oid: string }; name?: string }): string {
+    return item._id?.$oid ?? item.name ?? String(_index);
+  }
 }

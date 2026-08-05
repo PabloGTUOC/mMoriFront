@@ -78,4 +78,9 @@ export class ThoughtsComponent {
     }
   }
 
+
+  /** Mood buttons are a fixed list; track by the value sent to the API. */
+  trackByMood(_index: number, option: { mood: string }): string {
+    return option.mood;
+  }
 }

@@ -1,7 +1,7 @@
 <div class="thoughts-container">
   <h2>How are you feeling today?</h2>
   <div class="mood-options">
-    <button *ngFor="let mood of moods"
+    <button *ngFor="let mood of moods; trackBy: trackByMood"
             class="mood-button"
             (click)="selectMood(mood.mood)">
       <span class="emoji">{{ mood.emoji }}</span>

@@ -1,16 +1,22 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
+/**
+ * Navigation for the signed-in area.
+ *
+ * Uses `routerLink` rather than emitting a view name to the parent, so the links are real
+ * URLs — shareable, bookmarkable, and correct with the back button — and `routerLinkActive`
+ * gives the active state the old string switch could not.
+ */
 @Component({
   selector: 'app-navigation-menu',
   standalone: true,
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './navigation-menu.component.html',
   styleUrls: ['./navigation-menu.component.scss'],
 })
 export class NavigationMenuComponent {
-  @Output() viewChange = new EventEmitter<string>();
-
   dropdownOpen = false;
 
   constructor(
@@ -22,20 +28,19 @@ export class NavigationMenuComponent {
     this.dropdownOpen = !this.dropdownOpen;
   }
 
+  closeDropdown(): void {
+    this.dropdownOpen = false;
+  }
+
   /**
    * Signing out of Firebase is enough to clear the session: `UserService` watches auth
-   * state, so it resets itself. Clearing session fields here as well would be a second
-   * source of truth, which is what made the old auth handling unreliable.
+   * state, so it resets itself. A second source of truth here is what made the old auth
+   * handling unreliable.
    */
   signOut(): void {
     this.authService
       .signOut()
       .then(() => this.router.navigate(['/log-in']))
       .catch((error) => console.error('Sign out failed', error));
-  }
-
-  navigate(view: string): void {
-    this.viewChange.emit(view);
-    this.dropdownOpen = false;
   }
 }

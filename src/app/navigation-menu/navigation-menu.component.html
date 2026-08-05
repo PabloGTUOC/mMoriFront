@@ -1,21 +1,21 @@
 <div class="menu-container">
-  <div class="menu-bar">
-    <button (click)="navigate('daily')">Today</button>
-    <button (click)="navigate('trainings')">Trainings</button>
-    <button (click)="navigate('stretches')">Stretches</button>
-    <button (click)="navigate('thoughts')">Thoughts of the Day</button>
-    <button (click)="signOut()">Log Out</button>
-  </div>
+  <nav class="menu-bar">
+    <a routerLink="/home/daily" routerLinkActive="active">Today</a>
+    <a routerLink="/home/trainings" routerLinkActive="active">Trainings</a>
+    <a routerLink="/home/stretches" routerLinkActive="active">Stretches</a>
+    <a routerLink="/home/thoughts" routerLinkActive="active">Thoughts of the Day</a>
+    <button type="button" (click)="signOut()">Log Out</button>
+  </nav>
 
   <!-- Dropdown Menu for Smaller Screens -->
   <div class="dropdown-menu">
-    <button class="dropdown-btn" (click)="toggleDropdown()">☰ Menu</button>
-    <div class="dropdown-content" [class.show]="dropdownOpen">
-      <button (click)="navigate('daily')">Today</button>
-      <button (click)="navigate('trainings')">Trainings</button>
-      <button (click)="navigate('stretches')">Stretches</button>
-      <button (click)="navigate('thoughts')">Thoughts of the Day</button>
-      <button (click)="signOut()">Log Out</button>
-    </div>
+    <button class="dropdown-btn" type="button" (click)="toggleDropdown()">☰ Menu</button>
+    <nav class="dropdown-content" [class.show]="dropdownOpen">
+      <a routerLink="/home/daily" routerLinkActive="active" (click)="closeDropdown()">Today</a>
+      <a routerLink="/home/trainings" routerLinkActive="active" (click)="closeDropdown()">Trainings</a>
+      <a routerLink="/home/stretches" routerLinkActive="active" (click)="closeDropdown()">Stretches</a>
+      <a routerLink="/home/thoughts" routerLinkActive="active" (click)="closeDropdown()">Thoughts of the Day</a>
+      <button type="button" (click)="signOut()">Log Out</button>
+    </nav>
   </div>
 </div>

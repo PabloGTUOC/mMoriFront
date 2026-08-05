@@ -2,6 +2,7 @@ import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../services/user.service';
+import { MetricsService } from '../services/metrics.service';
 import { forkJoin } from 'rxjs';
 import { filter, switchMap, take } from 'rxjs/operators';
 import { LifeExpectancyChartComponent } from '../life-expectancy-chart/life-expectancy-chart.component';
@@ -27,7 +28,10 @@ export class DisplayDailyComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private metrics: MetricsService
+  ) {}
 
   /**
    * Subscribes to the refresh trigger exactly once.
@@ -78,7 +82,7 @@ export class DisplayDailyComponent implements OnInit {
   }
 
   updateFields(userData: any, adjustedLifeExpectancy:number, trainingStats: any, latestWeight: any): void {
-    this.currentAge = this.calculateAge(new Date(userData.dob));
+    this.currentAge = this.metrics.calculateAge(new Date(userData.dob));
     // Check if latestWeight is available, if not, use the weight from userData
     if (latestWeight && latestWeight.weight) {
       this.weight = latestWeight.weight;
@@ -86,52 +90,12 @@ export class DisplayDailyComponent implements OnInit {
       this.weight = userData.weight;
     }
     this.totalDaysTrained = trainingStats.training_count;
-    this.weeksLeftToLive = this.calculateWeeksLeftToLive(adjustedLifeExpectancy, this.currentAge);
-    this.bmi = this.calculateBMI(this.weight, userData.height);
-    this.bmiStatus = this.determineBMIStatus(this.bmi);
+    this.weeksLeftToLive = this.metrics.calculateWeeksLeftToLive(adjustedLifeExpectancy, this.currentAge);
+    this.bmi = this.metrics.calculateBMI(this.weight, userData.height);
+    this.bmiStatus = this.metrics.determineBMIStatus(this.bmi);
     const totalDaysSinceJoining = trainingStats.total_days_since_joining;
-    this.percentageDaysTrained = this.calculatePercentage(this.totalDaysTrained, totalDaysSinceJoining);
-    this.weeksGone = this.calculateWeeksGone(this.currentAge);
-  }
-
-  calculatePercentage(trainedDays: number, totalDays: number): number {
-    return totalDays > 0 ? parseFloat(((trainedDays / totalDays) * 100).toFixed(2)) : 0;
-  }
-
-  calculateAge(dob: Date): number {
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-      age--;
-    }
-    return age;
-  }
-  calculateWeeksLeftToLive(adjustedLifeExpectancy: number, currentAge: number): number {
-    const yearsLeft = adjustedLifeExpectancy - currentAge;
-    return yearsLeft > 0 ? Math.round(yearsLeft * 52) : 0; // Convert years to weeks and round to nearest whole number
-  }
-
-  calculateWeeksGone(currentAge: number): number {
-    return currentAge > 0 ? Math.round(currentAge * 52) : 0;
-  }
-
-  calculateBMI(weight: number, height: number): number {
-    const heightInMeters = height / 100; // Convert height from cm to meters
-    const bmi = weight / (heightInMeters * heightInMeters);
-    return parseFloat(bmi.toFixed(2)); // Round to 2 decimal places and convert back to number
-  }
-
-  determineBMIStatus(bmi: number): string {
-    if (bmi < 18.5) {
-      return 'Underweight';
-    } else if (bmi >= 18.5 && bmi < 24.9) {
-      return 'Normal Weight';
-    } else if (bmi >= 25 && bmi < 29.9) {
-      return 'Overweight';
-    } else {
-      return 'Obese';
-    }
+    this.percentageDaysTrained = this.metrics.calculatePercentage(this.totalDaysTrained, totalDaysSinceJoining);
+    this.weeksGone = this.metrics.calculateWeeksGone(this.currentAge);
   }
 
   toggleLifeExpectancyChart () {
