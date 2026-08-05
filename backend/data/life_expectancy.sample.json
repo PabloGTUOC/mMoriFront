@@ -1,0 +1,23 @@
+[
+  {
+    "_readme": "PLACEHOLDER DATA — NOT A REAL DATASET. These figures are illustrative round numbers used to exercise the seeding path and the adjustment algorithm end to end. Replace this file with a real source (e.g. WHO Global Health Observatory 'life expectancy at birth' or World Bank SP.DYN.LE00.{MA,FE}.IN) before drawing any conclusion from a number this API returns. Delete this entry when you do — the seeder skips objects containing a _readme key."
+  },
+
+  { "Country_Code": "ESP", "Gender": "Male", "Type": "LifeExpectancy_Gen", "Years": 81 },
+  { "Country_Code": "ESP", "Gender": "Female", "Type": "LifeExpectancy_Gen", "Years": 86 },
+
+  { "Country_Code": "USA", "Gender": "Male", "Type": "LifeExpectancy_Gen", "Years": 75 },
+  { "Country_Code": "USA", "Gender": "Female", "Type": "LifeExpectancy_Gen", "Years": 80 },
+
+  { "Country_Code": "GBR", "Gender": "Male", "Type": "LifeExpectancy_Gen", "Years": 79 },
+  { "Country_Code": "GBR", "Gender": "Female", "Type": "LifeExpectancy_Gen", "Years": 83 },
+
+  { "Country_Code": "DEU", "Gender": "Male", "Type": "LifeExpectancy_Gen", "Years": 79 },
+  { "Country_Code": "DEU", "Gender": "Female", "Type": "LifeExpectancy_Gen", "Years": 83 },
+
+  { "Country_Code": "FRA", "Gender": "Male", "Type": "LifeExpectancy_Gen", "Years": 80 },
+  { "Country_Code": "FRA", "Gender": "Female", "Type": "LifeExpectancy_Gen", "Years": 85 },
+
+  { "Country_Code": "JPN", "Gender": "Male", "Type": "LifeExpectancy_Gen", "Years": 81 },
+  { "Country_Code": "JPN", "Gender": "Female", "Type": "LifeExpectancy_Gen", "Years": 87 }
+]

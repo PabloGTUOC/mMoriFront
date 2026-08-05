@@ -2,6 +2,18 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.4.
 
+## Backend
+
+The API this frontend talks to lives in [`backend/`](backend) — a Node/Express/MongoDB
+service implementing [`BACKEND_SPEC.md`](BACKEND_SPEC.md). Start it before the frontend:
+
+```bash
+cd backend && npm install && npm run dev   # http://localhost:3000
+```
+
+See [`backend/README.md`](backend/README.md) for setup, the required reference-data seeding
+step, and the list of deviations from the spec.
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.

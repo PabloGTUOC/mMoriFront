@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment — never commit real credentials (BACKEND_SPEC §9 flagged plaintext
+# credentials committed in the Rails repo; .env.example is the template to copy)
+.env
+.env.local
+.env.*.local
+
+# Test + tooling artefacts
+coverage/
+.vitest/
+*.log
+
+# Cached mongod binaries downloaded by mongodb-memory-server
+.cache/

@@ -1,0 +1,41 @@
+# Local development stack: the API plus the MongoDB it needs.
+#
+#   docker compose up --build
+#   docker compose run --rm api npm run seed:life-expectancy
+#
+# The Angular frontend still runs on the host with `npm start` (port 4200) and talks to
+# http://localhost:3000, which is what `environment.ts` already points at.
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping")']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      MONGODB_URI: mongodb://mongo:27017/trainingappDB
+      CORS_ORIGINS: http://localhost:4200
+      # Set OPENAI_API_KEY in a .env file next to this one, or export it before `up`.
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo-data:
