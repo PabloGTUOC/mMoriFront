@@ -241,7 +241,23 @@ deleting them is a tidy follow-up, not urgent.
 
 **Exit criteria:** no `any` in `src/app/services/`; `strictTemplates` passes with real types.
 
-### Phase 4 — End-to-end Firebase authentication (~4–6 days, spans both halves of the repo)
+### Phase 4 — End-to-end Firebase authentication — 🟡 **PARTLY DONE**
+
+**Done:** 4.1 (token attached, scoped to `apiUrl`, one forced-refresh retry on 401),
+4.2.1–4.2.4 (`firebase-admin`, `requireAuth`, uid derived from the token, `checkRevoked`
+switch), the §4.2 route policy, 4.4 (`AUTH_MODE` staged rollout) and the backend half of
+4.5 — 12 tests with `verifyIdToken` stubbed, so CI needs no credentials.
+
+`AUTH_MODE` defaults to `optional`: tokens are verified when present and logged when absent,
+but nothing is rejected. **Set `AUTH_MODE=required` to actually enforce**, once the frontend
+is deployed and the unauthenticated-request warnings stop.
+
+**Still open:** 4.2.5 (rate limiting `/generate_recommendation`), 4.3 (YouTube URL
+validation, Markdown rendering), 4.1.6 (removing `user_id` from client payloads — safe now
+that the server overwrites it), 4.1.7 (Firebase config to build-time substitution), and the
+frontend half of 4.5 (interceptor specs).
+
+#### Original scope (~4–6 days, spans both halves of the repo)
 
 The largest correctness gap in the product, and the only phase that changes the frontend and
 the backend together.

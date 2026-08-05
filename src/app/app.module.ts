@@ -16,6 +16,7 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule} from "@angular/forms";
 import { InputDailyComponent } from './input-daily/input-daily.component';
 import { HttpInterceptorService } from './interceptor/http-interceptor.service';
+import { AuthInterceptor } from './interceptor/auth.interceptor';
 import { SpinnerComponent } from './components/spinner.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -64,6 +65,8 @@ import { GlobalErrorHandler } from './services/error-handler.service';
   bootstrap: [AppComponent],
   providers: [
             { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
+            // Ordered: the token is attached before the spinner/retry interceptor runs.
+            { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
             { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorService, multi: true },
             { provide: ErrorHandler, useClass: GlobalErrorHandler },
             // Resolve the Firebase session before the router evaluates a single guard,

@@ -44,6 +44,24 @@ export const env = {
     timeoutMs: int('OPENAI_TIMEOUT_MS', 20000),
   },
 
+  /**
+   * Staged rollout of token enforcement (FRONTEND_IMPROVEMENT_PLAN.md §4.4).
+   * `optional` is the default so shipping this cannot break a client that is not yet
+   * sending a token; flip to `required` once unauthenticated traffic reaches zero.
+   */
+  authMode: str('AUTH_MODE', 'optional') as 'disabled' | 'optional' | 'required',
+
+  /**
+   * `verifyIdToken(token, true)` also catches sign-out-everywhere and disabled accounts,
+   * at the cost of a network round trip per request. Off by default.
+   */
+  checkRevoked: str('AUTH_CHECK_REVOKED', 'false') === 'true',
+
+  firebase: {
+    /** A real secret, unlike the frontend's Firebase config. Never commit it. */
+    serviceAccountJson: process.env['FIREBASE_SERVICE_ACCOUNT_JSON'] ?? '',
+  },
+
   logLevel: str('LOG_LEVEL', 'info') as 'debug' | 'info' | 'warn' | 'error' | 'silent',
 } as const;
 

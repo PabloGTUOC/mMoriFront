@@ -13,6 +13,7 @@ import {
 import { createWeightUpdate, latestWeight } from './controllers/weight-updates.controller.js';
 import { createStretch, listStretches } from './controllers/stretches.controller.js';
 import { generateRecommendation, saveMood } from './controllers/moods.controller.js';
+import { requireAuth } from './middleware/require-auth.js';
 
 /**
  * All 16 routes from BACKEND_SPEC §4, at their exact paths.
@@ -34,6 +35,15 @@ router.get('/up', (_req, res) => {
     database: connected ? 'connected' : 'disconnected',
   });
 });
+
+/**
+ * Everything below the health check requires a verified Firebase ID token, and reads its
+ * identity from that token rather than from the request. The catalogue routes are included
+ * deliberately: `POST /stretches` accepts a URL that the frontend renders in an iframe for
+ * every user, so unauthenticated write access to it was the most exploitable surface in the
+ * app. How strictly this is enforced depends on AUTH_MODE — see require-auth.ts.
+ */
+router.use(requireAuth);
 
 // User data
 router.post('/user_data', createUserData);
