@@ -24,14 +24,41 @@
     <p class="value">{{ percentageDaysTrained }}%</p>
   </div>
 </div>
+<!--
+  These headings open the life chart, so they need to be reachable and operable by
+  keyboard. Kept as <h2> with button semantics rather than swapped for <button> elements,
+  so the existing styling is untouched. Full dialog semantics are plan item 6.4.
+-->
 <div class="weeks-left">
-  <h2 (click)="toggleLifeExpectancyChart()">Weeks Already gone: {{ weeksGone }}</h2>
-  <h2 (click)="toggleLifeExpectancyChart()">Weeks Left to Live: {{ weeksLeftToLive }}</h2>
+  <h2
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isChartVisible"
+    (click)="toggleLifeExpectancyChart()"
+    (keydown.enter)="toggleLifeExpectancyChart()"
+    (keydown.space)="toggleLifeExpectancyChart()"
+  >Weeks Already gone: {{ weeksGone }}</h2>
+  <h2
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isChartVisible"
+    (click)="toggleLifeExpectancyChart()"
+    (keydown.enter)="toggleLifeExpectancyChart()"
+    (keydown.space)="toggleLifeExpectancyChart()"
+  >Weeks Left to Live: {{ weeksLeftToLive }}</h2>
 </div>
 <!-- Life Expectancy Chart Modal -->
 <div *ngIf="isChartVisible" class="modal">
   <div class="modal-content">
-    <span class="close-btn" (click)="toggleLifeExpectancyChart()">&times;</span>
+    <span
+      class="close-btn"
+      role="button"
+      tabindex="0"
+      aria-label="Close life expectancy chart"
+      (click)="toggleLifeExpectancyChart()"
+      (keydown.enter)="toggleLifeExpectancyChart()"
+      (keydown.space)="toggleLifeExpectancyChart()"
+    >&times;</span>
     <h3>Life Expectancy Chart</h3>
     <!-- You can add the actual chart here -->
     <app-life-expectancy-chart
