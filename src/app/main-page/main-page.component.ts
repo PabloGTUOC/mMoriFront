@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { NavigationMenuComponent } from '../navigation-menu/navigation-menu.component';
 
 /**
  * Shell for the signed-in area: the nav bar plus a router outlet.
@@ -9,6 +11,8 @@ import { Component } from '@angular/core';
  */
 @Component({
   selector: 'app-main-page',
+  standalone: true,
+  imports: [RouterOutlet, NavigationMenuComponent],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
 })

@@ -1,15 +1,13 @@
-import {
-  Component,
-  Input,
-  OnDestroy,
-  ViewEncapsulation,
-} from "@angular/core";
+import { Component, Input, OnDestroy, ViewEncapsulation } from "@angular/core";
+import { CommonModule } from "@angular/common";
 import { HttpProgressState, HttpStateService, IHttpState } from "../interceptor/http-state.service";
 
 
 
 @Component({
   selector: "app-spinner",
+  standalone: true,
+  imports: [CommonModule],
   template: `<div class="preloader loading" *ngIf="isSpinnerVisible">
     <div class="spinner">
       <div class="sand-watch">
