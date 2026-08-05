@@ -1,17 +1,20 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { A11yModule } from '@angular/cdk/a11y';
 import { UserService } from '../services/user.service';
 import { MetricsService } from '../services/metrics.service';
 import { forkJoin } from 'rxjs';
 import { filter, switchMap, take } from 'rxjs/operators';
 import { LifeExpectancyChartComponent } from '../life-expectancy-chart/life-expectancy-chart.component';
+import { WeightHistoryChartComponent } from '../components/weight-history-chart/weight-history-chart.component';
+import { WeightHistory } from '../models';
 
 
 @Component({
   selector: 'app-display-daily',
   standalone: true,
-  imports: [LifeExpectancyChartComponent, CommonModule],
+  imports: [LifeExpectancyChartComponent, WeightHistoryChartComponent, CommonModule, A11yModule],
   templateUrl: './display-daily.component.html',
   styleUrl: './display-daily.component.css',
 })
@@ -25,6 +28,7 @@ export class DisplayDailyComponent implements OnInit {
   bmiStatus: string = 'Normal Weight';
   weeksGone: number = 0;
   isChartVisible: boolean = false;
+  weightHistory: WeightHistory[] = [];
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -59,13 +63,15 @@ export class DisplayDailyComponent implements OnInit {
             userData: this.userService.checkUserData(userId),
             trainingStats: this.userService.getTrainingStats(userId),
             latestWeight: this.userService.getLatestWeight(userId),
+            weightHistory: this.userService.getWeightHistory(userId),
           })
         ),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (response: any) => {
-          const { userData, trainingStats, latestWeight } = response;
+          const { userData, trainingStats, latestWeight, weightHistory } = response;
+          this.weightHistory = weightHistory;
           if (userData.success) {
             this.updateFields(
               userData.user_data,

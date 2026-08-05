@@ -5,7 +5,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import firebase from 'firebase/compat/app';
 import { environment } from '../../environments/environment';
-import { TrainingStatsResponse, UserDataResponse, WeightResponse } from '../models';
+import {
+  TrainingStatsResponse,
+  UserDataResponse,
+  WeightHistory,
+  WeightResponse,
+} from '../models';
 
 /**
  * Whether the app yet knows if anyone is signed in.
@@ -121,6 +126,17 @@ export class UserService {
   getLatestWeight(userId: string): Observable<WeightResponse> {
     const params = new HttpParams().set('user_id', userId);
     return this.http.get<WeightResponse>(`${this.apiUrl}/weight_updates/latest_weight`, { params });
+  }
+
+  /** The full weigh-in series, for the weight history chart. */
+  getWeightHistory(userId: string): Observable<WeightHistory[]> {
+    const params = new HttpParams().set('user_id', userId);
+    return this.http
+      .get<{ success: boolean; data?: WeightHistory[] }>(
+        `${this.apiUrl}/weight_updates/history`,
+        { params }
+      )
+      .pipe(map((response) => response.data ?? []));
   }
 
   get refreshTrigger$(): Observable<void> {

@@ -43,13 +43,25 @@ export async function fetchBaseLifeExpectancy(
     Type: 'LifeExpectancy_Gen',
   });
 
-  if (!record) {
-    logger.debug(`No life_expectancy row for ${countryCode}/${gender}`);
-    return 0;
+  if (record) {
+    const years = Number(record['Years']);
+    return Number.isFinite(years) ? years : 0;
   }
 
-  const years = Number(record['Years']);
-  return Number.isFinite(years) ? years : 0;
+  /**
+   * The reference dataset only carries Male and Female rows, so a user who selects "other"
+   * at signup — an option the form offers — used to fall through to a base of 0 and a
+   * meaningless "weeks left" figure, with no error anywhere
+   * (FRONTEND_IMPROVEMENT_PLAN.md 6.7). Blend the two rows for their country instead.
+   */
+  const blended = await blendedLifeExpectancy(countryCode);
+  if (blended !== null) {
+    logger.debug(`No ${gender} row for ${countryCode}; using the blended figure`);
+    return blended;
+  }
+
+  logger.debug(`No life_expectancy row for ${countryCode}/${gender}`);
+  return 0;
 }
 
 /** §5.2 — most recent weigh-in, or null. `_id` breaks same-date ties (latest insert wins). */
@@ -151,4 +163,18 @@ export function weeksLeftToLive(adjustedLifeExpectancy: number, age: number): nu
 function capitalize(value: string): string {
   if (!value) return value;
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
+/** Mean of the Male and Female figures for a country, or null if neither is present. */
+async function blendedLifeExpectancy(countryCode: string): Promise<number | null> {
+  const rows = await rawCollection('life_expectancy')
+    .find({ Country_Code: countryCode, Type: 'LifeExpectancy_Gen' })
+    .toArray();
+
+  const years = rows
+    .map((row) => Number(row['Years']))
+    .filter((value) => Number.isFinite(value));
+
+  if (years.length === 0) return null;
+  return years.reduce((total, value) => total + value, 0) / years.length;
 }

@@ -1,5 +1,6 @@
 import { ErrorHandler, Injectable, Injector } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { NotificationService } from './notification.service';
 
 /**
  * Global Error Handler Service
@@ -65,24 +66,30 @@ export class GlobalErrorHandler implements ErrorHandler {
   /**
    * Show error notification to user
    */
+  /**
+   * Shows the error as a toast.
+   *
+   * This used to call `alert()`, which blocks the page, cannot be styled or dismissed, and
+   * stacks up if several requests fail at once. `NotificationService` existed for exactly
+   * this and had no callers (FRONTEND_IMPROVEMENT_PLAN.md 6.2). Resolved lazily through the
+   * injector because an ErrorHandler is constructed before most of the app.
+   */
   private showErrorNotification(type: string, message: string): void {
-    // For now, use console and alert
-    // In the future, replace with a proper notification service/component
     console.warn(`${type}: ${message}`);
+    if (!this.shouldNotify(message)) return;
 
-    // You can replace this with a toast notification or modal
-    if (this.shouldShowAlert(message)) {
-      setTimeout(() => {
-        alert(`${type}\n\n${message}`);
-      }, 100);
+    try {
+      this.injector.get(NotificationService).error(message);
+    } catch {
+      // The injector is not ready yet (an error during bootstrap); the console line stands.
     }
   }
 
   /**
    * Determine if we should show an alert for this error
    */
-  private shouldShowAlert(message: string): boolean {
-    // Don't show alerts for certain types of errors
+  private shouldNotify(message: string): boolean {
+    // Chunk-loading failures are handled by a reload, not by telling the user.
     const silentErrors = [
       'Loading chunk',
       'Failed to fetch dynamically imported module'

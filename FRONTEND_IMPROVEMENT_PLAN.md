@@ -427,7 +427,28 @@ The largest phase, and the most optional. Do it if the app is going to keep grow
 | 5.5 | Adopt `OnPush` + signals for component state; drop the manual `cdr.detectChanges()` calls |
 | 5.6 | Add `trackBy` to every `*ngFor` |
 
-### Phase 6 — Make the promised features real (~3–5 days)
+### Phase 6 — Make the promised features real — 🟡 **PARTLY DONE**
+
+**Done: 6.2, 6.3, 6.4, 6.7.**
+
+- **6.3** The weight chart renders. It was a complete component with no data source — the
+  API only exposed `latest_weight` — so `GET /weight_updates/history` was added (additive;
+  no existing client affected) and the dashboard now fetches and passes the series.
+- **6.2** `NotificationService` has callers at last. A toast host is mounted next to the
+  spinner and `GlobalErrorHandler` uses it, so `alert()` is gone.
+- **6.4** The chart modal is a real dialog: `role`/`aria-modal`, `cdkTrapFocus` (from the
+  CDK already in the dependency list) to keep Tab inside and restore focus on close, Escape
+  to dismiss, and a real `<button>` close control.
+- **6.7** Gender "other" no longer silently yields a base of 0 — with no matching row, the
+  Male and Female figures for that country are blended.
+
+**Still open: 6.1** (dark mode — the 14 component stylesheets still hardcode colours, so the
+toggle remains largely decorative; this is the biggest remaining gap between the docs and
+what users see), **6.5** (per-view empty/loading/error states beyond the catalogues, plus
+form validation messages), **6.6** (bundle: tree-shake D3, modular Firebase, drop one of the
+two CSS frameworks).
+
+#### Original scope (~3–5 days)
 
 | # | Task |
 |---|---|

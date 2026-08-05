@@ -81,3 +81,25 @@ export async function latestWeight(req: Request, res: Response): Promise<Respons
     date: latest.date ? toDateOnly(latest.date) : null,
   });
 }
+
+/**
+ * `GET /weight_updates/history?user_id=<id>` — the full weigh-in series, oldest first.
+ *
+ * Not in BACKEND_SPEC: the original API only ever exposed `latest_weight`, which is why the
+ * frontend shipped a complete weight-history chart that could never be rendered
+ * (FRONTEND_IMPROVEMENT_PLAN.md 6.3). Additive, so no existing client is affected.
+ */
+export async function weightHistory(req: Request, res: Response): Promise<Response> {
+  const userId = queryParam(req.query['user_id']) ?? null;
+
+  const updates = await WeightUpdate.find({ user_id: userId })
+    .sort({ date: 1, _id: 1 })
+    .lean();
+
+  return ok(res, {
+    success: true,
+    data: updates
+      .filter((update) => update.date && typeof update.weight === 'number')
+      .map((update) => ({ date: toDateOnly(update.date as Date), weight: update.weight })),
+  });
+}

@@ -10,7 +10,11 @@ import {
   listTrainingRepository,
   trainingStats,
 } from './controllers/trainings.controller.js';
-import { createWeightUpdate, latestWeight } from './controllers/weight-updates.controller.js';
+import {
+  createWeightUpdate,
+  latestWeight,
+  weightHistory,
+} from './controllers/weight-updates.controller.js';
 import { createStretch, listStretches } from './controllers/stretches.controller.js';
 import { generateRecommendation, saveMood } from './controllers/moods.controller.js';
 import { requireAuth } from './middleware/require-auth.js';
@@ -63,6 +67,7 @@ router.post('/training-repository', createTrainingRepositoryEntry);
 // Weight
 router.post('/weight_updates', createWeightUpdate);
 router.get('/weight_updates/latest_weight', latestWeight);
+router.get('/weight_updates/history', weightHistory);
 
 // Stretch catalogue
 router.get('/stretches', listStretches);

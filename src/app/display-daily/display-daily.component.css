@@ -95,3 +95,13 @@
   text-decoration: none;
   cursor: pointer;
 }
+
+/* The close control became a real <button> for keyboard access; strip the UA chrome. */
+.close-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+}
