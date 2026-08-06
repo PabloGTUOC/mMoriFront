@@ -24,6 +24,26 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+
+  /* Synthwave tokens — light */
+  --panel-bg: #f2f2f7;
+  --panel-bg-strong: #e7e7ef;
+  --panel-bg-muted: #d8d8e2;
+  --panel-text: #1b1b2f;
+  --accent: #c2005c;
+  --accent-strong: #a30049;
+  --glow: rgba(194, 0, 92, 0.25);
+  --surface-raised: #ffffff;
+  --surface-raised-text: #1b1b2f;
+  --border-strong: #b9b9c6;
+  --text-muted: #6b6b7b;
+  --input-bg: #ffffff;
+  --input-panel-bg: #f9f9f9;
+  --input-border: #ccc;
+  --menu-gradient: linear-gradient(to right, rgba(235, 235, 224, 0.9), rgba(220, 220, 210, 0.9));
+  --button-gradient: linear-gradient(to right, #c2005c 0%, #590fb7 100%);
+  --button-gradient-hover: linear-gradient(to right, #c2005c 0%, #7a00cc 100%);
+  --spinner-backdrop: #6690ba;
 }
 
 // Dark Theme Variables
@@ -51,6 +71,50 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
+
+  /* Synthwave tokens — dark. These are the values the app shipped with. */
+  --panel-bg: #333;
+  --panel-bg-strong: #222;
+  --panel-bg-muted: #555;
+  --panel-text: #ffffff;
+  --accent: #ff0077;
+  --accent-strong: #e6006f;
+  --glow: rgba(255, 0, 120, 0.75);
+  --surface-raised: #1e1e2e;
+  --surface-raised-text: #ffffff;
+  --border-strong: #888;
+  --text-muted: #aaa;
+  --input-bg: #2a2a3a;
+  --input-panel-bg: #24243a;
+  --input-border: #444;
+  --menu-gradient: linear-gradient(to right, rgba(30, 30, 46, 0.95), rgba(20, 20, 34, 0.95));
+  --button-gradient: linear-gradient(to right, #ff0077 0%, #590fb7 100%);
+  --button-gradient-hover: linear-gradient(to right, #ff0077 0%, #7a00cc 100%);
+  --spinner-backdrop: #2a3a52;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Synthwave tokens (FRONTEND_IMPROVEMENT_PLAN.md 6.1)
+ *
+ * The 20 variables above were defined and then used by nothing: all 14 component
+ * stylesheets hardcoded their colours, and because view encapsulation gives component
+ * rules higher specificity than the global theme rules, the toggle changed little more
+ * than the body background. These tokens are the ones the components actually need.
+ *
+ * The "night sky" surfaces — the header and the life-expectancy chart — stay dark in both
+ * themes on purpose. They are the app's signature, the neon glow only reads against a dark
+ * backdrop, and flipping them would cascade contrast problems through every glow effect.
+ * Light mode lightens the panels, cards, inputs and menus around them.
+ * ------------------------------------------------------------------------ */
+:root {
+  --sky-gradient: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+  --on-sky-text: #ffffff;
+  --neon-line: #08f;
+  --accent-bright: #ff08f8;
+  --accent-secondary: #590fb7;
+  --accent-secondary-hover: #7a00cc;
+  --spinner-sand: #ffcc00;
 }
 
 // Apply theme colors globally

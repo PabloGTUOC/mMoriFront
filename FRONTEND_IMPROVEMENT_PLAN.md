@@ -429,7 +429,7 @@ The largest phase, and the most optional. Do it if the app is going to keep grow
 
 ### Phase 6 — Make the promised features real — 🟡 **PARTLY DONE**
 
-**Done: 6.2, 6.3, 6.4, 6.7.**
+**Done: 6.1, 6.2, 6.3, 6.4, 6.7.**
 
 - **6.3** The weight chart renders. It was a complete component with no data source — the
   API only exposed `latest_weight` — so `GET /weight_updates/history` was added (additive;
@@ -442,9 +442,14 @@ The largest phase, and the most optional. Do it if the app is going to keep grow
 - **6.7** Gender "other" no longer silently yields a base of 0 — with no matching row, the
   Male and Female figures for that country are blended.
 
-**Still open: 6.1** (dark mode — the 14 component stylesheets still hardcode colours, so the
-toggle remains largely decorative; this is the biggest remaining gap between the docs and
-what users see), **6.5** (per-view empty/loading/error states beyond the catalogues, plus
+- **6.1** Dark mode works. All 13 component stylesheets now read theme tokens instead of
+  hardcoded colours — verified in a browser that the *computed* button background differs
+  between themes (`rgb(194, 0, 92)` light vs `rgb(255, 0, 119)` dark), which is what the
+  toggle never achieved before. The header and life-expectancy chart deliberately stay dark
+  in both themes: the neon glow only reads against a dark backdrop, and they are the app's
+  signature.
+
+**Still open: 6.5** (per-view empty/loading/error states beyond the catalogues, plus
 form validation messages), **6.6** (bundle: tree-shake D3, modular Firebase, drop one of the
 two CSS frameworks).
 

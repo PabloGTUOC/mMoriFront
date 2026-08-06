@@ -9,22 +9,22 @@
 
 
 button {
-  background: linear-gradient(to right, #ff0077 0%, #590fb7 100%);
+  background: var(--button-gradient);
   border: none;
   border-radius: 4px;
-  color: white;
+  color: var(--panel-text);
   font-family: 'Roboto Mono', monospace;
   font-size: 16px;
   padding: 10px 20px;
   cursor: pointer;
   outline: none;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  text-shadow: 0 0 5px rgba(255, 0, 120, 0.75), 0 0 10px rgba(255, 0, 120, 0.75);
+  text-shadow: 0 0 5px var(--glow), 0 0 10px var(--glow);
   transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 button:hover, button:focus {
-  background: linear-gradient(to right, #ff0077 0%, #7a00cc 100%);
+  background: var(--button-gradient-hover);
   box-shadow: 0 6px 12px rgba(0,0,0,0.5);
 }
 

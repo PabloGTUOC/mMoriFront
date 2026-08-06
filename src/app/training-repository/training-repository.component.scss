@@ -7,12 +7,12 @@
 }
 
 h2 {
-  background: #333;
-  color: white;
+  background: var(--panel-bg);
+  color: var(--panel-text);
   padding: 10px;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  text-shadow: 0 0 5px rgba(255, 0, 120, 0.75);
+  text-shadow: 0 0 5px var(--glow);
   text-align: center;
   margin-bottom: 20px;
 }
@@ -25,8 +25,8 @@ h2 {
 
 /* Button styles */
 button {
-  background-color: #ff0078;
-  color: white;
+  background-color: var(--accent);
+  color: var(--panel-text);
   font-size: 16px;
   font-family: 'Roboto Mono', monospace;
   padding: 10px 20px;
@@ -38,12 +38,12 @@ button {
 }
 
 button:hover {
-  background-color: #e6006f;
+  background-color: var(--accent-strong);
 }
 
 /* Form styles */
 form {
-  background-color: #f9f9f9;
+  background-color: var(--input-panel-bg);
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -61,19 +61,19 @@ form input, form textarea, form select {
   width: 100%;
   padding: 10px;
   margin-bottom: 15px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   font-family: 'Roboto Mono', monospace;
   font-size: 14px;
   box-sizing: border-box;
-  background-color: #fff;
+  background-color: var(--input-bg);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Form button styles */
 form button {
-  background-color: #ff0078;
-  color: white;
+  background-color: var(--accent);
+  color: var(--panel-text);
   font-size: 16px;
   font-family: 'Roboto Mono', monospace;
   padding: 10px 20px;
@@ -85,13 +85,13 @@ form button {
 }
 
 form button:hover {
-  background-color: #e6006f;
+  background-color: var(--accent-strong);
 }
 
 /* Button to toggle form */
 .toggle-add-form-btn {
-  background-color: #333;
-  color: white;
+  background-color: var(--panel-bg);
+  color: var(--panel-text);
   padding: 10px 20px;
   border-radius: 4px;
   border: none;
@@ -102,5 +102,5 @@ form button:hover {
 }
 
 .toggle-add-form-btn:hover {
-  background-color: #555;
+  background-color: var(--panel-bg-muted);
 }

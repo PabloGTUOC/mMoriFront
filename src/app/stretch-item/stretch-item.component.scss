@@ -1,18 +1,18 @@
 /* src/app/stretch-item/stretch-item.component.scss */
 .stretch-item {
-  background: #333;
+  background: var(--panel-bg);
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   font-family: 'Roboto Mono', monospace;
   text-align: center;
-  color: white;
+  color: var(--panel-text);
   margin-bottom: 20px;
 }
 
 .stretch-item h3 {
-  color: #ff0077; /* Use the same pink highlight */
-  text-shadow: 0 0 10px #ff0077;
+  color: var(--accent); /* Use the same pink highlight */
+  text-shadow: 0 0 10px var(--accent);
   margin-bottom: 10px;
 }
 

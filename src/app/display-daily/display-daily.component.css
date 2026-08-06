@@ -11,32 +11,32 @@
 }
 
 .info-block h2 {
-  background: #333; /* Dark background for each heading */
-  color: white;
+  background: var(--panel-bg); /* Dark background for each heading */
+  color: var(--panel-text);
   padding: 10px;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   margin: 0; /* Remove default margins */
-  text-shadow: 0 0 5px rgba(255, 0, 120, 0.75); /* Neon glow for text */
+  text-shadow: 0 0 5px var(--glow); /* Neon glow for text */
 }
 
 .info-block h3 {
-  background: #333; /* Dark background for each heading */
-  color: white;
+  background: var(--panel-bg); /* Dark background for each heading */
+  color: var(--panel-text);
   padding: 10px;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   margin: 0; /* Remove default margins */
-  text-shadow: 0 0 5px rgba(255, 0, 120, 0.75); /* Neon glow for text */
+  text-shadow: 0 0 5px var(--glow); /* Neon glow for text */
   text-align: center;
 }
 .info-block .value {
   font-size: 2em;
-  color: #ff0077; /* Pink neon color for the value */
-  text-shadow: 0 0 5px rgba(255, 0, 120, 0.75); /* Glow effect matching the labels */
+  color: var(--accent); /* Pink neon color for the value */
+  text-shadow: 0 0 5px var(--glow); /* Glow effect matching the labels */
   margin-top: 5px; /* Space between label and value */
   padding: 5px;
-  background-color: #222; /* Background behind the value to highlight it */
+  background-color: var(--panel-bg-strong); /* Background behind the value to highlight it */
   border-radius: 4px;
   text-align: center;
 }
@@ -48,12 +48,12 @@
   margin: 0 auto 20px; /* Center and space below */
   font-size: 1.5em; /* Larger font size for emphasis */
   text-align: center; /* Center the text */
-  background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e); /* Dark gradient mimicking a night sky */
+  background: var(--sky-gradient); /* Dark gradient mimicking a night sky */
 }
 
 .weeks-left h2 {
-  color: #ff0077; /* Bright color for importance */
-  text-shadow: 0 0 10px #ff0077; /* Glow effect for emphasis */
+  color: var(--accent); /* Bright color for importance */
+  text-shadow: 0 0 10px var(--accent); /* Glow effect for emphasis */
 }
 /* Modal container */
 .modal {
@@ -70,10 +70,10 @@
 
 /* Modal content */
 .modal-content {
-  background-color: #fefefe;
+  background-color: var(--surface-raised);
   margin: 15% auto;
   padding: 20px;
-  border: 1px solid #888;
+  border: 1px solid var(--border-strong);
   width: 80%;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -82,7 +82,7 @@
 
 /* Close button */
 .close-btn {
-  color: #aaa;
+  color: var(--text-muted);
   float: right;
   font-size: 28px;
   font-weight: bold;
@@ -91,7 +91,7 @@
 
 .close-btn:hover,
 .close-btn:focus {
-  color: black;
+  color: var(--surface-raised-text);
   text-decoration: none;
   cursor: pointer;
 }

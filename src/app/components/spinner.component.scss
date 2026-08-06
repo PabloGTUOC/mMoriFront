@@ -6,7 +6,7 @@
   height: 100%;
   width: 100%;
   opacity: 0.8;
-  background: #6690ba;
+  background: var(--spinner-backdrop);
   z-index: 9999999;
   display: flex;
   justify-content: center;
@@ -37,13 +37,13 @@
 
 .hourglass-top {
   top: 0;
-  border-bottom: 50px solid #333;
+  border-bottom: 50px solid var(--panel-bg);
   animation: topSandFall 2s linear infinite;
 }
 
 .hourglass-bottom {
   bottom: 0;
-  border-top: 50px solid #333;
+  border-top: 50px solid var(--panel-bg);
   animation: bottomSandFill 2s linear infinite;
 }
 
@@ -53,32 +53,32 @@
   left: 50%;
   width: 6px;
   height: 0;
-  background: #ffcc00;
+  background: var(--spinner-sand);
   transform: translateX(-50%);
   animation: sandFlow 2s linear infinite;
 }
 
 @keyframes topSandFall {
   0% {
-    border-bottom-color: #333;
+    border-bottom-color: var(--panel-bg);
   }
   50% {
-    border-bottom-color: #ffcc00;
+    border-bottom-color: var(--spinner-sand);
   }
   100% {
-    border-bottom-color: #333;
+    border-bottom-color: var(--panel-bg);
   }
 }
 
 @keyframes bottomSandFill {
   0% {
-    border-top-color: #333;
+    border-top-color: var(--panel-bg);
   }
   50% {
-    border-top-color: #ffcc00;
+    border-top-color: var(--spinner-sand);
   }
   100% {
-    border-top-color: #333;
+    border-top-color: var(--panel-bg);
   }
 }
 
