@@ -20,7 +20,7 @@ import { logger } from '../lib/logger.js';
  * Enforcement cannot land in one commit: the moment the server requires a token, any client
  * not yet sending one breaks. See FRONTEND_IMPROVEMENT_PLAN.md §4.4.
  *
- *   disabled — no verification at all (the pre-Phase-4 behaviour)
+ *   disabled — no verification; an unnamed caller becomes DEV_USER_ID (local single-user)
  *   optional — verify when a token is present, log when it is not, never reject  ← default
  *   required — reject anything unauthenticated with 401
  */
@@ -83,6 +83,13 @@ export async function requireAuth(
   next: NextFunction
 ): Promise<void> {
   if (env.authMode === 'disabled') {
+    // No verification. A request that names a user is trusted, which is the pre-Phase-4
+    // behaviour; one that does not — every request the current frontend makes — gets a
+    // fixed local identity, so the app is usable without Firebase credentials.
+    if (!claimedUserId(req)) {
+      req.auth = { uid: env.devUserId };
+      applyVerifiedUserId(req, env.devUserId);
+    }
     next();
     return;
   }

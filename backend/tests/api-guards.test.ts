@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
+import { env } from '../src/config/env.js';
 
 /**
  * Request-guard and routing coverage that never reaches the database.
@@ -12,6 +13,17 @@ import { createApp } from '../src/app.js';
  */
 
 const app = createApp();
+
+/**
+ * These cover the spec's own `UserId is missing` guards (§7), which only fire when nothing
+ * upstream has supplied an identity. The suite default of AUTH_MODE=disabled now injects a
+ * local development uid for unnamed callers, which would satisfy those guards and make the
+ * assertions vacuous — so this file runs in `optional`, where an unauthenticated request
+ * reaches the controllers with no user, exactly as the spec describes.
+ */
+const originalMode = env.authMode;
+beforeAll(() => ((env as { authMode: string }).authMode = 'optional'));
+afterAll(() => ((env as { authMode: string }).authMode = originalMode));
 
 describe('routing', () => {
   it('answers unknown routes with JSON, not Express HTML', async () => {

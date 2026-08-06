@@ -26,11 +26,13 @@ npm run dev                               # http://localhost:3000
 cd .. && npm install && npm start          # http://localhost:4200
 ```
 
-> ⚠️ **Firebase Admin credentials are mandatory.** The frontend sends no user identity of its
-> own — the API derives it from the verified ID token — so `AUTH_MODE` defaults to
-> `required` and every user-scoped request answers 401 without
-> `FIREBASE_SERVICE_ACCOUNT_JSON`. For solo local work without credentials, set
-> `AUTH_MODE=disabled`.
+> ⚠️ **Pick an auth mode before first run.** The frontend sends no user identity of its own —
+> the API derives it from the verified ID token — so `AUTH_MODE` defaults to `required` and
+> every user-scoped request answers 401 without `FIREBASE_SERVICE_ACCOUNT_JSON`.
+>
+> To run locally **without Firebase at all**, set `AUTH_MODE=disabled` in `backend/.env`:
+> every request is then treated as one shared local account (`DEV_USER_ID`). Google Sign-In
+> still needs the web Firebase config, which is already committed in `environment.ts`.
 
 > ⚠️ **The bundled life-expectancy data is placeholder data** — six countries of round
 > illustrative numbers. Until you seed a real dataset, most users get a base of 0 and a

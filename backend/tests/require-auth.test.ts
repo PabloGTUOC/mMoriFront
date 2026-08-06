@@ -160,7 +160,7 @@ describe('AUTH_MODE=optional (the rollout default)', () => {
 });
 
 describe('AUTH_MODE=disabled', () => {
-  it('skips verification entirely', async () => {
+  it('skips verification and trusts a caller that names itself', async () => {
     setMode('disabled');
 
     const response = await request(app).get('/probe').query({ user_id: 'anything' });
@@ -168,5 +168,20 @@ describe('AUTH_MODE=disabled', () => {
     expect(response.status).toBe(200);
     expect(response.body.queryUserId).toBe('anything');
     expect(verifyIdToken).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The current frontend sends no user_id at all (4.1.6). Without a fallback identity,
+   * `disabled` would leave every request with no user — reads matching nothing and signup
+   * failing its presence validation — which is not a usable local mode.
+   */
+  it('gives an unnamed caller the local development identity', async () => {
+    setMode('disabled');
+
+    const response = await request(app).get('/probe');
+
+    expect(response.status).toBe(200);
+    expect(response.body.queryUserId).toBe('local-dev-user');
+    expect(response.body.auth.uid).toBe('local-dev-user');
   });
 });

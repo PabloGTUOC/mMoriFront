@@ -60,6 +60,16 @@ export const env = {
   checkRevoked: str('AUTH_CHECK_REVOKED', 'false') === 'true',
 
   /**
+   * The identity used when AUTH_MODE=disabled and the request names no user.
+   *
+   * Since 4.1.6 the frontend sends no `user_id`, so without this `disabled` mode would leave
+   * every request with no identity at all: reads would match nothing and signup would fail
+   * its presence validation. This makes `disabled` a coherent single-user local mode rather
+   * than a broken one.
+   */
+  devUserId: str('DEV_USER_ID', 'local-dev-user'),
+
+  /**
    * Bounds on POST /generate_recommendation — the one endpoint that costs money per call.
    * Ten an hour is generous for the UI, which fires one per mood selection.
    */

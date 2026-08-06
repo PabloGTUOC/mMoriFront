@@ -26,9 +26,11 @@ npm run dev                   # http://localhost:3000
 
 Before that works you need two values in `.env`:
 
-- **`FIREBASE_SERVICE_ACCOUNT_JSON`** — mandatory. `AUTH_MODE` defaults to `required`, so
-  without credentials every user-scoped request answers 401. Set `AUTH_MODE=disabled` instead
-  if you are working alone locally and do not want Firebase in the loop.
+- **`FIREBASE_SERVICE_ACCOUNT_JSON`** — mandatory *unless* you turn auth off. `AUTH_MODE`
+  defaults to `required`, so without credentials every user-scoped request answers 401.
+- **`AUTH_MODE=disabled`** — the no-Firebase path. Every request is then treated as
+  `DEV_USER_ID` (default `local-dev-user`), i.e. a single shared local account. Fine for one
+  developer on one machine; unsafe for anything else.
 - **`OPENAI_API_KEY`** — only needed for mood recommendations; everything else works without it.
 
 Then start the frontend from the repo root (`npm start`) and open `http://localhost:4200`.
