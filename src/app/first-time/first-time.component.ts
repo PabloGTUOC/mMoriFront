@@ -201,7 +201,6 @@ export class FirstTimeComponent implements OnInit {
   ngOnInit(): void {
     this.userService.userId$.subscribe((id: string | null) => {
       this.userId = id;
-      console.log('User ID in ngOnInit:', this.userId);
       if (this.userId) {
         this.initializeForm();
       }
@@ -238,8 +237,7 @@ export class FirstTimeComponent implements OnInit {
             country: form.country_code,
           };
           this.userDataService.submitUserData(payload).subscribe({
-            next: (response) => {
-              console.log('user data submitted OK', response);
+            next: () => {
               this.userService.setUserNewStatus(false);
               // Was '/main', which is not a route — onboarding dead-ended here.
               this.router.navigate(['/home']);

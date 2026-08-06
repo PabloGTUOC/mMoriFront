@@ -102,7 +102,7 @@ export class GlobalErrorHandler implements ErrorHandler {
    * Log error to external monitoring service (Sentry, LogRocket, etc.)
    * Placeholder for future implementation
    */
-  private logErrorToService(error: Error | HttpErrorResponse): void {
+  private logErrorToService(_error: Error | HttpErrorResponse): void {
     // TODO: Integrate with error monitoring service
     // Example: Sentry.captureException(error);
   }

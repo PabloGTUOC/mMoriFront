@@ -8,7 +8,12 @@ import { forkJoin } from 'rxjs';
 import { filter, switchMap, take } from 'rxjs/operators';
 import { LifeExpectancyChartComponent } from '../life-expectancy-chart/life-expectancy-chart.component';
 import { WeightHistoryChartComponent } from '../components/weight-history-chart/weight-history-chart.component';
-import { WeightHistory } from '../models';
+import {
+  TrainingStatsResponse,
+  UserData,
+  WeightHistory,
+  WeightResponse,
+} from '../models';
 
 
 @Component({
@@ -76,15 +81,16 @@ export class DisplayDailyComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: (response: any) => {
-          const { userData, trainingStats, latestWeight, weightHistory } = response;
+        next: ({ userData, trainingStats, latestWeight, weightHistory }) => {
           this.loading = false;
           this.weightHistory = weightHistory;
           this.hasProfile = !!userData.success;
-          if (userData.success) {
+          // `user_data` is optional on the response even when `success` is true, so it is
+          // checked here rather than asserted — see UserDataResponse.
+          if (userData.success && userData.user_data) {
             this.updateFields(
               userData.user_data,
-              userData.adjusted_life_expectancy,
+              userData.adjusted_life_expectancy ?? 0,
               trainingStats,
               latestWeight
             );
@@ -92,7 +98,7 @@ export class DisplayDailyComponent implements OnInit {
             console.warn('No user data found');
           }
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           console.error('Error loading dashboard', error);
           this.loading = false;
           this.error = 'Could not load your dashboard. Please try again.';
@@ -100,7 +106,12 @@ export class DisplayDailyComponent implements OnInit {
       });
   }
 
-  updateFields(userData: any, adjustedLifeExpectancy:number, trainingStats: any, latestWeight: any): void {
+  updateFields(
+    userData: UserData,
+    adjustedLifeExpectancy: number,
+    trainingStats: TrainingStatsResponse,
+    latestWeight: WeightResponse
+  ): void {
     this.currentAge = this.metrics.calculateAge(new Date(userData.dob));
     // Check if latestWeight is available, if not, use the weight from userData
     if (latestWeight && latestWeight.weight) {

@@ -19,9 +19,9 @@ export class HttpInterceptorService implements HttpInterceptor {
     ) {}
 
   intercept(
-    request: HttpRequest<any>,
+    request: HttpRequest<unknown>,
     next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<unknown>> {
     if (request.url.includes("json")) {
       return next.handle(request);
     }
@@ -62,7 +62,7 @@ export class HttpInterceptorService implements HttpInterceptor {
     );
   }
 
-  cloneRequest(request: HttpRequest<any>) {
+  cloneRequest(request: HttpRequest<unknown>) {
     return request.clone();
   }
 

@@ -27,13 +27,13 @@ Kept as a record, because the gap is the reason the audit happened.
 | "Error Handling … user-friendly notifications" | `NotificationService` had **zero call sites**; the error handler used `alert()` | ✅ Real — a toast host, no `alert()` |
 | "TypeScript Interfaces … type safety" | The models were used only by the orphaned chart; everything else was `any` | ✅ Real — services and payloads typed against the API contract |
 | "Authentication … secure auth guards" | Firebase signed you in; **the token was never sent**, and the API trusted a `user_id` string from the client | ✅ Real — verified tokens, identity from the token only |
-| "Input Sanitization: XSS and SQL injection protection" | `SanitizationService` had zero call sites | ⚠️ **Still unused** — see below |
+| "Input Sanitization: XSS and SQL injection protection" | `SanitizationService` had zero call sites | Claim withdrawn — the service is deleted; the two real problems were closed another way, see below |
 | "Bootstrap 5.3", "Angular Material 18" | Bootstrap was never imported; Material was carried in full for two `<select>`s | Both removed |
 
-## The one that is still not true
+## The one that was never true
 
-**`src/app/services/sanitization.service.ts` has no callers.** The two problems it was
-written for were closed a different way, and better:
+**`src/app/services/sanitization.service.ts` is deleted.** It never had a caller. The two
+problems it was written for were closed a different way, and better:
 
 - The AI recommendation no longer passes through `[innerHTML]` at all — it is parsed into
   paragraphs, lists and bold runs and rendered as text, so there is no HTML to sanitise.
@@ -41,5 +41,6 @@ written for were closed a different way, and better:
   is extracted, and the embed URL is constructed from it, on the client and again on the
   server.
 
-The service is therefore dead code. It should be deleted, or given a purpose — leaving it in
-place is what let this file claim a feature that did not exist.
+The service was therefore dead code, and deleting it is what removes the claim. Its own
+methods were also weaker than what replaced them: regex tag-stripping rather than a parser,
+and an SQL-injection filter in an app whose only database is MongoDB.

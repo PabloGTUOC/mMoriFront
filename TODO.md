@@ -7,7 +7,7 @@ Nothing here is blocking a local run — see [`README.md`](README.md) for that. 
 audit in [`FRONTEND_IMPROVEMENT_PLAN.md`](FRONTEND_IMPROVEMENT_PLAN.md) is complete; this is
 what was deliberately left, plus what the work itself uncovered.
 
-**Baseline to preserve:** 61 frontend tests, 62 backend tests, 0 lint errors, 26 lint
+**Baseline to preserve:** 61 frontend tests, 62 backend tests, 0 lint errors, 0 lint
 warnings, 571 kB initial bundle. Any change should leave those the same or better.
 
 ```bash
@@ -58,18 +58,7 @@ Thoughts screen shows the mood but no recommendation; everything else works.
 
 ## 2. Code — small, self-contained
 
-### 2.1 Delete `SanitizationService`, or give it a purpose
-`src/app/services/sanitization.service.ts` — **zero call sites.** The two problems it was
-written for were closed differently and better: the AI recommendation is parsed into data and
-rendered as text (no `[innerHTML]` anywhere), and the stretch video URL is *rebuilt* from a
-validated YouTube id rather than sanitised.
-
-It is dead code that a document once cited as a shipped security feature. Deleting it is the
-honest move; it has no importers, so removal is a single `git rm` plus its spec.
-
-*Done when:* `grep -rn SanitizationService src/` returns nothing, and the suites stay green.
-
-### 2.2 Finish `OnPush` on the last four components
+### 2.1 Finish `OnPush` on the last four components
 `DisplayDailyComponent`, `InputDailyComponent`, `ThoughtsComponent`, `FirstTimeComponent`
 still hold async state in plain fields and run default change detection. They are **correct as
 they are** — just not optimised.
@@ -82,19 +71,16 @@ a completed request invisible on screen, which is why the signal step comes firs
 ⚠️ `OnPush` faults are **runtime-only** — unit tests that call `detectChanges()` by hand will
 not catch them. Verify in a browser (`npm start`, then exercise the view).
 
-### 2.3 The 26 lint warnings
-All deliberate debt, none errors. Breakdown: **21 `no-explicit-any`**, **3 `no-console`**,
-**2 `no-unused-vars`**.
-
-Most of the `any`s are in the two D3 chart components, where D3's callback types are genuinely
-awkward, plus `DisplayDailyComponent.loadDashboard`/`updateFields`, which can now be typed
-against `UserDataResponse` / `TrainingStatsResponse` / `WeightResponse` — those models already
-exist and are accurate. That is the highest-value slice.
-
-### 2.4 Two stale `TODO` comments
+### 2.2 Two stale `TODO` comments
 - `src/app/services/error-handler.service.ts:106` — "Integrate with error monitoring service".
-  Either wire up Sentry or delete the placeholder.
+  Either wire up Sentry or delete the placeholder. Its unused `_error` parameter is
+  underscore-prefixed to keep lint quiet; it is the argument Sentry would take.
 - `src/environments/environment.ts:8` — resolved by item 1.3; delete the comment then.
+
+**The lint warnings are gone** — the count is 0, and the run is clean. Keep it there: the
+`any`s in the D3 charts were replaced with `Selection<SVGGElement, unknown, null, undefined>`
+and a local `WeightPoint`, and D3's own callback types now infer the datum, so new chart code
+should not need an annotation at all.
 
 ---
 

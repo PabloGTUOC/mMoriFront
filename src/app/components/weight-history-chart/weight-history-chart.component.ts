@@ -1,12 +1,18 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // Only the D3 modules this chart uses, rather than the whole meta-package (6.6).
-import { select, selectAll } from 'd3-selection';
+import { Selection, select, selectAll } from 'd3-selection';
 import { extent, max, min } from 'd3-array';
 import { scaleLinear, scaleTime } from 'd3-scale';
 import { curveMonotoneX, line as d3Line } from 'd3-shape';
 import { axisBottom, axisLeft } from 'd3-axis';
 import { WeightHistory } from '../../models';
+
+/** A `WeightHistory` entry with its date parsed, which is what the scales and line consume. */
+interface WeightPoint {
+  date: Date;
+  weight: number;
+}
 
 @Component({
   selector: 'app-weight-history-chart',
@@ -52,9 +58,11 @@ import { WeightHistory } from '../../models';
 })
 export class WeightHistoryChartComponent implements OnInit, OnChanges {
   @Input() weightData: WeightHistory[] = [];
-  @ViewChild('chart', { static: false }) chartElement!: ElementRef;
+  @ViewChild('chart', { static: false }) chartElement!: ElementRef<HTMLDivElement>;
 
-  private svg: any;
+  // Optional rather than definite: `createChart` returns early when there is nothing to
+  // draw, so every use is guarded.
+  private svg?: Selection<SVGGElement, unknown, null, undefined>;
   private margin = { top: 20, right: 30, bottom: 50, left: 60 };
   private width = 0;
   private height = 300;
@@ -96,8 +104,10 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       return;
     }
 
+    const svg = this.svg;
+
     // Parse dates
-    const data = this.weightData.map(d => ({
+    const data: WeightPoint[] = this.weightData.map(d => ({
       date: new Date(d.date),
       weight: d.weight
     }));
@@ -115,16 +125,16 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       .range([this.height, 0]);
 
     // Create line generator
-    const line = d3Line<{date: Date, weight: number}>()
+    const line = d3Line<WeightPoint>()
       .x(d => x(d.date))
       .y(d => y(d.weight))
       .curve(curveMonotoneX);
 
     // Clear previous content
-    this.svg.selectAll('*').remove();
+    svg.selectAll('*').remove();
 
     // Add grid lines
-    this.svg.append('g')
+    svg.append('g')
       .attr('class', 'grid')
       .attr('opacity', 0.1)
       .call(axisLeft(y)
@@ -133,7 +143,7 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       );
 
     // Add line path
-    this.svg.append('path')
+    svg.append('path')
       .datum(data)
       .attr('fill', 'none')
       .attr('stroke', 'var(--primary-color)')
@@ -141,18 +151,19 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       .attr('d', line);
 
     // Add dots
-    this.svg.selectAll('.dot')
+    svg.selectAll('.dot')
       .data(data)
       .enter()
       .append('circle')
       .attr('class', 'dot')
-      .attr('cx', (d: any) => x(d.date))
-      .attr('cy', (d: any) => y(d.weight))
+      .attr('cx', d => x(d.date))
+      .attr('cy', d => y(d.weight))
       .attr('r', 5)
       .attr('fill', 'var(--primary-color)')
       .attr('stroke', 'var(--card-background)')
       .attr('stroke-width', 2)
-      .on('mouseover', (event: any, d: any) => {
+      // `event` is typed by d3's own listener signature; the datum comes from `.data(data)`.
+      .on('mouseover', (event, d) => {
         select(event.currentTarget)
           .attr('r', 8)
           .attr('fill', 'var(--primary-light)');
@@ -160,7 +171,7 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
         // Show tooltip
         this.showTooltip(event, d);
       })
-      .on('mouseout', (event: any) => {
+      .on('mouseout', (event) => {
         select(event.currentTarget)
           .attr('r', 5)
           .attr('fill', 'var(--primary-color)');
@@ -169,18 +180,18 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       });
 
     // Add X axis
-    this.svg.append('g')
+    svg.append('g')
       .attr('transform', `translate(0,${this.height})`)
       .call(axisBottom(x).ticks(5))
       .attr('color', 'var(--text-secondary)');
 
     // Add Y axis
-    this.svg.append('g')
+    svg.append('g')
       .call(axisLeft(y).ticks(5))
       .attr('color', 'var(--text-secondary)');
 
     // Add axis labels
-    this.svg.append('text')
+    svg.append('text')
       .attr('transform', 'rotate(-90)')
       .attr('y', 0 - this.margin.left)
       .attr('x', 0 - (this.height / 2))
@@ -189,14 +200,14 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       .style('fill', 'var(--text-primary)')
       .text('Weight (kg)');
 
-    this.svg.append('text')
+    svg.append('text')
       .attr('transform', `translate(${this.width / 2},${this.height + this.margin.bottom - 10})`)
       .style('text-anchor', 'middle')
       .style('fill', 'var(--text-primary)')
       .text('Date');
   }
 
-  private showTooltip(event: any, d: any): void {
+  private showTooltip(event: MouseEvent, d: WeightPoint): void {
     const tooltip = select('body')
       .append('div')
       .attr('class', 'weight-tooltip')

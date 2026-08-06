@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild } from '@angular/core';
 // Only the two D3 modules this chart uses, rather than the whole meta-package (6.6).
-import { select } from 'd3-selection';
+import { Selection, select } from 'd3-selection';
 import { range } from 'd3-array';
 import { HostListener} from "@angular/core";
 
@@ -24,19 +24,19 @@ export class LifeExpectancyChartComponent implements OnChanges {
   @Input() weeksLeftToLive!: number;
 
   @ViewChild('chart', { static: true }) chartContainer!: ElementRef;
-  @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
-    const innerWidht= event.target.innerWidth;
-    console.log(event.target.innerWidth);
-    if (innerWidht < 920) {
-      //Call to udpate chart with new widht
+  // The resize target is always the window, so the width is read from it directly rather
+  // than off an untyped `$event.target`.
+  @HostListener('window:resize')
+  onResize() {
+    if (window.innerWidth < 920) {
+      // Redraw with a smaller dot so 52 columns still fit.
       this.createChart(2);
     } else {
       this.createChart(5);
     }
   }
 
-  private svg: any;
+  private svg!: Selection<SVGGElement, unknown, null, undefined>;
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['currentAge'] || changes['weeksLeftToLive']) {
@@ -52,7 +52,6 @@ export class LifeExpectancyChartComponent implements OnChanges {
     select(this.chartContainer.nativeElement).select('svg').remove();
 
     const element = this.chartContainer.nativeElement;
-    const width = element.offsetWidth - 10;
     const dotRadius= dotradius;
     const dotSpacing = dotRadius * 2.5;
 
