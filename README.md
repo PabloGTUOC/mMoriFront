@@ -95,3 +95,4 @@ MongoDB service container, so the backend's integration suite executes rather th
 | [`backend/README.md`](backend/README.md) | API setup, configuration, and every deliberate deviation from the spec |
 | [`BACKEND_SPEC.md`](BACKEND_SPEC.md) | Specification of the original **Rails** service this API replaced |
 | [`FRONTEND_IMPROVEMENT_PLAN.md`](FRONTEND_IMPROVEMENT_PLAN.md) | The audit that produced the current state, and the record of what was done |
+| [`TODO.md`](TODO.md) | **Everything still outstanding** — configuration you must supply, and the code items deliberately left |

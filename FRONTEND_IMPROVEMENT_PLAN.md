@@ -6,7 +6,8 @@
 > **STATUS: every phase is complete.** Sections 1 and 2 below are the *original* assessment,
 > written in the present tense and kept unchanged as the record of what was found — they
 > describe the code as it was, not as it is. Each phase in section 3 carries its own outcome.
-> For the app as it stands now, read [`README.md`](README.md).
+> For the app as it stands now, read [`README.md`](README.md); for what is still outstanding,
+> read [`TODO.md`](TODO.md).
 
 ---
 

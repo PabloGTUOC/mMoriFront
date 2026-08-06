@@ -4,6 +4,8 @@ Node/TypeScript reimplementation of **MoriBackEnd**, the API behind the mMori An
 frontend in this repository. It replaces the Rails 7.1 + Mongoid service specified in
 [`../BACKEND_SPEC.md`](../BACKEND_SPEC.md), which lives in a separate repo.
 
+Outstanding work is tracked in [`../TODO.md`](../TODO.md).
+
 Same paths, response envelopes and MongoDB collections as the spec, plus two additions:
 `GET /weight_updates/history` (the weight chart had no data source) and token verification on
 every route but the health check. Deviations are listed in full below.
