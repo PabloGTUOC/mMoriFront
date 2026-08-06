@@ -18,6 +18,8 @@ import {
 import { createStretch, listStretches } from './controllers/stretches.controller.js';
 import { generateRecommendation, saveMood } from './controllers/moods.controller.js';
 import { requireAuth } from './middleware/require-auth.js';
+import { rateLimit } from './middleware/rate-limit.js';
+import { env } from './config/env.js';
 
 /**
  * All 16 routes from BACKEND_SPEC §4, at their exact paths.
@@ -75,4 +77,14 @@ router.post('/stretches', createStretch);
 
 // Mood + AI recommendation
 router.post('/moods', saveMood);
-router.post('/generate_recommendation', generateRecommendation);
+// The only endpoint that spends money per call, so it is the only one that is throttled.
+// `requireAuth` runs first, so the limiter can key on the verified uid rather than an IP.
+router.post(
+  '/generate_recommendation',
+  rateLimit({
+    limit: env.recommendationRateLimit,
+    windowMs: env.recommendationRateWindowMs,
+    message: 'Too many recommendation requests. Please try again later.',
+  }),
+  generateRecommendation
+);

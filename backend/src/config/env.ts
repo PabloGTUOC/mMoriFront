@@ -57,6 +57,13 @@ export const env = {
    */
   checkRevoked: str('AUTH_CHECK_REVOKED', 'false') === 'true',
 
+  /**
+   * Bounds on POST /generate_recommendation — the one endpoint that costs money per call.
+   * Ten an hour is generous for the UI, which fires one per mood selection.
+   */
+  recommendationRateLimit: int('RECOMMENDATION_RATE_LIMIT', 10),
+  recommendationRateWindowMs: int('RECOMMENDATION_RATE_WINDOW_MS', 60 * 60 * 1000),
+
   firebase: {
     /** A real secret, unlike the frontend's Firebase config. Never commit it. */
     serviceAccountJson: process.env['FIREBASE_SERVICE_ACCOUNT_JSON'] ?? '',

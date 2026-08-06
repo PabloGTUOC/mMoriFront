@@ -262,8 +262,13 @@ our API, *not* attached to other hosts, absent when signed out, one forced-refre
 11-character video id, so nothing a user types reaches it, and the link is validated on the
 server too. The recommendation renders as structured data with no `[innerHTML]` anywhere.
 
-**Still open:** 4.2.5 (rate limiting `/generate_recommendation`) and 4.3.3 (optional
-`created_by` on catalogue entries).
+**4.2.5 done.** `POST /generate_recommendation` is throttled — 10 per hour by default,
+configurable — keyed on the **verified uid** where one is present rather than the IP, since
+an IP is shared behind a NAT and a signed-in abuser can change networks. Returns 429 with
+`Retry-After`. State is in memory, which is right for one instance and wrong for several:
+scaling out means moving it to a shared store.
+
+**Still open:** 4.3.3 only (optional `created_by` on catalogue entries).
 
 **4.1.6 is deliberately blocked, not forgotten.** Removing `user_id` from client payloads is
 rollout step 5 and the deployment is at step 1. With `AUTH_MODE=optional` and no Firebase
