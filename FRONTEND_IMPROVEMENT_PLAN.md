@@ -276,11 +276,14 @@ small privacy leak of its own.
 **Phase 4 is finished. So is the plan** — every task across all six phases is either done or
 recorded with the reason it was stopped.
 
-**4.1.6 is deliberately blocked, not forgotten.** Removing `user_id` from client payloads is
-rollout step 5 and the deployment is at step 1. With `AUTH_MODE=optional` and no Firebase
-Admin credentials configured, `requireAuth` calls `next()` without setting a uid — so
-stripping `user_id` today would leave every request with no user at all. Do it *after*
-credentials are in place and the mode is `required`.
+**4.1.6 done — the rollout is complete.** No request carries a `user_id` any more: reads
+send no query parameter and every payload omits it, so identity exists solely in the verified
+token.
+
+**This is a breaking operational change.** `AUTH_MODE` now defaults to `required` — leaving
+it `optional` would mean unauthenticated requests arriving with no user and quietly reading
+nothing, a silent empty dashboard instead of a clear 401. **Firebase Admin credentials are
+now mandatory.** For local work without them, set `AUTH_MODE=disabled`.
 
 #### Original scope (~4–6 days, spans both halves of the repo)
 

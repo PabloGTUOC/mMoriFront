@@ -46,10 +46,12 @@ export const env = {
 
   /**
    * Staged rollout of token enforcement (FRONTEND_IMPROVEMENT_PLAN.md §4.4).
-   * `optional` is the default so shipping this cannot break a client that is not yet
-   * sending a token; flip to `required` once unauthenticated traffic reaches zero.
+   * Now defaults to `required`. The rollout is finished: as of 4.1.6 the frontend sends no
+   * `user_id` at all, so identity exists only in the token. Leaving this on `optional` would
+   * mean unauthenticated requests arriving with no user and quietly reading nothing —
+   * a silent empty dashboard instead of a clear 401.
    */
-  authMode: str('AUTH_MODE', 'optional') as 'disabled' | 'optional' | 'required',
+  authMode: str('AUTH_MODE', 'required') as 'disabled' | 'optional' | 'required',
 
   /**
    * `verifyIdToken(token, true)` also catches sign-out-everywhere and disabled accounts,

@@ -55,18 +55,16 @@ export class InputDailyComponent implements OnInit {
   }
 
   submitData(): void {
-    if (this.dailyForm.valid && this.userId) {
+    if (this.dailyForm.valid) {
       const formData = this.dailyForm.value;
       const today = new Date().toISOString().split('T')[0];
       // Canonical backend field names. This used to send `date` and `training`, which the
       // API does not permit, so the row saved with nulls and the session's type was lost.
       const training_data = {
-        user_id: this.userId,
         training_date: today,
         training_type: formData.training,
       };
       const weight_data = {
-        user_id: this.userId,
         date: today,
         weight: Number(formData.weight),
       };

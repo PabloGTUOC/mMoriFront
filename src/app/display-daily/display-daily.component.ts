@@ -59,16 +59,18 @@ export class DisplayDailyComponent implements OnInit {
   private loadDashboard(): void {
     this.loading = true;
     this.error = null;
-    this.userService.userId$
+    // Waits for an authenticated session so the interceptor has a token to attach; the
+    // requests themselves no longer name a user.
+    this.userService.session$
       .pipe(
-        filter((userId): userId is string => userId !== null),
+        filter((session) => session.status === 'authenticated'),
         take(1),
-        switchMap((userId) =>
+        switchMap(() =>
           forkJoin({
-            userData: this.userService.checkUserData(userId),
-            trainingStats: this.userService.getTrainingStats(userId),
-            latestWeight: this.userService.getLatestWeight(userId),
-            weightHistory: this.userService.getWeightHistory(userId),
+            userData: this.userService.checkUserData(),
+            trainingStats: this.userService.getTrainingStats(),
+            latestWeight: this.userService.getLatestWeight(),
+            weightHistory: this.userService.getWeightHistory(),
           })
         ),
         takeUntilDestroyed(this.destroyRef)

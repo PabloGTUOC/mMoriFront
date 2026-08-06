@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { catchError, distinctUntilChanged, filter, map, take, tap } from 'rxjs/operators';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import firebase from 'firebase/compat/app';
 import { environment } from '../../environments/environment';
@@ -113,29 +113,27 @@ export class UserService {
 
   // API calls
 
-  checkUserData(userId: string): Observable<UserDataResponse> {
-    const params = new HttpParams().set('user_id', userId);
-    return this.http.get<UserDataResponse>(`${this.apiUrl}/user_data/user_data`, { params });
+  /**
+   * None of these send a `user_id` any more (4.1.6). The server derives identity from the
+   * verified Firebase token, so passing one from the client would be at best redundant and
+   * at worst a claim the server has to police — it answers 403 on a mismatch.
+   */
+  checkUserData(): Observable<UserDataResponse> {
+    return this.http.get<UserDataResponse>(`${this.apiUrl}/user_data/user_data`);
   }
 
-  getTrainingStats(userId: string): Observable<TrainingStatsResponse> {
-    const params = new HttpParams().set('user_id', userId);
-    return this.http.get<TrainingStatsResponse>(`${this.apiUrl}/trainings/training-stats`, { params });
+  getTrainingStats(): Observable<TrainingStatsResponse> {
+    return this.http.get<TrainingStatsResponse>(`${this.apiUrl}/trainings/training-stats`);
   }
 
-  getLatestWeight(userId: string): Observable<WeightResponse> {
-    const params = new HttpParams().set('user_id', userId);
-    return this.http.get<WeightResponse>(`${this.apiUrl}/weight_updates/latest_weight`, { params });
+  getLatestWeight(): Observable<WeightResponse> {
+    return this.http.get<WeightResponse>(`${this.apiUrl}/weight_updates/latest_weight`);
   }
 
   /** The full weigh-in series, for the weight history chart. */
-  getWeightHistory(userId: string): Observable<WeightHistory[]> {
-    const params = new HttpParams().set('user_id', userId);
+  getWeightHistory(): Observable<WeightHistory[]> {
     return this.http
-      .get<{ success: boolean; data?: WeightHistory[] }>(
-        `${this.apiUrl}/weight_updates/history`,
-        { params }
-      )
+      .get<{ success: boolean; data?: WeightHistory[] }>(`${this.apiUrl}/weight_updates/history`)
       .pipe(map((response) => response.data ?? []));
   }
 
@@ -163,7 +161,7 @@ export class UserService {
 
     const userId = user.uid;
 
-    return this.checkUserData(userId).pipe(
+    return this.checkUserData().pipe(
       map((response) => !response.success),
       catchError((error) => {
         console.error('Could not check user profile; assuming an existing user', error);

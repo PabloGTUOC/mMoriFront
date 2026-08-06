@@ -17,7 +17,6 @@ export interface MoodOption {
 
 /** Both `POST /moods` and `POST /generate_recommendation` take this under `mood_data`. */
 export interface MoodPayload {
-  user_id: string;
   mood: MoodType;
   date: string;
 }

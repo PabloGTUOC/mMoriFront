@@ -43,7 +43,7 @@ export class ThoughtsComponent {
     const currentDate = new Date().toISOString().split('T')[0]; // Get the current date
 
     if (this.selectedMood && userId) {
-      const moodData = { user_id: userId, mood: this.selectedMood, date: currentDate };
+      const moodData = { mood: this.selectedMood, date: currentDate };
       this.thoughtsService.saveMood(moodData)
         .subscribe({
           next: () => undefined,
@@ -61,7 +61,7 @@ export class ThoughtsComponent {
     const currentDate = new Date().toISOString().split('T')[0]; // Get the current date
 
     if (this.selectedMood && userId) {
-      const moodData = { user_id: userId, mood: this.selectedMood, date: currentDate };
+      const moodData = { mood: this.selectedMood, date: currentDate };
       this.thoughtsService.getRecommendation(moodData)
         .subscribe({
           next: (response) => {

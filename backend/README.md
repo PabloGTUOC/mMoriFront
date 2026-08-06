@@ -222,7 +222,13 @@ required` rollout that avoids breaking the live client, and the test coverage it
 Existing documents already store the Firebase `uid` in `user_id`, so no data migration is
 involved.
 
-**Until that ships, do not expose this service beyond localhost.**
+**Status: shipped.** `AUTH_MODE` now defaults to `required`, because the frontend no longer
+sends a `user_id` at all — identity exists only in the verified token. That makes
+`FIREBASE_SERVICE_ACCOUNT_JSON` (or `GOOGLE_APPLICATION_CREDENTIALS`) **mandatory**: without
+credentials every user-scoped request answers 401.
+
+For local work without Firebase credentials, set `AUTH_MODE=disabled` — every request then
+shares one empty identity, which is fine for a single developer and unsafe for anything else.
 
 ---
 

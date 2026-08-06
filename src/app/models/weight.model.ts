@@ -4,7 +4,6 @@
  */
 
 export interface WeightPayload {
-  user_id: string;
   weight: number;
   date: string;
 }

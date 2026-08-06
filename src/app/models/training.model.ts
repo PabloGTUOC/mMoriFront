@@ -28,7 +28,6 @@ export interface Training {
 
 /** Payload for `POST /trainings`; the service nests it under a `training` key. */
 export interface TrainingPayload {
-  user_id: string;
   training_date: string;
   training_type: string;
 }

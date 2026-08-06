@@ -25,7 +25,8 @@ export interface UserData {
 }
 
 /** Payload for `POST /user_data`; the service nests it under a `user_data` key. */
-export type UserDataPayload = Omit<UserData, '_id' | 'created_at' | 'updated_at'>;
+/** `user_id` is omitted too: the server takes it from the verified token (4.1.6). */
+export type UserDataPayload = Omit<UserData, '_id' | 'user_id' | 'created_at' | 'updated_at'>;
 
 /**
  * `GET /user_data/user_data`.

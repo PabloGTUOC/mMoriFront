@@ -210,7 +210,6 @@ export class FirstTimeComponent implements OnInit {
 
   initializeForm(): void {
     this.userForm = this.fb.group({
-      user_id: [this.userId, Validators.required],
       dob: ['', Validators.required],
       gender: ['', Validators.required],
       height: ['', Validators.required],
@@ -223,13 +222,12 @@ export class FirstTimeComponent implements OnInit {
   }
 
     onSubmit(): void {
-      if (this.userForm.valid && this.userId) {
+      if (this.userForm.valid) {
           const form = this.userForm.value;
           // The form's control names are its own; these are the backend's. Sending the
           // form value verbatim meant training_frequency, smoking_status, drinking_status
           // and country were all dropped, so signup failed its presence validations.
           const payload: UserDataPayload = {
-            user_id: this.userId,
             dob: form.dob,
             gender: form.gender,
             height: Number(form.height),
