@@ -32,7 +32,9 @@ import { documentId, serializeDocument, serializeDocuments, toDateOnly } from '.
  * spec-conformant clients and the live frontend both find what they expect.
  */
 function withTrainingNameAlias(doc: Record<string, unknown>): Record<string, unknown> {
-  return { ...doc, training_name: doc['name'] };
+  // `created_by` is stored for traceability but never returned — see the model.
+  const { created_by: _createdBy, ...rest } = doc;
+  return { ...rest, training_name: doc['name'] };
 }
 
 /**
@@ -189,6 +191,7 @@ export async function createTrainingRepositoryEntry(
     duration: toIntegerOrUndefined(pick(params, 'duration')),
     calories: toIntegerOrUndefined(pick(params, 'calories', 'calories_burned')),
     description: toStringOrUndefined(pick(params, 'description')),
+    created_by: req.auth?.uid,
   });
 
   try {

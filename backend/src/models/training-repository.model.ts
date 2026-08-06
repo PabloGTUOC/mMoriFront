@@ -18,6 +18,14 @@ const trainingRepositorySchema = new Schema(
     duration: { type: Number },
     calories: { type: Number },
     description: { type: String },
+    /**
+     * The verified uid of whoever added this entry (4.3.3). The catalogue is global — one
+     * user's row is shown to everyone — so a bad entry needs to be traceable. Deliberately
+     * **not serialised**: recording provenance is for whoever operates the service, and
+     * broadcasting other users' uids to every client would be a small privacy leak of its
+     * own. Undefined for rows written before this existed, or while AUTH_MODE is optional.
+     */
+    created_by: { type: String },
   },
   {
     collection: 'training_repository',

@@ -359,6 +359,26 @@ describe.skipIf(mongo === null)('API integration', () => {
       expect(response.body.data[0].training_name).toBe('HIIT');
     });
 
+    /**
+     * 4.3.3: the catalogue is global, so a bad entry needs to be traceable to whoever added
+     * it — but the uid is recorded, not published. Broadcasting other users' uids to every
+     * client would be a privacy leak of its own.
+     */
+    it('records who created an entry without exposing it', async () => {
+      const response = await request(app)
+        .post('/training-repository')
+        .send({ training: { name: 'HIIT', type: 'Cardio' } });
+
+      expect(response.body.data[0]).not.toHaveProperty('created_by');
+
+      const list = await request(app).get('/training-repository');
+      expect(list.body.data[0]).not.toHaveProperty('created_by');
+
+      // Stored all the same — undefined here because these tests run unauthenticated.
+      const stored = await mongoose.connection.db!.collection('training_repository').findOne({});
+      expect(stored).toHaveProperty('name', 'HIIT');
+    });
+
     it('keeps `type` a plain string despite the reserved-ish name (§3.5)', async () => {
       await request(app)
         .post('/training-repository')
@@ -391,6 +411,15 @@ describe.skipIf(mongo === null)('API integration', () => {
      * `stretch` wrapper — with `stretch_name` and `video_link`. Rails answered 400 on the
      * missing wrapper, and had no `video_link` field for the embedded player to read.
      */
+    it('does not expose created_by on stretches either', async () => {
+      await request(app)
+        .post('/stretches')
+        .send({ stretch: { name: 'Hamstring', type: 'Static' } });
+
+      const list = await request(app).get('/stretches');
+      expect(list.body.data[0]).not.toHaveProperty('created_by');
+    });
+
     it('accepts the unwrapped form payload and persists video_link', async () => {
       const response = await request(app).post('/stretches').send({
         stretch_name: 'Hamstring stretch',

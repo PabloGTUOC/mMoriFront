@@ -268,7 +268,13 @@ an IP is shared behind a NAT and a signed-in abuser can change networks. Returns
 `Retry-After`. State is in memory, which is right for one instance and wrong for several:
 scaling out means moving it to a shared store.
 
-**Still open:** 4.3.3 only (optional `created_by` on catalogue entries).
+**4.3.3 done — Phase 4 complete.** Catalogue entries record the verified uid of whoever
+added them, so a bad entry is traceable. Deliberately **not serialised**: provenance is for
+whoever operates the service, and returning other users' uids to every client would be a
+small privacy leak of its own.
+
+**Phase 4 is finished. So is the plan** — every task across all six phases is either done or
+recorded with the reason it was stopped.
 
 **4.1.6 is deliberately blocked, not forgotten.** Removing `user_id` from client payloads is
 rollout step 5 and the deployment is at step 1. With `AUTH_MODE=optional` and no Firebase

@@ -12,7 +12,9 @@ import { isValidYouTubeUrl } from '../lib/youtube.js';
  * `{{ stretch.stretch_name }}`. Canonical storage stays `name`, mirrored on output.
  */
 function withStretchNameAlias(doc: Record<string, unknown>): Record<string, unknown> {
-  return { ...doc, stretch_name: doc['name'] };
+  // `created_by` is stored for traceability but never returned — see the model.
+  const { created_by: _createdBy, ...rest } = doc;
+  return { ...rest, stretch_name: doc['name'] };
 }
 
 /**
@@ -64,6 +66,7 @@ export async function createStretch(req: Request, res: Response): Promise<Respon
     duration: toIntegerOrUndefined(pick(params, 'duration')),
     description: toStringOrUndefined(pick(params, 'description')),
     video_link: videoLink,
+    created_by: req.auth?.uid,
   });
 
   try {
