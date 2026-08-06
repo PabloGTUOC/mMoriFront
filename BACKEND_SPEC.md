@@ -1,5 +1,12 @@
 # MoriBackEnd — Complete Functionality Specification
 
+> **This describes the original Rails service, which lives in a separate repository.** It is
+> kept as the authoritative record of the contract that was reimplemented. The running API is
+> now the Node service in [`backend/`](backend); where it deliberately differs — added
+> endpoints, fixed BMI bands, authentication — those differences are listed in
+> [`backend/README.md`](backend/README.md). Read this for *what the contract is*, and that
+> for *what the implementation does*.
+
 > **Purpose of this document.** This is a reconstruction-grade specification of the
 > `MoriBackEnd` service. It describes every route, model, field, validation, business
 > rule, external integration, and configuration detail needed to rebuild the backend

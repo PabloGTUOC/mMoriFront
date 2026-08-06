@@ -2,6 +2,11 @@
 
 > Assessment of the Angular 18 app in `src/`, and a phased plan to fix it.
 > Companion to [`BACKEND_SPEC.md`](BACKEND_SPEC.md) and [`backend/README.md`](backend/README.md).
+>
+> **STATUS: every phase is complete.** Sections 1 and 2 below are the *original* assessment,
+> written in the present tense and kept unchanged as the record of what was found — they
+> describe the code as it was, not as it is. Each phase in section 3 carries its own outcome.
+> For the app as it stands now, read [`README.md`](README.md).
 
 ---
 

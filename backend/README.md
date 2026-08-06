@@ -4,8 +4,9 @@ Node/TypeScript reimplementation of **MoriBackEnd**, the API behind the mMori An
 frontend in this repository. It replaces the Rails 7.1 + Mongoid service specified in
 [`../BACKEND_SPEC.md`](../BACKEND_SPEC.md), which lives in a separate repo.
 
-Same 16 routes, same paths, same response envelopes, same MongoDB collections — so the
-existing frontend works against it with no changes to `environment.ts`.
+Same paths, response envelopes and MongoDB collections as the spec, plus two additions:
+`GET /weight_updates/history` (the weight chart had no data source) and token verification on
+every route but the health check. Deviations are listed in full below.
 
 ---
 
@@ -13,7 +14,7 @@ existing frontend works against it with no changes to `environment.ts`.
 
 ```bash
 cd backend
-cp .env.example .env          # fill in OPENAI_API_KEY if you want mood recommendations
+cp .env.example .env
 npm install
 
 # Need a MongoDB. Either point MONGODB_URI at one you already have, or:
@@ -22,6 +23,13 @@ docker run -d --name mmori-mongo -p 27017:27017 mongo:7
 npm run seed:life-expectancy  # REQUIRED — see "Reference data" below
 npm run dev                   # http://localhost:3000
 ```
+
+Before that works you need two values in `.env`:
+
+- **`FIREBASE_SERVICE_ACCOUNT_JSON`** — mandatory. `AUTH_MODE` defaults to `required`, so
+  without credentials every user-scoped request answers 401. Set `AUTH_MODE=disabled` instead
+  if you are working alone locally and do not want Firebase in the loop.
+- **`OPENAI_API_KEY`** — only needed for mood recommendations; everything else works without it.
 
 Then start the frontend from the repo root (`npm start`) and open `http://localhost:4200`.
 `src/environments/environment.ts` already points at `http://localhost:3000`.
@@ -47,7 +55,12 @@ docker compose run --rm api npm run seed:life-expectancy
 ## Configuration
 
 Everything is environment-driven; see [`.env.example`](.env.example) for the full list. The
-ones that matter: `MONGODB_URI`, `CORS_ORIGINS`, `OPENAI_API_KEY`, `PORT`.
+ones that matter: `MONGODB_URI`, `AUTH_MODE`, `FIREBASE_SERVICE_ACCOUNT_JSON`,
+`CORS_ORIGINS`, `OPENAI_API_KEY`, `PORT`.
+
+**`AUTH_MODE` defaults to `required`**, so Firebase Admin credentials are mandatory — see
+"Authentication" under Deviations below. Set `AUTH_MODE=disabled` for solo local work without
+them.
 
 `CHATGPT_API_KEY` is accepted as an alias for `OPENAI_API_KEY` — that was the Rails name.
 
@@ -92,7 +105,8 @@ Re-running the seeder is safe: rows upsert on `(Country_Code, Gender, Type)`.
 src/
   server.ts                  process entrypoint: connect to Mongo, then listen
   app.ts                     Express app factory (CORS, JSON, routes, error handler)
-  routes.ts                  all 16 routes at their exact spec paths
+  routes.ts                  the spec's 16 routes at their exact paths, plus /weight_updates/history
+  middleware/                requireAuth (token verification), rateLimit
   config/env.ts              environment configuration
   db/mongo.ts                connection management + raw collection access
   models/                    six Mongoose models mirroring the Mongoid collections
@@ -109,8 +123,8 @@ src/
 tests/                       unit + integration suites
 ```
 
-Stack: Express 5, Mongoose 9, TypeScript (ESM), Vitest. No authentication — see
-"Security" below.
+Stack: Express 5, Mongoose 9, TypeScript (ESM), Vitest, firebase-admin for token
+verification.
 
 ### Data model
 
@@ -207,7 +221,7 @@ spec's behaviour without the data leak. Covered by tests.
 - **Central error handling** — `ApplicationController` had none (§7). Unhandled errors are
   JSON 500s, missing wrappers are 400s, malformed JSON is a 400.
 
-### 7. Not changed: authentication
+### 7. Authentication — added since (Phase 4)
 
 There still isn't any. §9.3 is right that any caller can read or write any user's data by
 guessing a `user_id`, which is a client-supplied string trusted verbatim. Changing that means
