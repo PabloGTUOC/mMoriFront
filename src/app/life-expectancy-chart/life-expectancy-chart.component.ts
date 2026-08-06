@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild } from '@angular/core';
 // Only the two D3 modules this chart uses, rather than the whole meta-package (6.6).
 import { select } from 'd3-selection';
 import { range } from 'd3-array';
@@ -15,7 +15,9 @@ interface Dot {
   selector: 'app-life-expectancy-chart',
   standalone: true,
   templateUrl: './life-expectancy-chart.component.html',
-  styleUrls: ['./life-expectancy-chart.component.scss']
+  styleUrls: ['./life-expectancy-chart.component.scss'],
+  // Redraws from ngOnChanges, not from change detection.
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LifeExpectancyChartComponent implements OnChanges {
   @Input() currentAge!: number;

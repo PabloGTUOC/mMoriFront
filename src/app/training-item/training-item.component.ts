@@ -1,5 +1,5 @@
 // src/app/training-item/training-item.component.ts
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { TrainingRepositoryEntry } from '../models';
 
 @Component({
@@ -7,6 +7,8 @@ import { TrainingRepositoryEntry } from '../models';
   standalone: true,
   templateUrl: './training-item.component.html',
   styleUrls: ['./training-item.component.scss'],
+  // Pure @Input; nothing to check beyond input changes.
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrainingItemComponent {
   @Input({ required: true }) training!: TrainingRepositoryEntry;

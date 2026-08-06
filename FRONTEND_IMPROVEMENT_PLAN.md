@@ -412,7 +412,20 @@ toggle / submit / refetch cycle plus loading and error state. Each subclass is d
 members — what to fetch, what to create, and the form — so a change to the cycle happens
 once instead of twice.
 
-**Still open: 5.5** (`OnPush` and signals).
+**5.5 done, with a stated boundary.** Twelve components run `ChangeDetectionStrategy.OnPush`.
+Where state arrives asynchronously it moved to signals first — writing a signal marks the
+view dirty, whereas assigning a field under OnPush leaves a completed request invisible.
+`CatalogueComponent` holds its state in signals, so both catalogue views inherit that safely.
+Verified in a browser rather than by unit test, since OnPush faults are runtime-only: the
+theme toggle (an OnPush component driven by a signal) flips its icon, with no page errors.
+
+The manual `cdr.detectChanges()` calls the plan set out to remove were already gone — Phase 1
+deleted them along with `MainPageComponent`'s duplicated auth state.
+
+**Not converted:** `DisplayDailyComponent`, `InputDailyComponent`, `ThoughtsComponent` and
+`FirstTimeComponent` still hold async state in plain fields and stay on default change
+detection. They are correct as they are; converting them is the same signal-first pattern
+applied to more fields.
 
 #### Original scope (~4–6 days)
 

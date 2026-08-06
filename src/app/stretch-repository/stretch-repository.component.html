@@ -1,24 +1,24 @@
 <div class="stretch-repository-container">
   <h2>Stretches</h2>
 
-  <p *ngIf="loading">Loading stretches…</p>
-  <p *ngIf="error" class="catalogue-error" role="alert">{{ error }}</p>
+  <p *ngIf="loading()">Loading stretches…</p>
+  <p *ngIf="error()" class="catalogue-error" role="alert">{{ error() }}</p>
 
-  <div *ngIf="items.length; else noStretches" class="stretch-grid">
+  <div *ngIf="items().length; else noStretches" class="stretch-grid">
     <app-stretch-item
-      *ngFor="let stretch of items; trackBy: trackById"
+      *ngFor="let stretch of items(); trackBy: trackById"
       [stretch]="stretch"
     ></app-stretch-item>
   </div>
   <ng-template #noStretches>
-    <p *ngIf="!loading">No stretches available.</p>
+    <p *ngIf="!loading()">No stretches available.</p>
   </ng-template>
 
   <button type="button" (click)="toggleAddForm()">
-    {{ showAddForm ? 'Cancel' : 'Add New Stretch' }}
+    {{ showAddForm() ? 'Cancel' : 'Add New Stretch' }}
   </button>
 
-  <form *ngIf="showAddForm" [formGroup]="form" (ngSubmit)="submit()">
+  <form *ngIf="showAddForm()" [formGroup]="form" (ngSubmit)="submit()">
     <label for="stretch_name">Stretch Name</label>
     <input id="stretch_name" formControlName="name" />
     <label for="description">Description</label>

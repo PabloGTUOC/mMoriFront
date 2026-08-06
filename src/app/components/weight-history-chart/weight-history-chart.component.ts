@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // Only the D3 modules this chart uses, rather than the whole meta-package (6.6).
 import { select, selectAll } from 'd3-selection';
@@ -46,7 +46,9 @@ import { WeightHistory } from '../../models';
       color: var(--text-secondary);
       font-style: italic;
     }
-  `]
+  `],
+  // Redraws from ngOnChanges, not from change detection.
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WeightHistoryChartComponent implements OnInit, OnChanges {
   @Input() weightData: WeightHistory[] = [];

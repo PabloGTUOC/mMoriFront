@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { Notification, NotificationService } from '../services/notification.service';
@@ -15,18 +15,19 @@ import { Notification, NotificationService } from '../services/notification.serv
 @Component({
   selector: 'app-notification',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div
-      *ngIf="notification"
+      *ngIf="notification() as toast"
       class="toast"
-      [class.toast-success]="notification.type === 'success'"
-      [class.toast-error]="notification.type === 'error'"
-      [class.toast-warning]="notification.type === 'warning'"
-      [class.toast-info]="notification.type === 'info'"
+      [class.toast-success]="toast.type === 'success'"
+      [class.toast-error]="toast.type === 'error'"
+      [class.toast-warning]="toast.type === 'warning'"
+      [class.toast-info]="toast.type === 'info'"
       role="alert"
     >
-      <span class="toast-message">{{ notification.message }}</span>
+      <span class="toast-message">{{ toast.message }}</span>
       <button type="button" class="toast-close" aria-label="Dismiss" (click)="dismiss()">
         &times;
       </button>
@@ -75,13 +76,13 @@ import { Notification, NotificationService } from '../services/notification.serv
   ],
 })
 export class NotificationComponent implements OnDestroy {
-  notification: Notification | null = null;
+  readonly notification = signal<Notification | null>(null);
 
   private readonly subscription: Subscription;
 
   constructor(private notifications: NotificationService) {
     this.subscription = this.notifications.notification$.subscribe(
-      (notification) => (this.notification = notification)
+      (notification) => this.notification.set(notification)
     );
   }
 

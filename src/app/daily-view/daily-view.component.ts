@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { DisplayDailyComponent } from '../display-daily/display-daily.component';
 import { InputDailyComponent } from '../input-daily/input-daily.component';
 
@@ -16,5 +16,7 @@ import { InputDailyComponent } from '../input-daily/input-daily.component';
     <app-display-daily></app-display-daily>
     <app-input-daily></app-input-daily>
   `,
+  // Static composition of two components.
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DailyViewComponent {}

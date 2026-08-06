@@ -8,8 +8,8 @@
       <h1>GoToTheF***gGym</h1>
       <h2>MememtoMori</h2>
     </div>
-    <button class="theme-toggle" (click)="toggleTheme()" [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'">
-      <span class="theme-icon">{{ isDarkMode ? '☀️' : '🌙' }}</span>
+    <button class="theme-toggle" (click)="toggleTheme()" [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'">
+      <span class="theme-icon">{{ isDarkMode() ? '☀️' : '🌙' }}</span>
     </button>
   </div>
 </header>

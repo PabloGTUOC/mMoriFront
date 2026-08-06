@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -14,6 +14,8 @@ import { TrainingRepositoryEntry, TrainingRepositoryPayload } from '../models';
 @Component({
   selector: 'app-training-repository',
   standalone: true,
+  // State lives in signals on CatalogueComponent, so OnPush is safe here.
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './training-repository.component.html',
   styleUrls: ['./training-repository.component.scss'],
   imports: [CommonModule, TrainingItemComponent, ReactiveFormsModule],

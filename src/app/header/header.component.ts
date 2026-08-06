@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../services/theme.service';
 
@@ -8,13 +8,14 @@ import { ThemeService } from '../services/theme.service';
   imports: [CommonModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent {
-  isDarkMode = false;
+  readonly isDarkMode = signal(false);
 
   constructor(public themeService: ThemeService) {
     this.themeService.darkMode$.subscribe(darkMode => {
-      this.isDarkMode = darkMode;
+      this.isDarkMode.set(darkMode);
     });
   }
 

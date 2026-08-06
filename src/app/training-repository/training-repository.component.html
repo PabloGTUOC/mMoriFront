@@ -1,24 +1,24 @@
 <div class="training-repository-container">
   <h2>Training Repository</h2>
 
-  <p *ngIf="loading">Loading trainings…</p>
-  <p *ngIf="error" class="catalogue-error" role="alert">{{ error }}</p>
+  <p *ngIf="loading()">Loading trainings…</p>
+  <p *ngIf="error()" class="catalogue-error" role="alert">{{ error() }}</p>
 
-  <div *ngIf="items.length; else noTrainings" class="training-grid">
+  <div *ngIf="items().length; else noTrainings" class="training-grid">
     <app-training-item
-      *ngFor="let training of items; trackBy: trackById"
+      *ngFor="let training of items(); trackBy: trackById"
       [training]="training"
     ></app-training-item>
   </div>
   <ng-template #noTrainings>
-    <p *ngIf="!loading">No trainings available.</p>
+    <p *ngIf="!loading()">No trainings available.</p>
   </ng-template>
 
   <button type="button" (click)="toggleAddForm()">
-    {{ showAddForm ? 'Cancel' : 'Add New Training' }}
+    {{ showAddForm() ? 'Cancel' : 'Add New Training' }}
   </button>
 
-  <form *ngIf="showAddForm" [formGroup]="form" (ngSubmit)="submit()">
+  <form *ngIf="showAddForm()" [formGroup]="form" (ngSubmit)="submit()">
     <label for="trainingName">Training Name:</label>
     <input type="text" id="trainingName" formControlName="name" required>
 

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -12,10 +12,11 @@ import { UserService } from '../services/user.service';
   imports: [CommonModule],
   templateUrl: './log-in.component.html',
   styleUrl: './log-in.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogInComponent implements OnInit, OnDestroy {
-  signingIn = false;
-  errorMessage: string | null = null;
+  readonly signingIn = signal(false);
+  readonly errorMessage = signal<string | null>(null);
 
   private readonly subscriptions = new Subscription();
 
@@ -41,7 +42,7 @@ export class LogInComponent implements OnInit, OnDestroy {
           take(1)
         )
         .subscribe((session) => {
-          this.signingIn = false;
+          this.signingIn.set(false);
           void this.router.navigateByUrl(session.isNew ? '/first-time' : this.returnUrl());
         })
     );
@@ -52,21 +53,21 @@ export class LogInComponent implements OnInit, OnDestroy {
   }
 
   signInwithGoogle(): void {
-    this.signingIn = true;
-    this.errorMessage = null;
+    this.signingIn.set(true);
+    this.errorMessage.set(null);
 
     this.authService
       .googleSignIn()
       .then((result) => {
         // A popup the user closes resolves without a credential; nothing to report.
         if (!result?.user) {
-          this.signingIn = false;
+          this.signingIn.set(false);
         }
       })
       .catch((error) => {
         console.error('Sign in with Google failed', error);
-        this.signingIn = false;
-        this.errorMessage = 'Sign in failed. Please try again.';
+        this.signingIn.set(false);
+        this.errorMessage.set('Sign in failed. Please try again.');
       });
   }
 

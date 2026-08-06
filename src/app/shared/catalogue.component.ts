@@ -1,4 +1,4 @@
-import { Directive, OnInit } from '@angular/core';
+import { Directive, OnInit, signal } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
 
@@ -20,11 +20,16 @@ import { Observable } from 'rxjs';
  */
 @Directive()
 export abstract class CatalogueComponent<TItem, TPayload> implements OnInit {
-  items: TItem[] = [];
-  loading = false;
+  /**
+   * Signals rather than plain fields, so subclasses can run OnPush (5.5): writing to a
+   * signal marks the view dirty, where assigning a field under OnPush would leave a
+   * completed request invisible on screen.
+   */
+  readonly items = signal<TItem[]>([]);
+  readonly loading = signal(false);
   /** Surfaced in the template so a failed fetch is visible instead of console-only. */
-  error: string | null = null;
-  showAddForm = false;
+  readonly error = signal<string | null>(null);
+  readonly showAddForm = signal(false);
   form!: FormGroup;
 
   /** Fetches the catalogue. The service unwraps the envelope, so this is a plain array. */
@@ -44,25 +49,25 @@ export abstract class CatalogueComponent<TItem, TPayload> implements OnInit {
   }
 
   load(): void {
-    this.loading = true;
-    this.error = null;
+    this.loading.set(true);
+    this.error.set(null);
 
     this.fetch().subscribe({
       next: (items) => {
-        this.items = items;
-        this.loading = false;
+        this.items.set(items);
+        this.loading.set(false);
       },
       error: (error) => {
         console.error(`Error fetching ${this.itemLabel}`, error);
-        this.error = `Could not load ${this.itemLabel}. Please try again.`;
-        this.loading = false;
+        this.error.set(`Could not load ${this.itemLabel}. Please try again.`);
+        this.loading.set(false);
       },
     });
   }
 
   toggleAddForm(): void {
-    this.showAddForm = !this.showAddForm;
-    if (!this.showAddForm) this.form.reset();
+    this.showAddForm.update((open) => !open);
+    if (!this.showAddForm()) this.form.reset();
   }
 
   submit(): void {
@@ -70,13 +75,13 @@ export abstract class CatalogueComponent<TItem, TPayload> implements OnInit {
 
     this.create(this.form.value as TPayload).subscribe({
       next: () => {
-        this.showAddForm = false;
+        this.showAddForm.set(false);
         this.form.reset();
         this.load();
       },
       error: (error) => {
         console.error(`Error adding ${this.itemLabel}`, error);
-        this.error = `Could not save. Please check the form and try again.`;
+        this.error.set('Could not save. Please check the form and try again.');
       },
     });
   }

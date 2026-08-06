@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavigationMenuComponent } from '../navigation-menu/navigation-menu.component';
 
@@ -15,5 +15,7 @@ import { NavigationMenuComponent } from '../navigation-menu/navigation-menu.comp
   imports: [RouterOutlet, NavigationMenuComponent],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
+  // A shell around a router outlet; holds no state.
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainPageComponent {}

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Stretch } from '../models';
@@ -9,7 +9,9 @@ import { extractYouTubeVideoId, youTubeEmbedUrl } from '../shared/youtube';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './stretch-item.component.html',
-  styleUrl: './stretch-item.component.scss'
+  styleUrl: './stretch-item.component.scss',
+  // Pure @Input; nothing to check beyond input changes.
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StretchItemComponent {
   @Input({ required: true }) stretch!: Stretch;

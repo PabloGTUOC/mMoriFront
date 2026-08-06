@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, ViewEncapsulation, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpProgressState, HttpStateService, IHttpState } from "../interceptor/http-state.service";
 
@@ -8,7 +8,7 @@ import { HttpProgressState, HttpStateService, IHttpState } from "../interceptor/
   selector: "app-spinner",
   standalone: true,
   imports: [CommonModule],
-  template: `<div class="preloader loading" *ngIf="isSpinnerVisible">
+  template: `<div class="preloader loading" *ngIf="isSpinnerVisible()">
     <div class="spinner">
       <div class="sand-watch">
         <div class="hourglass-top"></div>
@@ -25,10 +25,11 @@ import { HttpProgressState, HttpStateService, IHttpState } from "../interceptor/
     </div>
   </div>`,
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ["./spinner.component.scss"],
 })
 export class SpinnerComponent implements OnDestroy {
-  public isSpinnerVisible = false;
+  public readonly isSpinnerVisible = signal(false);
 
   @Input() public backgroundColor = "rgba(0, 115, 170, 0.69)";
 
@@ -38,14 +39,14 @@ export class SpinnerComponent implements OnDestroy {
 
     this.httpStateService.state.subscribe((progress: IHttpState) => {
      if (progress && progress.state === HttpProgressState.end) {
-        this.isSpinnerVisible = false;
+        this.isSpinnerVisible.set(false);
       }else if (progress && progress.state === HttpProgressState.start){
-        this.isSpinnerVisible = true;
+        this.isSpinnerVisible.set(true);
       }
     });
   }
 
   ngOnDestroy(): void {
-    this.isSpinnerVisible = false;
+    this.isSpinnerVisible.set(false);
   }
 }

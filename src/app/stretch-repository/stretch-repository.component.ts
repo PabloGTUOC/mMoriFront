@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -17,6 +17,8 @@ import { Stretch, StretchPayload } from '../models';
 @Component({
   selector: 'app-stretch-repository',
   standalone: true,
+  // State lives in signals on CatalogueComponent, so OnPush is safe here.
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './stretch-repository.component.html',
   styleUrl: './stretch-repository.component.scss',
   imports: [CommonModule, StretchItemComponent, ReactiveFormsModule],
