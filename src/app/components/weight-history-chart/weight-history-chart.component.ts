@@ -1,6 +1,11 @@
 import { Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import * as d3 from 'd3';
+// Only the D3 modules this chart uses, rather than the whole meta-package (6.6).
+import { select, selectAll } from 'd3-selection';
+import { extent, max, min } from 'd3-array';
+import { scaleLinear, scaleTime } from 'd3-scale';
+import { curveMonotoneX, line as d3Line } from 'd3-shape';
+import { axisBottom, axisLeft } from 'd3-axis';
 import { WeightHistory } from '../../models';
 
 @Component({
@@ -71,10 +76,10 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
     this.width = element.offsetWidth - this.margin.left - this.margin.right;
 
     // Clear any existing chart
-    d3.select(element).selectAll('*').remove();
+    select(element).selectAll('*').remove();
 
     // Create SVG
-    this.svg = d3.select(element)
+    this.svg = select(element)
       .append('svg')
       .attr('width', this.width + this.margin.left + this.margin.right)
       .attr('height', this.height + this.margin.top + this.margin.bottom)
@@ -96,22 +101,22 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
     }));
 
     // Create scales
-    const x = d3.scaleTime()
-      .domain(d3.extent(data, d => d.date) as [Date, Date])
+    const x = scaleTime()
+      .domain(extent(data, d => d.date) as [Date, Date])
       .range([0, this.width]);
 
-    const y = d3.scaleLinear()
+    const y = scaleLinear()
       .domain([
-        d3.min(data, d => d.weight)! * 0.95,
-        d3.max(data, d => d.weight)! * 1.05
+        min(data, d => d.weight)! * 0.95,
+        max(data, d => d.weight)! * 1.05
       ])
       .range([this.height, 0]);
 
     // Create line generator
-    const line = d3.line<{date: Date, weight: number}>()
+    const line = d3Line<{date: Date, weight: number}>()
       .x(d => x(d.date))
       .y(d => y(d.weight))
-      .curve(d3.curveMonotoneX);
+      .curve(curveMonotoneX);
 
     // Clear previous content
     this.svg.selectAll('*').remove();
@@ -120,7 +125,7 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
     this.svg.append('g')
       .attr('class', 'grid')
       .attr('opacity', 0.1)
-      .call(d3.axisLeft(y)
+      .call(axisLeft(y)
         .tickSize(-this.width)
         .tickFormat(() => '')
       );
@@ -146,7 +151,7 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       .attr('stroke', 'var(--card-background)')
       .attr('stroke-width', 2)
       .on('mouseover', (event: any, d: any) => {
-        d3.select(event.currentTarget)
+        select(event.currentTarget)
           .attr('r', 8)
           .attr('fill', 'var(--primary-light)');
 
@@ -154,7 +159,7 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
         this.showTooltip(event, d);
       })
       .on('mouseout', (event: any) => {
-        d3.select(event.currentTarget)
+        select(event.currentTarget)
           .attr('r', 5)
           .attr('fill', 'var(--primary-color)');
 
@@ -164,12 +169,12 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
     // Add X axis
     this.svg.append('g')
       .attr('transform', `translate(0,${this.height})`)
-      .call(d3.axisBottom(x).ticks(5))
+      .call(axisBottom(x).ticks(5))
       .attr('color', 'var(--text-secondary)');
 
     // Add Y axis
     this.svg.append('g')
-      .call(d3.axisLeft(y).ticks(5))
+      .call(axisLeft(y).ticks(5))
       .attr('color', 'var(--text-secondary)');
 
     // Add axis labels
@@ -190,7 +195,7 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
   }
 
   private showTooltip(event: any, d: any): void {
-    const tooltip = d3.select('body')
+    const tooltip = select('body')
       .append('div')
       .attr('class', 'weight-tooltip')
       .style('position', 'absolute')
@@ -211,6 +216,6 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
   }
 
   private hideTooltip(): void {
-    d3.selectAll('.weight-tooltip').remove();
+    selectAll('.weight-tooltip').remove();
   }
 }

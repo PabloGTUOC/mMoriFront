@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
-import { UserService } from "../services/user.service";
+import { UserService } from '../services/user.service';
+import { NotificationService } from '../services/notification.service';
 import { UserDataService } from "../services/user-data.service";
 import { forkJoin } from "rxjs";
 import { TrainingRepositoryService } from "../services/training-repository.service";
@@ -26,7 +27,8 @@ export class InputDailyComponent implements OnInit {
   constructor(private fb: FormBuilder,
     private userDataService: UserDataService,
     private userService: UserService,
-    private trainingRepositoryService: TrainingRepositoryService) { }
+    private trainingRepositoryService: TrainingRepositoryService,
+    private notifications: NotificationService) { }
 
   ngOnInit(): void {
     this.userService.userId$.subscribe(userId => {
@@ -72,8 +74,15 @@ export class InputDailyComponent implements OnInit {
         this.userDataService.submitTrainingData(training_data),
         this.userDataService.submitWeightUpdate(weight_data)
       ]).subscribe({
-        next: () => this.userService.triggerRefresh(),
-        error: (error) => console.error('Error submitting data', error),
+        next: () => {
+          this.notifications.success('Logged for today.');
+          this.dailyForm.reset();
+          this.userService.triggerRefresh();
+        },
+        error: (error) => {
+          console.error('Error submitting data', error);
+          this.notifications.error('Could not save today\'s entry. Please try again.');
+        },
       });
     } else {
       console.warn('Form is invalid or the user is not signed in');

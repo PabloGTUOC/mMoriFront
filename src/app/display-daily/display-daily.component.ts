@@ -29,6 +29,9 @@ export class DisplayDailyComponent implements OnInit {
   weeksGone: number = 0;
   isChartVisible: boolean = false;
   weightHistory: WeightHistory[] = [];
+  loading = false;
+  error: string | null = null;
+  hasProfile = true;
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -54,6 +57,8 @@ export class DisplayDailyComponent implements OnInit {
   }
 
   private loadDashboard(): void {
+    this.loading = true;
+    this.error = null;
     this.userService.userId$
       .pipe(
         filter((userId): userId is string => userId !== null),
@@ -71,7 +76,9 @@ export class DisplayDailyComponent implements OnInit {
       .subscribe({
         next: (response: any) => {
           const { userData, trainingStats, latestWeight, weightHistory } = response;
+          this.loading = false;
           this.weightHistory = weightHistory;
+          this.hasProfile = !!userData.success;
           if (userData.success) {
             this.updateFields(
               userData.user_data,
@@ -83,7 +90,11 @@ export class DisplayDailyComponent implements OnInit {
             console.warn('No user data found');
           }
         },
-        error: (error: any) => console.error('Error loading dashboard', error),
+        error: (error: any) => {
+          console.error('Error loading dashboard', error);
+          this.loading = false;
+          this.error = 'Could not load your dashboard. Please try again.';
+        },
       });
   }
 

@@ -12,6 +12,17 @@
           </select>
         <label for="weightInput">Current Weight (kg):</label>
         <input type="number" id="weightInput" class="weightInput" formControlName="weight" required min="0">
+      <p
+        *ngIf="dailyForm.get('training')?.touched && dailyForm.get('training')?.invalid"
+        class="field-error"
+        role="alert"
+      >Pick the training you did today.</p>
+      <p
+        *ngIf="dailyForm.get('weight')?.touched && dailyForm.get('weight')?.invalid"
+        class="field-error"
+        role="alert"
+      >Enter your current weight in kilograms.</p>
+
       <button type="submit" [disabled]="dailyForm.invalid">Submit</button>
     </div>
   </form>

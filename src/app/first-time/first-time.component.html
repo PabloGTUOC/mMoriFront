@@ -3,14 +3,12 @@
   <input type="date" id="dob" formControlName="dob" required>
 
   <label for="gender">Gender:</label>
-  <mat-form-field appearance="fill">
-    <mat-label>Gender</mat-label>
-    <mat-select id="gender" formControlName="gender" required>
-      <mat-option value="male">Male</mat-option>
-      <mat-option value="female">Female</mat-option>
-      <mat-option value="other">Other</mat-option>
-    </mat-select>
-  </mat-form-field>
+  <select id="gender" formControlName="gender" required>
+    <option value="" disabled>Select gender</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+    <option value="other">Other</option>
+  </select>
 
   <label for="height">Height (cm):</label>
   <input type="number" id="height" formControlName="height" required>
@@ -28,14 +26,13 @@
   <input type="checkbox" id="drinker" formControlName="drinker">
 
   <label for="country">Country:</label>
-  <mat-form-field appearance="fill">
-    <mat-label>Country</mat-label>
-    <mat-select id="country" formControlName="country_code" required>
-      <mat-option *ngFor="let country of countries" [value]="country.Country_Code">
-        {{ country.Country }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+  <select id="country" formControlName="country_code" required>
+    <option value="" disabled>Select country</option>
+    <option
+      *ngFor="let country of countries; trackBy: trackByCountryCode"
+      [value]="country.Country_Code"
+    >{{ country.Country }}</option>
+  </select>
 
   <button type="submit" [disabled]="userForm.invalid">Submit</button>
 </form>

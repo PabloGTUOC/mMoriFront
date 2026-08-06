@@ -429,7 +429,7 @@ The largest phase, and the most optional. Do it if the app is going to keep grow
 
 ### Phase 6 — Make the promised features real — 🟡 **PARTLY DONE**
 
-**Done: 6.1, 6.2, 6.3, 6.4, 6.7.**
+**Phase 6 complete.**
 
 - **6.3** The weight chart renders. It was a complete component with no data source — the
   API only exposed `latest_weight` — so `GET /weight_updates/history` was added (additive;
@@ -449,9 +449,19 @@ The largest phase, and the most optional. Do it if the app is going to keep grow
   in both themes: the neon glow only reads against a dark backdrop, and they are the app's
   signature.
 
-**Still open: 6.5** (per-view empty/loading/error states beyond the catalogues, plus
-form validation messages), **6.6** (bundle: tree-shake D3, modular Firebase, drop one of the
-two CSS frameworks).
+- **6.5** The dashboard has loading, error and no-profile states; the daily form explains
+  which field is missing instead of only disabling its button, and reports success or
+  failure through the toast from 6.2.
+- **6.6** Initial bundle **926.68 kB → 571.65 kB** across Phase 5 and 6. Bootstrap was a
+  phantom dependency — declared, never imported, not in the build — and is gone. Angular
+  Material was carried entirely for two `<select>`s on the signup form; those are now native
+  controls, which dropped the 73 kB prebuilt theme (styles: 72.97 kB → 3.28 kB). D3 is
+  imported per module rather than as the meta-package. The budget is re-ratcheted to
+  620 kB warn / 750 kB error.
+
+**Not done from 6.6:** moving Firebase off the `compat` layer. It touches auth, the session
+service and the interceptor at once, and the modular SDK's saving is smaller than the two
+above — a deliberate stop, not an oversight.
 
 #### Original scope (~3–5 days)
 

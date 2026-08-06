@@ -58,3 +58,14 @@ form button:active {
   transform: translateY(2px);
 }
 
+
+/* Native <select> replaced the Material controls; match the existing field styling. */
+select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid var(--input-border);
+  background: var(--panel-bg);
+  color: var(--panel-text);
+}

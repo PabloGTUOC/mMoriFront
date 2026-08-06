@@ -6,7 +6,6 @@ import {
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideServiceWorker } from '@angular/service-worker';
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
 
@@ -49,7 +48,6 @@ export const appConfig: ApplicationConfig = {
       multi: true,
     },
 
-    provideAnimationsAsync(),
 
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

@@ -94,3 +94,10 @@ button:disabled {
     padding: 12px 24px; /* Increase padding for better touch targets */
   }
 }
+
+/* Buttons used to just sit disabled with no explanation of what was missing (6.5). */
+.field-error {
+  margin: 4px 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+}

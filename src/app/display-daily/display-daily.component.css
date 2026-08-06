@@ -105,3 +105,14 @@
   cursor: pointer;
   color: inherit;
 }
+
+.dashboard-status {
+  max-width: 1400px;
+  width: 80%;
+  margin: 16px auto;
+  text-align: center;
+  color: var(--panel-text);
+}
+.dashboard-error {
+  color: var(--accent);
+}

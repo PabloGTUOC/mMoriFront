@@ -3,11 +3,7 @@ import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/
 import { UserDataService} from "../services/user-data.service";
 import { UserService} from "../services/user.service";
 import { Router} from "@angular/router";
-import { MatFormFieldModule} from "@angular/material/form-field";
-import { MatSelectModule} from "@angular/material/select";
 import { CommonModule } from '@angular/common';  // Import CommonModule here
-import { MatInputModule } from '@angular/material/input';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { UserDataPayload } from '../models';
 
 @Component({
@@ -17,10 +13,6 @@ import { UserDataPayload } from '../models';
   styleUrls: ['./first-time.component.css'],
   imports: [
     ReactiveFormsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatInputModule,
-    MatCheckboxModule,
     CommonModule
   ],
   providers: [UserDataService]
@@ -260,4 +252,9 @@ export class FirstTimeComponent implements OnInit {
           });
       }
     }
+
+  /** The country list is static; track by its code rather than by index. */
+  trackByCountryCode(_index: number, country: { Country_Code: string }): string {
+    return country.Country_Code;
+  }
 }

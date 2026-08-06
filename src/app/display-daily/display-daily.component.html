@@ -1,3 +1,11 @@
+<!-- Per-view states (6.5): a failed or empty load used to leave stale zeroes on screen
+     with the only explanation in the console. -->
+<p *ngIf="loading" class="dashboard-status">Loading your dashboard…</p>
+<p *ngIf="error" class="dashboard-status dashboard-error" role="alert">{{ error }}</p>
+<p *ngIf="!loading && !error && !hasProfile" class="dashboard-status">
+  No profile data yet — log a weight and a training to get started.
+</p>
+
 <div class="info-block">
   <div>
     <h3>Age</h3>

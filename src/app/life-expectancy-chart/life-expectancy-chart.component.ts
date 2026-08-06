@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild } from '@angular/core';
-import * as d3 from 'd3';
+// Only the two D3 modules this chart uses, rather than the whole meta-package (6.6).
+import { select } from 'd3-selection';
+import { range } from 'd3-array';
 import { HostListener} from "@angular/core";
 
 interface Dot {
@@ -45,7 +47,7 @@ export class LifeExpectancyChartComponent implements OnChanges {
     const weeksLived = this.currentAge * 52;
 
     // Clear any previous SVGs
-    d3.select(this.chartContainer.nativeElement).select('svg').remove();
+    select(this.chartContainer.nativeElement).select('svg').remove();
 
     const element = this.chartContainer.nativeElement;
     const width = element.offsetWidth - 10;
@@ -60,13 +62,13 @@ export class LifeExpectancyChartComponent implements OnChanges {
     const actualWidth = numCols * dotSpacing + dotRadius * 2;
     const height = numRows * dotSpacing + dotRadius * 2;
 
-    this.svg = d3.select(element).append('svg')
+    this.svg = select(element).append('svg')
       .attr('width', actualWidth)
       .attr('height', height)
       .append('g')
       .attr('transform', `translate(${dotRadius}, ${dotRadius})`);
 
-    const dots: Dot[] = d3.range(totalWeeks).map((_, i) => {
+    const dots: Dot[] = range(totalWeeks).map((_, i) => {
       return {
         index: i,
         lived: i < weeksLived,
