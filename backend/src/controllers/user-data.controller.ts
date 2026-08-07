@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
 import { UserData } from '../models/user-data.model.js';
 import {
-  adjustLifeExpectancy,
   calculateAge,
   explainLifeExpectancy,
   fetchBaseLifeExpectancy,
@@ -95,7 +94,18 @@ export async function showUserData(req: Request, res: Response): Promise<Respons
 
   const baseLifeExpectancy = await fetchBaseLifeExpectancy(userData);
   const latestWeight = userId ? await fetchLatestWeight(userId) : null;
-  const adjustedLifeExpectancy = adjustLifeExpectancy(
+
+  /*
+   * Itemised as well as totalled.
+   *
+   * The dashboard shows what your life expectancy *is*; the breakdown shows what is holding
+   * it there. That matters because the figure moves: the BMI term is computed from the most
+   * recent weigh-in rather than the weight given at signup, so it changes as you do.
+   *
+   * Same `explainLifeExpectancy` the onboarding preview uses, so the working the user saw
+   * while signing up and the working they see afterwards cannot disagree.
+   */
+  const { adjusted: adjustedLifeExpectancy, steps } = explainLifeExpectancy(
     baseLifeExpectancy,
     userData,
     latestWeight
@@ -106,6 +116,7 @@ export async function showUserData(req: Request, res: Response): Promise<Respons
     user_data: serializeDocument(userData),
     base_life_expectancy: baseLifeExpectancy,
     adjusted_life_expectancy: adjustedLifeExpectancy,
+    steps,
   });
 }
 

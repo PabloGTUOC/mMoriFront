@@ -16,6 +16,7 @@ import { filter, switchMap, take } from 'rxjs/operators';
 import { LifeExpectancyChartComponent } from '../life-expectancy-chart/life-expectancy-chart.component';
 import { WeightHistoryChartComponent } from '../components/weight-history-chart/weight-history-chart.component';
 import {
+  AdjustmentStep,
   TrainingStatsResponse,
   UserData,
   WeightHistory,
@@ -56,6 +57,17 @@ export class DisplayDailyComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly hasProfile = signal(true);
+
+  /**
+   * What is holding the life expectancy where it is.
+   *
+   * The weeks figure says how much is left; this says why. It is not static — the BMI term
+   * is computed from the most recent weigh-in rather than the weight given at signup, so it
+   * moves as the user does.
+   */
+  readonly baseLifeExpectancy = signal(0);
+  readonly adjustedLifeExpectancy = signal(0);
+  readonly adjustmentSteps = signal<AdjustmentStep[]>([]);
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -106,6 +118,10 @@ export class DisplayDailyComponent implements OnInit {
           this.hasProfile.set(!!userData.success);
           // `user_data` is optional on the response even when `success` is true, so it is
           // checked here rather than asserted — see UserDataResponse.
+          this.baseLifeExpectancy.set(userData.base_life_expectancy ?? 0);
+          this.adjustedLifeExpectancy.set(userData.adjusted_life_expectancy ?? 0);
+          this.adjustmentSteps.set(userData.steps ?? []);
+
           if (userData.success && userData.user_data) {
             this.updateFields(
               userData.user_data,
@@ -152,6 +168,30 @@ export class DisplayDailyComponent implements OnInit {
       )
     );
     this.weeksGone.set(this.metrics.calculateWeeksGone(age));
+  }
+
+  /** Plain-language labels for the adjustment the backend itemises. */
+  stepLabel(step: AdjustmentStep): string {
+    switch (step.key) {
+      case 'smoking':
+        return 'Smoking';
+      case 'drinking':
+        return 'Drinking';
+      case 'bmi':
+        return 'Height and weight';
+      case 'training':
+        return 'Training frequency';
+    }
+  }
+
+  /** The sign carries the meaning, so it is never hidden. */
+  stepValue(step: AdjustmentStep): string {
+    if (step.years === 0) return 'no change';
+    return `${step.years > 0 ? '+' : ''}${step.years} years`;
+  }
+
+  trackByStep(_index: number, step: AdjustmentStep): string {
+    return step.key;
   }
 
   toggleLifeExpectancyChart() {

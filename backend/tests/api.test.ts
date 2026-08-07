@@ -150,6 +150,14 @@ describe.skipIf(mongo === null)('API integration', () => {
       expect(response.body.base_life_expectancy).toBe(83.2);
       // 83.2, drinker -4, BMI 24.07 → 0, trains 3x → +6.
       expect(response.body.adjusted_life_expectancy).toBeCloseTo(85.2, 6);
+
+      // Itemised too, so the dashboard can show what is holding the figure there.
+      expect(response.body.steps).toEqual([
+        { key: 'smoking', years: 0 },
+        { key: 'drinking', years: -4 },
+        { key: 'bmi', years: 0 },
+        { key: 'training', years: 6 },
+      ]);
     });
 
     it('prefers the latest weigh-in over the profile weight', async () => {
@@ -165,6 +173,8 @@ describe.skipIf(mongo === null)('API integration', () => {
 
       // BMI at 95kg is 29.32 → -3 instead of 0, so 3 years lower than the case above.
       expect(response.body.adjusted_life_expectancy).toBeCloseTo(82.2, 6);
+      // The breakdown moves with it — this is the term that changes as the user does.
+      expect(response.body.steps).toContainEqual({ key: 'bmi', years: -3 });
     });
 
     it('returns base 0 when the life_expectancy collection has no matching row', async () => {

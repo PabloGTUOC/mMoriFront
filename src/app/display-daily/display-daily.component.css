@@ -112,7 +112,7 @@
 .life {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
+  align-items: start;
   gap: var(--sp-6);
   max-width: var(--app-column-max);
   width: var(--app-column);
@@ -176,8 +176,70 @@
   text-shadow: 0 0 16px var(--accent-bright);
 }
 
-.life-expand {
+/*
+ * The working, between the figures and the grid.
+ *
+ * Quieter than either: it explains the anchor rather than competing with it, so it takes
+ * body size and inherits the sky's ink instead of the accent.
+ */
+.life-working {
+  width: 100%;
+  max-width: 34ch;
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-4) 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.life-term {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+.life-term dt {
+  font: var(--type-label);
+  font-weight: 400;
+  color: var(--on-sky-text);
+  opacity: 0.8;
+}
+
+.life-term dd {
+  margin: 0;
+  font: var(--type-label);
+  font-weight: 400;
+  color: var(--on-sky-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.life-term--total {
   margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.life-term--total dt,
+.life-term--total dd {
+  opacity: 1;
+  font-weight: 700;
+}
+
+/* The text already reads "+6 years" or "-10 years"; colour only reinforces it, so nobody
+   has to tell these apart to read the figure. */
+.life-term dd.is-penalty {
+  color: var(--md-p-80);
+}
+
+.life-term dd.is-bonus {
+  color: var(--md-s-80);
+}
+
+.life-expand {
+  margin-top: var(--sp-4);
   padding: var(--sp-2) var(--sp-4);
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--r-full);
@@ -210,6 +272,12 @@
     gap: var(--sp-5);
     justify-items: center;
     text-align: center;
+  }
+
+  /* Stacked, the reading order is already weeks, working, dots — keep the working
+     left-aligned so the two columns of terms stay scannable. */
+  .life-working {
+    text-align: left;
   }
 
   .life-figures {

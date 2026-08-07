@@ -28,6 +28,12 @@ export interface UserData {
 /** `user_id` is omitted too: the server takes it from the verified token (4.1.6). */
 export type UserDataPayload = Omit<UserData, '_id' | 'user_id' | 'created_at' | 'updated_at'>;
 
+/** One term of the life-expectancy adjustment, in years. */
+export interface AdjustmentStep {
+  key: 'smoking' | 'drinking' | 'bmi' | 'training';
+  years: number;
+}
+
 /**
  * `GET /user_data/user_data`.
  *
@@ -39,13 +45,12 @@ export interface UserDataResponse {
   user_data?: UserData;
   base_life_expectancy?: number;
   adjusted_life_expectancy?: number;
+  /**
+   * The adjustment itemised, so the dashboard can show what is holding the figure where it
+   * is rather than only the total. Same shape the onboarding preview renders.
+   */
+  steps?: AdjustmentStep[];
   message?: string;
-}
-
-/** One term of the life-expectancy adjustment, in years. */
-export interface AdjustmentStep {
-  key: 'smoking' | 'drinking' | 'bmi' | 'training';
-  years: number;
 }
 
 /**
