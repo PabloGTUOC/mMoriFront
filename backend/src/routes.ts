@@ -4,6 +4,7 @@ import { createUserData, showUserData } from './controllers/user-data.controller
 import {
   allTrainings,
   createTraining,
+  deleteTraining,
   createTrainingRepositoryEntry,
   initialTrainings,
   latestTrainings,
@@ -12,17 +13,18 @@ import {
 } from './controllers/trainings.controller.js';
 import {
   createWeightUpdate,
+  deleteWeightUpdate,
   latestWeight,
   weightHistory,
 } from './controllers/weight-updates.controller.js';
 import { createStretch, listStretches } from './controllers/stretches.controller.js';
-import { generateRecommendation, saveMood } from './controllers/moods.controller.js';
+import { generateRecommendation, moodHistory, saveMood } from './controllers/moods.controller.js';
 import { requireAuth } from './middleware/require-auth.js';
 import { rateLimit } from './middleware/rate-limit.js';
 import { env } from './config/env.js';
 
 /**
- * All 16 routes from BACKEND_SPEC §4, at their exact paths.
+ * The spec's 16 routes at their exact paths, plus four additions marked below.
  *
  * The awkward ones are deliberate and must not be "tidied":
  *   - `/user_data/user_data` is the real read path — `/user_data` is the create.
@@ -61,6 +63,8 @@ router.get('/trainings/latest-trainings', latestTrainings);
 router.get('/trainings/initial-trainings', initialTrainings);
 router.get('/trainings/all-trainings', allTrainings);
 router.get('/trainings/training-stats', trainingStats);
+// Additive: nothing in the spec could be undone. See the controller.
+router.delete('/trainings/:id', deleteTraining);
 
 // Training catalogue
 router.get('/training-repository', listTrainingRepository);
@@ -70,6 +74,7 @@ router.post('/training-repository', createTrainingRepositoryEntry);
 router.post('/weight_updates', createWeightUpdate);
 router.get('/weight_updates/latest_weight', latestWeight);
 router.get('/weight_updates/history', weightHistory);
+router.delete('/weight_updates/:id', deleteWeightUpdate);
 
 // Stretch catalogue
 router.get('/stretches', listStretches);
@@ -77,6 +82,8 @@ router.post('/stretches', createStretch);
 
 // Mood + AI recommendation
 router.post('/moods', saveMood);
+// Additive: POST /moods had no counterpart, so mood was write-only.
+router.get('/moods', moodHistory);
 // The only endpoint that spends money per call, so it is the only one that is throttled.
 // `requireAuth` runs first, so the limiter can key on the verified uid rather than an IP.
 router.post(

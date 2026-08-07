@@ -17,7 +17,8 @@ import {
   toNumberOrUndefined,
   toStringOrUndefined,
 } from '../lib/params.js';
-import { documentId, toDateOnly } from '../lib/serialize.js';
+import { documentId, oid, toDateOnly } from '../lib/serialize.js';
+import { ownedLookup } from '../lib/owned.js';
 import { logger } from '../lib/logger.js';
 
 /**
@@ -111,8 +112,36 @@ export async function weightHistory(req: Request, res: Response): Promise<Respon
 
   return ok(res, {
     success: true,
+    // `_id` is included so a weigh-in can be deleted from the history screen. Without an
+    // identifier the series is readable but not correctable, which is how a stray point
+    // ended up distorting the chart with no way to remove it.
     data: updates
       .filter((update) => update.date && typeof update.weight === 'number')
-      .map((update) => ({ date: toDateOnly(update.date as Date), weight: update.weight })),
+      .map((update) => ({
+        _id: oid(update._id),
+        date: toDateOnly(update.date as Date),
+        weight: update.weight,
+      })),
   });
+}
+
+/**
+ * `DELETE /weight_updates/:id` — **an addition to the spec.**
+ *
+ * Same-day submissions replace each other, so a figure typed for *today* can be corrected
+ * by re-entering it. That does nothing for a weigh-in filed against the wrong date, or one
+ * logged for a day you would rather drop — and a stray point distorts the history chart for
+ * as long as it exists. Ownership is enforced in the filter; see lib/owned.ts.
+ */
+export async function deleteWeightUpdate(req: Request, res: Response): Promise<Response> {
+  const lookup = ownedLookup(req);
+  if (!lookup.ok) return failWithError(res, HTTP.badRequest, lookup.error);
+
+  const deleted = await WeightUpdate.findOneAndDelete({
+    _id: lookup.id,
+    user_id: lookup.userId,
+  }).lean();
+
+  if (!deleted) return failWithError(res, HTTP.notFound, 'Not found');
+  return ok(res, { success: true });
 }

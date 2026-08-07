@@ -8,8 +8,8 @@ Nothing here blocks a local run — see [`README.md`](README.md) for that, and
 [`FRONTEND_IMPROVEMENT_PLAN.md`](FRONTEND_IMPROVEMENT_PLAN.md) is complete; the design
 system now lives in [`PRODUCT.md`](PRODUCT.md) and [`DESIGN.md`](DESIGN.md).
 
-**Baseline to preserve:** 70 frontend tests, 97 backend tests, 0 lint errors, 0 lint
-warnings, 576 kB initial bundle (budget warns at 620).
+**Baseline to preserve:** 78 frontend tests, 106 backend tests, 0 lint errors, 0 lint
+warnings, 577 kB initial bundle (budget warns at 620).
 
 ```bash
 npm run lint && npm run test:ci && npm run build     # frontend
@@ -70,6 +70,7 @@ Current state, verified:
 | `InputDailyComponent` | default | `trainings` is a signal; the rest are plain |
 | `ThoughtsComponent` | default | plain fields (`selectedMood`, `recommendationBlocks`) |
 | `FirstTimeComponent` | default | plain fields (`userId`) |
+| `HistoryComponent` | **OnPush** | signals throughout |
 
 Follow the pattern in `DisplayDailyComponent`: move async-updated fields to `signal()`
 *first*, add `()` in the template, then add `changeDetection: ChangeDetectionStrategy.OnPush`.
@@ -174,4 +175,7 @@ Recorded so nobody "fixes" them by accident.
 | Dates are stamped from the **local** calendar, not UTC | `toISOString()` filed anything logged before the UTC offset against yesterday — 00:30 in Spain became the previous day | `src/app/shared/dates.ts` |
 | `training_count` is distinct days, `total_days_since_joining` includes the join day | Both diverge from BACKEND_SPEC. The first made two sessions in a day read as two days trained; the second made day-one training report 0% | `trainings.controller.ts`, backend README §3b–3c |
 | A same-day weigh-in replaces rather than appends | The spec appends and disambiguates on read. That left two points at one x on the chart and no way to fix a typo, since the API has no PATCH or DELETE | `weight-updates.controller.ts`, backend README §3d |
+| Deletes are scoped by a filter, not a check | `user_id` is part of the query, so no future caller can reach the delete without it. Another user's row answers 404 exactly as a missing one does | `lib/owned.ts`, `backend/README.md` §3e |
+| Moods are read-only in the UI | A mood records how a day felt; editing it later makes the series a record of how you remember it | `history.component.html` |
+| Deleting takes two clicks | There is no undo, and removing a training moves the dashboard's "days trained" | `history.component.ts` |
 | `README_ENHANCEMENTS.md` still exists | Kept as the record of what was claimed versus what was true — that gap is why the audit happened | — |

@@ -10,6 +10,8 @@ import {
   UserDataResponse,
   WeightHistory,
   WeightResponse,
+  AllTrainingsResponse,
+  Training,
 } from '../models';
 
 /**
@@ -140,6 +142,30 @@ export class UserService {
 
   getLatestWeight(): Observable<WeightResponse> {
     return this.http.get<WeightResponse>(`${this.apiUrl}/weight_updates/latest_weight`);
+  }
+
+  /**
+   * Every logged session, oldest first.
+   *
+   * `/trainings/all-trainings` has existed since the first backend and nothing ever called
+   * it — the API could always say what you had done, and no screen asked. Its empty result
+   * is a 200 with `success: false` and a `message` key, not a 404, so callers branch on the
+   * flag rather than on the status.
+   */
+  getAllTrainings(): Observable<Training[]> {
+    return this.http
+      .get<AllTrainingsResponse>(`${this.apiUrl}/trainings/all-trainings`)
+      .pipe(map((response) => response.trainings ?? []));
+  }
+
+  /** Removes one logged session. The server scopes the delete to the verified caller. */
+  deleteTraining(id: string): Observable<unknown> {
+    return this.http.delete(`${this.apiUrl}/trainings/${id}`);
+  }
+
+  /** Removes one weigh-in. Same ownership scoping as above. */
+  deleteWeightUpdate(id: string): Observable<unknown> {
+    return this.http.delete(`${this.apiUrl}/weight_updates/${id}`);
   }
 
   /** The full weigh-in series, for the weight history chart. */

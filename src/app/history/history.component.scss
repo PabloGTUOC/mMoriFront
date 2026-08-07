@@ -1,0 +1,154 @@
+/*
+ * The history screen. Deck, not sky (DESIGN.md §1): this is a record to scan and correct,
+ * so it stays matte and the accent appears only on the destructive confirm.
+ */
+:host {
+  display: block;
+}
+
+.history {
+  width: var(--app-column);
+  max-width: var(--app-column-max);
+  margin: var(--sp-5) auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.status {
+  text-align: center;
+  color: var(--md-on-surface-variant);
+  font: var(--type-body);
+}
+
+.status--error {
+  color: var(--md-primary);
+}
+
+.panel {
+  background: var(--md-surface-container-high);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+}
+
+.panel h2 {
+  margin: 0 0 var(--sp-3);
+  font: var(--type-title);
+  color: var(--md-on-surface);
+}
+
+.empty {
+  margin: 0;
+  font: var(--type-body);
+  color: var(--md-on-surface-variant);
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+.row:first-child {
+  border-top: none;
+}
+
+.row-main {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* Tabular figures so the dates form a column rather than shifting per glyph width. */
+.row-date {
+  font: var(--type-label);
+  color: var(--md-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.row-value {
+  font: var(--type-body);
+  color: var(--md-on-surface);
+  overflow-wrap: anywhere;
+}
+
+.unit {
+  margin-left: var(--sp-1);
+  font: var(--type-label);
+  color: var(--md-on-surface-variant);
+}
+
+.row-actions {
+  display: flex;
+  gap: var(--sp-2);
+  flex: 0 0 auto;
+}
+
+.row-actions button {
+  border: 1px solid var(--md-outline);
+  border-radius: var(--r-full);
+  padding: var(--sp-1) var(--sp-3);
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  font: var(--type-label);
+  cursor: pointer;
+  transition: color var(--motion-short) var(--ease-standard),
+              background-color var(--motion-short) var(--ease-standard),
+              border-color var(--motion-short) var(--ease-standard);
+}
+
+.row-actions button:hover {
+  color: var(--md-on-surface);
+  background-color: rgba(127, 127, 127, 0.14);
+}
+
+.row-actions button:focus-visible {
+  outline: 2px solid var(--md-secondary);
+  outline-offset: 2px;
+}
+
+/*
+ * Only the confirm carries the accent, and only once it is the pending action. A row that
+ * is merely deletable should not look dangerous.
+ */
+.row-actions .confirm {
+  background: var(--md-primary);
+  border-color: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
+.row-actions .confirm:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--md-on-primary);
+}
+
+@media (max-width: 560px) {
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-2);
+  }
+
+  .row-actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-actions button {
+    transition: none;
+  }
+}

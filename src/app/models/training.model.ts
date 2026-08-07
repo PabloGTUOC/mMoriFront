@@ -52,6 +52,16 @@ export interface TrainingRepositoryPayload {
   description?: string;
 }
 
+/**
+ * `GET /trainings/all-trainings`. Oldest first, and note the empty-result key is `message`
+ * here where the sibling endpoints use `error` — reproduced from the spec.
+ */
+export interface AllTrainingsResponse {
+  success: boolean;
+  trainings?: Training[];
+  message?: string;
+}
+
 /** `GET /trainings/training-stats`. Drives the dashboard's "% days trained". */
 export interface TrainingStatsResponse {
   success: boolean;

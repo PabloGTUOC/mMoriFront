@@ -21,6 +21,12 @@ export interface MoodPayload {
   date: string;
 }
 
+/** One entry from `GET /moods`, newest first. */
+export interface MoodHistoryEntry {
+  date: string;
+  mood: string;
+}
+
 export interface MoodResponse {
   success: boolean;
   message?: string | string[];

@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { Training } from '../models/training.model.js';
+import { ownedLookup } from '../lib/owned.js';
 import { TrainingRepository } from '../models/training-repository.model.js';
 import { UserData } from '../models/user-data.model.js';
 import {
@@ -218,6 +219,31 @@ export async function createTrainingRepositoryEntry(
     success: true,
     data: [withTrainingNameAlias(serializeDocument(document.toObject()))],
   });
+}
+
+/**
+ * `DELETE /trainings/:id` — **an addition to the spec.**
+ *
+ * Nothing in this API could be undone: no PATCH, no DELETE, on any of the sixteen routes.
+ * A session logged by mistake was permanent, and since `training_count` feeds the dashboard
+ * it also permanently skewed the only progress figure the app shows.
+ *
+ * The filter carries `user_id` as well as `_id`, so ownership is enforced by the query
+ * rather than by a check that could be forgotten. `requireAuth` has already replaced that
+ * value with the verified uid. A row belonging to someone else is indistinguishable from
+ * one that does not exist, which is the correct answer to both.
+ */
+export async function deleteTraining(req: Request, res: Response): Promise<Response> {
+  const lookup = ownedLookup(req);
+  if (!lookup.ok) return failWithError(res, HTTP.badRequest, lookup.error);
+
+  const deleted = await Training.findOneAndDelete({
+    _id: lookup.id,
+    user_id: lookup.userId,
+  }).lean();
+
+  if (!deleted) return failWithError(res, HTTP.notFound, 'Not found');
+  return ok(res, { success: true });
 }
 
 /**

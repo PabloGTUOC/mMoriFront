@@ -51,6 +51,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'history',
+        title: 'History',
+        loadComponent: () =>
+          import('./history/history.component').then((m) => m.HistoryComponent),
+      },
+      {
         path: 'thoughts',
         title: 'Thoughts of the Day',
         loadComponent: () =>

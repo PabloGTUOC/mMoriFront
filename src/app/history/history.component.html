@@ -1,0 +1,99 @@
+<div class="history">
+  <p *ngIf="loading()" class="status">Loading your history…</p>
+  <p *ngIf="error()" class="status status--error" role="alert">{{ error() }}</p>
+
+  <ng-container *ngIf="!loading() && !error()">
+    <section class="panel" aria-labelledby="history-trainings">
+      <h2 id="history-trainings">Trainings</h2>
+
+      <p *ngIf="!trainings().length" class="empty">
+        Nothing logged yet. Sessions you record on Today appear here.
+      </p>
+
+      <ul class="rows" *ngIf="trainings().length">
+        <li *ngFor="let training of trainings(); trackBy: trackByTraining" class="row">
+          <div class="row-main">
+            <span class="row-date">{{ training.training_date }}</span>
+            <span class="row-value">{{ training.training_type || 'Unnamed session' }}</span>
+          </div>
+
+          <!--
+            Two clicks, because there is no undo: the delete is permanent and it moves the
+            dashboard's "days trained" with it.
+          -->
+          <div class="row-actions">
+            <ng-container *ngIf="pendingDelete() === training._id?.$oid; else trainingIdle">
+              <button type="button" class="confirm" (click)="confirmDeleteTraining(training)">
+                Delete
+              </button>
+              <button type="button" class="cancel" (click)="cancelDelete()">Keep</button>
+            </ng-container>
+            <ng-template #trainingIdle>
+              <button
+                type="button"
+                class="remove"
+                [attr.aria-label]="'Remove training on ' + training.training_date"
+                (click)="askToDelete(training._id?.$oid ?? '')"
+              >Remove</button>
+            </ng-template>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel" aria-labelledby="history-weights">
+      <h2 id="history-weights">Weigh-ins</h2>
+
+      <p *ngIf="!weights().length" class="empty">
+        No weigh-ins yet. One per day; logging again for the same day replaces it.
+      </p>
+
+      <ul class="rows" *ngIf="weights().length">
+        <li *ngFor="let entry of weights(); trackBy: trackByWeight" class="row">
+          <div class="row-main">
+            <span class="row-date">{{ entry.date }}</span>
+            <span class="row-value">{{ entry.weight }}<span class="unit">kg</span></span>
+          </div>
+
+          <div class="row-actions">
+            <ng-container *ngIf="pendingDelete() === entry._id?.$oid; else weightIdle">
+              <button type="button" class="confirm" (click)="confirmDeleteWeight(entry)">
+                Delete
+              </button>
+              <button type="button" class="cancel" (click)="cancelDelete()">Keep</button>
+            </ng-container>
+            <ng-template #weightIdle>
+              <button
+                type="button"
+                class="remove"
+                [attr.aria-label]="'Remove weigh-in on ' + entry.date"
+                (click)="askToDelete(entry._id?.$oid ?? '')"
+              >Remove</button>
+            </ng-template>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel" aria-labelledby="history-moods">
+      <h2 id="history-moods">Moods</h2>
+
+      <!--
+        Read-only. A mood is a record of how a day felt; editing it later would make the
+        series a record of how you remember it instead.
+      -->
+      <p *ngIf="!moods().length" class="empty">
+        No moods yet. Pick one on Thoughts and it will show up here.
+      </p>
+
+      <ul class="rows" *ngIf="moods().length">
+        <li *ngFor="let entry of moods(); trackBy: trackByMood" class="row row--static">
+          <div class="row-main">
+            <span class="row-date">{{ entry.date }}</span>
+            <span class="row-value">{{ entry.mood | titlecase }}</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </ng-container>
+</div>

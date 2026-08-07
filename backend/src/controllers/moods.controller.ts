@@ -10,13 +10,22 @@ import {
 } from '../services/life-methods.service.js';
 import { buildPrompt, queryChatGpt } from '../services/openai.service.js';
 import {
+  failWithError,
   failWithMessage,
   HTTP,
   isValidationError,
   ok,
   validationMessages,
 } from '../lib/http.js';
-import { isBlank, optionalWrapper, pick, toDateOrUndefined, toStringOrUndefined } from '../lib/params.js';
+import {
+  isBlank,
+  optionalWrapper,
+  pick,
+  queryParam,
+  toDateOrUndefined,
+  toStringOrUndefined,
+} from '../lib/params.js';
+import { toDateOnly } from '../lib/serialize.js';
 
 /**
  * `POST /moods` — BACKEND_SPEC §4.14.
@@ -50,6 +59,32 @@ export async function saveMood(req: Request, res: Response): Promise<Response> {
   }
 
   return ok(res, { success: true, message: 'Mood saved successfully' });
+}
+
+/**
+ * `GET /moods` — **an addition to the spec.**
+ *
+ * `POST /moods` existed with no counterpart, so mood was write-only: the app asked how you
+ * felt every day, stored it, and offered no way to ever see it again. Recording data a user
+ * can never read is not a feature.
+ *
+ * Newest first, and the date is serialised as `YYYY-MM-DD` to match `weight_updates/history`
+ * — these are calendar days, not instants.
+ */
+export async function moodHistory(req: Request, res: Response): Promise<Response> {
+  const userId = queryParam(req.query['user_id']);
+  if (isBlank(userId)) {
+    return failWithError(res, HTTP.badRequest, 'UserId is missing');
+  }
+
+  const moods = await Mood.find({ user_id: userId }).sort({ date: -1, _id: -1 }).lean();
+
+  return ok(res, {
+    success: true,
+    data: moods
+      .filter((entry) => entry.date instanceof Date && entry.mood)
+      .map((entry) => ({ date: toDateOnly(entry.date as Date), mood: entry.mood })),
+  });
 }
 
 /**

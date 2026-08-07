@@ -300,6 +300,59 @@ describe.skipIf(mongo === null)('API integration', () => {
       expect(response.body.first_login_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
 
+    describe('DELETE /trainings/:id (additive)', () => {
+      async function logTraining(user_id: string) {
+        const created = await request(app)
+          .post('/trainings')
+          .send({ training: { user_id, training_date: '2024-06-14', training_type: 'Push' } });
+        return created.body.inserted_id.$oid as string;
+      }
+
+      it('removes the caller’s own session', async () => {
+        const id = await logTraining('abc123');
+
+        const response = await request(app)
+          .delete(`/trainings/${id}`)
+          .query({ user_id: 'abc123' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ success: true });
+
+        const all = await request(app)
+          .get('/trainings/all-trainings')
+          .query({ user_id: 'abc123' });
+        expect(all.body.success).toBe(false);
+      });
+
+      it('will not delete another user’s session', async () => {
+        const id = await logTraining('someone-else');
+
+        const response = await request(app)
+          .delete(`/trainings/${id}`)
+          .query({ user_id: 'abc123' });
+
+        expect(response.status).toBe(404);
+
+        const all = await request(app)
+          .get('/trainings/all-trainings')
+          .query({ user_id: 'someone-else' });
+        expect(all.body.trainings).toHaveLength(1);
+      });
+
+      /** Deleting a session has to move the dashboard figure it feeds. */
+      it('is reflected in training-stats', async () => {
+        await request(app).post('/user_data').send({ user_data: profile });
+        const id = await logTraining('abc123');
+
+        await request(app).delete(`/trainings/${id}`).query({ user_id: 'abc123' });
+
+        const stats = await request(app)
+          .get('/trainings/training-stats')
+          .query({ user_id: 'abc123' });
+        expect(stats.body.training_count).toBe(0);
+      });
+    });
+
     it('counts days trained, not sessions logged', async () => {
       await request(app).post('/user_data').send({ user_data: profile });
       // Two sessions on one day, one on another: two days trained, not three.
@@ -491,12 +544,14 @@ describe.skipIf(mongo === null)('API integration', () => {
 
       expect(response.body.weight).toBe(82);
 
-      // One row, not three.
+      // One row, not three. Matched loosely: the series also carries `_id`, which the
+      // history screen needs in order to delete an entry.
       const history = await request(app)
         .get('/weight_updates/history')
         .query({ user_id: 'abc123' });
 
-      expect(history.body.data).toEqual([{ date: '2024-08-10', weight: 82 }]);
+      expect(history.body.data).toHaveLength(1);
+      expect(history.body.data[0]).toMatchObject({ date: '2024-08-10', weight: 82 });
     });
 
     it('keeps weigh-ins on different days as separate entries', async () => {
@@ -522,6 +577,56 @@ describe.skipIf(mongo === null)('API integration', () => {
       expect(response.body).toEqual({ success: false, error: 'No weight data found' });
     });
 
+    describe('DELETE /weight_updates/:id (additive)', () => {
+      async function createWeighIn(user_id: string) {
+        const created = await request(app)
+          .post('/weight_updates')
+          .send({ weight_update: { user_id, date: '2024-08-10', weight: 77.4 } });
+        return created.body.inserted_id.$oid as string;
+      }
+
+      it('removes the caller’s own weigh-in', async () => {
+        const id = await createWeighIn('abc123');
+
+        const response = await request(app)
+          .delete(`/weight_updates/${id}`)
+          .query({ user_id: 'abc123' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ success: true });
+
+        const history = await request(app)
+          .get('/weight_updates/history')
+          .query({ user_id: 'abc123' });
+        expect(history.body.data).toEqual([]);
+      });
+
+      /** Ownership is in the filter, so another user's row is simply not found. */
+      it('will not delete another user’s weigh-in', async () => {
+        const id = await createWeighIn('someone-else');
+
+        const response = await request(app)
+          .delete(`/weight_updates/${id}`)
+          .query({ user_id: 'abc123' });
+
+        expect(response.status).toBe(404);
+
+        const history = await request(app)
+          .get('/weight_updates/history')
+          .query({ user_id: 'someone-else' });
+        expect(history.body.data).toHaveLength(1);
+      });
+
+      it('rejects a malformed id rather than treating it as a miss', async () => {
+        const response = await request(app)
+          .delete('/weight_updates/not-an-object-id')
+          .query({ user_id: 'abc123' });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('Invalid id');
+      });
+    });
+
     it('does not leak another user when user_id is omitted', async () => {
       await request(app)
         .post('/weight_updates')
@@ -544,6 +649,46 @@ describe.skipIf(mongo === null)('API integration', () => {
 
       const stored = await mongoose.connection.db!.collection('moods').findOne({});
       expect(stored).toMatchObject({ user_id: 'abc123', mood: 'calm' });
+    });
+  });
+
+  describe('GET /moods (additive)', () => {
+    async function saveMood(user_id: string, mood: string, date: string) {
+      await request(app).post('/moods').send({ mood_data: { user_id, mood, date } });
+    }
+
+    it('reads back what POST /moods wrote, newest first', async () => {
+      await saveMood('abc123', 'calm', '2024-08-24');
+      await saveMood('abc123', 'tired', '2024-08-26');
+      await saveMood('abc123', 'strong', '2024-08-25');
+
+      const response = await request(app).get('/moods').query({ user_id: 'abc123' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        success: true,
+        data: [
+          { date: '2024-08-26', mood: 'tired' },
+          { date: '2024-08-25', mood: 'strong' },
+          { date: '2024-08-24', mood: 'calm' },
+        ],
+      });
+    });
+
+    it('scopes to the caller', async () => {
+      await saveMood('abc123', 'calm', '2024-08-24');
+      await saveMood('someone-else', 'tired', '2024-08-24');
+
+      const response = await request(app).get('/moods').query({ user_id: 'abc123' });
+
+      expect(response.body.data).toEqual([{ date: '2024-08-24', mood: 'calm' }]);
+    });
+
+    it('answers with an empty series rather than an error when nothing is logged', async () => {
+      const response = await request(app).get('/moods').query({ user_id: 'abc123' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ success: true, data: [] });
     });
   });
 
