@@ -92,10 +92,7 @@ literally):
 { "Country_Code": "ESP", "Gender": "Male", "Type": "LifeExpectancy_Gen", "Years": 83.2 }
 ```
 
-⚠️ **`data/life_expectancy.sample.json` is placeholder data**, not a real dataset. It
-covers six countries with round illustrative numbers so the seeding path and the adjustment
-algorithm can be exercised end to end. Replace it with a real source — e.g. WHO Global
-Health Observatory life expectancy at birth, or World Bank `SP.DYN.LE00.MA.IN` /
+⚠️ **`data/life_expectancy.json` Is the real dataset now, extracted from reliable sources /
 `SP.DYN.LE00.FE.IN` — before treating any number this API returns as meaningful. The
 frontend offers ~180 countries; the sample covers six, so most users would get a base of 0.
 
