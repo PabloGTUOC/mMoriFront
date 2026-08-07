@@ -1,109 +1,187 @@
+/*
+ * Reflows instead of being locked to two columns. `1fr 1fr` meant two cramped columns on a
+ * phone and two very wide ones on a desktop; auto-fit lets the same six stats sit 1-up,
+ * 2-up or 3-up as the space allows, with no breakpoints.
+ */
 .info-block {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Two columns of equal width */
-  grid-gap: 20px; /* Space between grid items */
-  max-width: 1400px; /* Maximum width of 1400px */
-  width: 80%; /* 80% of the available screen width */
-  margin: 20px auto; /* Center the block */
-  font-family: 'Roboto Mono', monospace; /* Consistent font family */
-  box-sizing: border-box; /* Ensure padding is included in the width */
-
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--sp-3);
+  max-width: var(--app-column-max);
+  width: var(--app-column);
+  margin: var(--sp-5) auto;
+  box-sizing: border-box;
 }
 
-.info-block h2 {
-  background: var(--panel-bg); /* Dark background for each heading */
-  color: var(--panel-text);
-  padding: 10px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  margin: 0; /* Remove default margins */
-  text-shadow: 0 0 5px var(--glow); /* Neon glow for text */
+/*
+ * One tile per stat, not two stacked boxes. Each stat used to be a heading with its own
+ * background and shadow sitting above a separately-backed value, so a single number read
+ * as two fragments with a seam between them.
+ *
+ * The tile sits two tonal steps off the page rather than one, and carries an outline. At
+ * one step apart the tiles and the background were nearly the same colour, and the M3
+ * elevation-1 shadow is far too soft to separate them on its own.
+ */
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  background: var(--md-surface-container-high);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-md);
+  transition: border-color var(--motion-short) var(--ease-standard);
+}
+
+.stat:hover {
+  border-color: var(--md-outline);
 }
 
 .info-block h3 {
-  background: var(--panel-bg); /* Dark background for each heading */
-  color: var(--panel-text);
-  padding: 10px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  margin: 0; /* Remove default margins */
-  text-shadow: 0 0 5px var(--glow); /* Neon glow for text */
-  text-align: center;
-}
-.info-block .value {
-  font-size: 2em;
-  color: var(--accent); /* Pink neon color for the value */
-  text-shadow: 0 0 5px var(--glow); /* Glow effect matching the labels */
-  margin-top: 5px; /* Space between label and value */
-  padding: 5px;
-  background-color: var(--panel-bg-strong); /* Background behind the value to highlight it */
-  border-radius: 4px;
-  text-align: center;
+  margin: 0;
+  font: var(--type-label);
+  color: var(--md-on-surface-variant);
+  text-align: left;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
+/*
+ * Values are plain ink, not accent. Six pink numbers spent the whole One Voice budget on
+ * the stat grid and left the accent with nothing to distinguish; the one number that gets
+ * the accent is weeks-left, on the sky surface below.
+ */
+.info-block .value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  font: var(--type-display);
+  font-size: 2rem;
+  color: var(--md-on-surface);
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+/* BMI status is a word, not a figure, so it does not get the numeric display size. */
+.info-block .value--text {
+  font: var(--type-title);
+  padding-block: var(--sp-2);
+}
+
+.info-block .unit {
+  font: var(--type-label);
+  color: var(--md-on-surface-variant);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* A percentage deserves a track. This is the one tile whose value has a natural maximum. */
+.track {
+  height: 4px;
+  margin-top: var(--sp-2);
+  border-radius: var(--r-full);
+  background: var(--md-surface-container-lowest);
+  overflow: hidden;
+}
+
+.track-fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--md-primary);
+  transition: width var(--motion-medium) var(--ease-emphasized);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat,
+  .track-fill {
+    transition: none;
+  }
+}
+
+/* A sky surface, so it keeps the glow. This and the header are the only two places the
+   app is allowed to be loud (DESIGN.md, One Loud Surface). */
 .weeks-left {
-  max-width: 1400px; /* Maximum width of 1400px */
-  width: 80%; /* 80% of the available screen width */
-  border-radius: 4px;
-  margin: 0 auto 20px; /* Center and space below */
-  font-size: 1.5em; /* Larger font size for emphasis */
-  text-align: center; /* Center the text */
-  background: var(--sky-gradient); /* Dark gradient mimicking a night sky */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--sp-4);
+  max-width: var(--app-column-max);
+  width: var(--app-column);
+  margin: 0 auto var(--sp-5);
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--r-md);
+  box-sizing: border-box;
+  text-align: center;
+  background: var(--sky-gradient);
+  box-shadow: var(--md-elev-2);
 }
 
 .weeks-left h2 {
-  color: var(--accent); /* Bright color for importance */
-  text-shadow: 0 0 10px var(--accent); /* Glow effect for emphasis */
-}
-/* Modal container */
-.modal {
-  display: block; /* Hidden by default */
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.4); /* Black background with transparency */
+  margin: 0;
+  font: var(--type-headline);
+  color: var(--accent-bright);
+  text-shadow: 0 0 12px var(--accent-bright);
+  cursor: pointer;
+  border-radius: var(--r-xs);
+  padding: var(--sp-2);
+  transition: background-color var(--motion-short) var(--ease-standard);
 }
 
-/* Modal content */
+.weeks-left h2:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.weeks-left h2:focus-visible {
+  outline: 2px solid var(--neon-line);
+  outline-offset: 2px;
+}
+/*
+ * The life-chart dialog.
+ *
+ * It used to be a `margin: 15% auto` box: pushed off-centre, sized by a percentage of the
+ * page rather than its contents, and scrolling the whole viewport behind itself. It now
+ * centres with flex, caps its own height, and scrolls internally — so the chart, which is
+ * tall by nature, stays framed instead of running off the bottom.
+ */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4);
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+
+/*
+ * With the heading and the hint gone the panel is just a frame around the grid, so the
+ * padding is tight and the height cap only has the chart to accommodate. Default cursor,
+ * so the pointer reads as "dismiss" over the backdrop and nowhere else.
+ */
 .modal-content {
-  background-color: var(--surface-raised);
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid var(--border-strong);
-  width: 80%;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 1100px);
+  max-height: 96vh;
+  padding: var(--sp-3);
+  cursor: default;
+  background-color: var(--md-surface-container);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-lg);
+  box-shadow: var(--md-elev-3);
+  overflow-y: auto;
   text-align: center;
 }
 
-/* Close button */
-.close-btn {
-  color: var(--text-muted);
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.close-btn:hover,
-.close-btn:focus {
-  color: var(--surface-raised-text);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-/* The close control became a real <button> for keyboard access; strip the UA chrome. */
-.close-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-  color: inherit;
+/* The panel is the focus target now, and it should not draw a ring for a programmatic
+   focus it never asked for. */
+.modal-content:focus {
+  outline: none;
 }
 
 .dashboard-status {

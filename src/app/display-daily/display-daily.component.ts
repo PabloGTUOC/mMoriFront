@@ -1,4 +1,11 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { A11yModule } from '@angular/cdk/a11y';
@@ -22,21 +29,33 @@ import {
   imports: [LifeExpectancyChartComponent, WeightHistoryChartComponent, CommonModule, A11yModule],
   templateUrl: './display-daily.component.html',
   styleUrl: './display-daily.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisplayDailyComponent implements OnInit {
-  currentAge: number = 0;
-  weeksLeftToLive: number = 0;
-  weight: number = 0;
-  totalDaysTrained: number = 0;
-  percentageDaysTrained: number = 0;
-  bmi: number = 0;
-  bmiStatus: string = 'Normal Weight';
-  weeksGone: number = 0;
-  isChartVisible: boolean = false;
-  weightHistory: WeightHistory[] = [];
-  loading = false;
-  error: string | null = null;
-  hasProfile = true;
+  /*
+   * Signals, not plain fields.
+   *
+   * The dashboard would load its data and never leave the "Loading…" state. Everything here
+   * hangs off `afAuth.authState`, and AngularFire's compat layer emits outside the Angular
+   * zone — so the switchMap into forkJoin, and the subscribe callback that assigns these,
+   * ran outside it too. The values arrived; change detection was never told.
+   *
+   * Signals notify Angular themselves regardless of which zone the write happened in, which
+   * is also what makes the OnPush strategy above safe (TODO.md item 2.1).
+   */
+  readonly currentAge = signal(0);
+  readonly weeksLeftToLive = signal(0);
+  readonly weight = signal(0);
+  readonly totalDaysTrained = signal(0);
+  readonly percentageDaysTrained = signal(0);
+  readonly bmi = signal(0);
+  readonly bmiStatus = signal('Normal Weight');
+  readonly weeksGone = signal(0);
+  readonly isChartVisible = signal(false);
+  readonly weightHistory = signal<WeightHistory[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly hasProfile = signal(true);
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -62,8 +81,8 @@ export class DisplayDailyComponent implements OnInit {
   }
 
   private loadDashboard(): void {
-    this.loading = true;
-    this.error = null;
+    this.loading.set(true);
+    this.error.set(null);
     // Waits for an authenticated session so the interceptor has a token to attach; the
     // requests themselves no longer name a user.
     this.userService.session$
@@ -82,9 +101,9 @@ export class DisplayDailyComponent implements OnInit {
       )
       .subscribe({
         next: ({ userData, trainingStats, latestWeight, weightHistory }) => {
-          this.loading = false;
-          this.weightHistory = weightHistory;
-          this.hasProfile = !!userData.success;
+          this.loading.set(false);
+          this.weightHistory.set(weightHistory);
+          this.hasProfile.set(!!userData.success);
           // `user_data` is optional on the response even when `success` is true, so it is
           // checked here rather than asserted — see UserDataResponse.
           if (userData.success && userData.user_data) {
@@ -100,8 +119,8 @@ export class DisplayDailyComponent implements OnInit {
         },
         error: (error: unknown) => {
           console.error('Error loading dashboard', error);
-          this.loading = false;
-          this.error = 'Could not load your dashboard. Please try again.';
+          this.loading.set(false);
+          this.error.set('Could not load your dashboard. Please try again.');
         },
       });
   }
@@ -112,23 +131,43 @@ export class DisplayDailyComponent implements OnInit {
     trainingStats: TrainingStatsResponse,
     latestWeight: WeightResponse
   ): void {
-    this.currentAge = this.metrics.calculateAge(new Date(userData.dob));
+    const age = this.metrics.calculateAge(new Date(userData.dob));
+    this.currentAge.set(age);
+
     // Check if latestWeight is available, if not, use the weight from userData
-    if (latestWeight && latestWeight.weight) {
-      this.weight = latestWeight.weight;
-    } else {
-      this.weight = userData.weight;
-    }
-    this.totalDaysTrained = trainingStats.training_count;
-    this.weeksLeftToLive = this.metrics.calculateWeeksLeftToLive(adjustedLifeExpectancy, this.currentAge);
-    this.bmi = this.metrics.calculateBMI(this.weight, userData.height);
-    this.bmiStatus = this.metrics.determineBMIStatus(this.bmi);
-    const totalDaysSinceJoining = trainingStats.total_days_since_joining;
-    this.percentageDaysTrained = this.metrics.calculatePercentage(this.totalDaysTrained, totalDaysSinceJoining);
-    this.weeksGone = this.metrics.calculateWeeksGone(this.currentAge);
+    const weight = latestWeight?.weight ? latestWeight.weight : userData.weight;
+    this.weight.set(weight);
+
+    this.totalDaysTrained.set(trainingStats.training_count);
+    this.weeksLeftToLive.set(this.metrics.calculateWeeksLeftToLive(adjustedLifeExpectancy, age));
+
+    const bmi = this.metrics.calculateBMI(weight, userData.height);
+    this.bmi.set(bmi);
+    this.bmiStatus.set(this.metrics.determineBMIStatus(bmi));
+
+    this.percentageDaysTrained.set(
+      this.metrics.calculatePercentage(
+        trainingStats.training_count,
+        trainingStats.total_days_since_joining
+      )
+    );
+    this.weeksGone.set(this.metrics.calculateWeeksGone(age));
   }
 
-  toggleLifeExpectancyChart () {
-    this.isChartVisible = !this.isChartVisible;
+  toggleLifeExpectancyChart() {
+    this.isChartVisible.update((visible) => !visible);
+  }
+
+  /**
+   * Closes the life chart only when the backdrop itself was clicked.
+   *
+   * Comparing target to currentTarget keeps the panel from needing its own
+   * `stopPropagation` handler — a click anywhere inside the dialog, including on the grid,
+   * has a target deeper than the backdrop and is ignored.
+   */
+  onBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.toggleLifeExpectancyChart();
+    }
   }
 }

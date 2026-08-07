@@ -34,8 +34,13 @@ form {
   width: 97% !important;
 }
 
+/*
+ * These labels sit on the page background, not on a panel. `--panel-bg` is a *surface*
+ * token (#333 dark), so it rendered near-invisible against the #121212 ground. Weight is
+ * what separates a label from its field (DESIGN.md §3), not colour.
+ */
 .input-block label {
-  color: var(--panel-bg);
+  color: var(--text-primary);
   font-weight: bold;
 }
 
@@ -52,22 +57,57 @@ form {
   font-family: 'Roboto Mono', monospace; /* Consistent font family */
 }
 
+/*
+ * The M3 filled button. This paired --panel-text with an --accent fill, which measures
+ * 2.94:1 on the dark theme and 2.79:1 on the light one — the label has to be the primary's
+ * own on-colour, not the surface ink.
+ *
+ * `justify-self: start` stops it stretching the full width of the grid: a submit button
+ * spanning two columns reads as a banner, not a control.
+ */
 button {
-  background-color: var(--accent);
-  color: var(--panel-text);
-  padding: 10px 20px;
+  background-color: var(--md-primary);
+  color: var(--md-on-primary);
+  padding: var(--sp-3) var(--sp-6);
   border: none;
-  border-radius: 4px;
-  font-size: 1em;
+  border-radius: var(--r-full);
+  font: var(--type-label);
   cursor: pointer;
-  text-shadow: 0 0 5px var(--glow); /* Neon glow for text */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  grid-column: span 2; /* Span both columns */
+  grid-column: span 2;
+  justify-self: start;
+  margin-top: var(--sp-3);
+  transition: background-color var(--motion-short) var(--ease-standard),
+              box-shadow var(--motion-short) var(--ease-standard);
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--accent-strong);
+  box-shadow: var(--md-elev-1);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--md-secondary);
+  outline-offset: 2px;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 button:disabled {
-  background-color: var(--input-border);
+  background-color: var(--md-surface-container-highest);
+  color: var(--md-outline);
   cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+
+  button:active:not(:disabled) {
+    transform: none;
+  }
 }
 
 /* Adjustments for mobile screens */

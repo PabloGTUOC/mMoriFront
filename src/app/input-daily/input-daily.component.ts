@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { UserService } from '../services/user.service';
 import { NotificationService } from '../services/notification.service';
@@ -22,7 +22,18 @@ import { TrainingRepositoryEntry } from '../models';
 export class InputDailyComponent implements OnInit {
   dailyForm!: FormGroup;
   userId!: string | null;
-  trainings: TrainingRepositoryEntry[] = [];
+  /*
+   * A signal, so the option list appears the moment it arrives.
+   *
+   * As a plain field this was assigned inside a subscribe callback that ran outside the
+   * Angular zone (see AuthInterceptor), so the array filled up and the <select> stayed
+   * empty until an unrelated click woke change detection. The zone fix in the interceptor
+   * addresses the cause; this makes the component correct regardless of who calls it.
+   *
+   * Deliberately not paired with OnPush yet: TODO.md 2.1 notes those faults are
+   * runtime-only and need a browser to verify.
+   */
+  readonly trainings = signal<TrainingRepositoryEntry[]>([]);
 
   constructor(private fb: FormBuilder,
     private userDataService: UserDataService,
@@ -47,7 +58,7 @@ export class InputDailyComponent implements OnInit {
 
   fetchTrainings(): void {
     this.trainingRepositoryService.getTrainingRepository().subscribe({
-      next: (trainings) => (this.trainings = trainings),
+      next: (trainings) => this.trainings.set(trainings),
       error: (error) => {
         console.error('Error fetching trainings', error);
       }

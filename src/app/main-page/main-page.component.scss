@@ -1,0 +1,13 @@
+/*
+ * App shell spacing.
+ *
+ * This file was empty, and nothing else supplied bottom padding — so the last control on a
+ * view (the submit button on the daily form) sat flush against the bottom edge of the
+ * viewport with nowhere to breathe.
+ */
+:host {
+  display: block;
+  padding-bottom: var(--sp-8);
+  min-height: 100vh;
+  box-sizing: border-box;
+}

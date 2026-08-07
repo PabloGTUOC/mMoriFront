@@ -22,10 +22,10 @@ describe('DisplayDailyComponent', () => {
   });
 
   it('toggles the life expectancy chart', () => {
-    expect(component.isChartVisible).toBe(false);
+    expect(component.isChartVisible()).toBe(false);
     component.toggleLifeExpectancyChart();
-    expect(component.isChartVisible).toBe(true);
+    expect(component.isChartVisible()).toBe(true);
     component.toggleLifeExpectancyChart();
-    expect(component.isChartVisible).toBe(false);
+    expect(component.isChartVisible()).toBe(false);
   });
 });

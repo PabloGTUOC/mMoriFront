@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { catchError, distinctUntilChanged, filter, map, take, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
@@ -67,7 +67,8 @@ export class UserService {
 
   constructor(
     private http: HttpClient,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private zone: NgZone
   ) {}
 
   /**
@@ -89,13 +90,24 @@ export class UserService {
         }
       };
 
+      /*
+       * `zone.run` is load-bearing, not defensive.
+       *
+       * Firebase emits auth state outside Angular's zone, so without this every push into
+       * `sessionSource` — and everything the app derives from it — lands with change
+       * detection asleep. See the same fix, and the same reason, in AuthInterceptor.
+       */
       this.afAuth.authState.subscribe({
-        next: (user) => this.applyFirebaseUser(user).subscribe({ next: settle, error: settle }),
-        error: (error) => {
-          console.error('Could not resolve Firebase auth state', error);
-          this.sessionSource.next(ANONYMOUS_SESSION);
-          settle();
-        },
+        next: (user) =>
+          this.zone.run(() =>
+            this.applyFirebaseUser(user).subscribe({ next: settle, error: settle })
+          ),
+        error: (error) =>
+          this.zone.run(() => {
+            console.error('Could not resolve Firebase auth state', error);
+            this.sessionSource.next(ANONYMOUS_SESSION);
+            settle();
+          }),
       });
     });
 

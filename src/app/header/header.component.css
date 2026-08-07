@@ -60,7 +60,16 @@ h2 {
   transform: scale(1.1);
 }
 
+/* The sun is stroked, the moon filled, so both read at the same visual weight. */
 .theme-icon {
-  font-size: 24px;
-  user-select: none;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--on-sky-text);
+  stroke-width: 1.8;
+}
+
+.theme-icon path[d^='M20.4'] {
+  fill: var(--on-sky-text);
+  stroke: none;
 }

@@ -51,8 +51,10 @@
   margin-top: 20px;
   font-size: 1.3em;
 
+  // On the page background, so this takes the body ink token. It previously used
+  // `--panel-bg`, a surface colour, and was near-invisible on the dark ground.
   h3 {
-    color: var(--panel-bg);
+    color: var(--text-primary);
   }
 }
 
@@ -66,8 +68,10 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+// Inside `.recommendation`, which is `--input-panel-bg`. `--panel-bg` (#333) on that
+// surface (#24243a) was barely legible; the panel's own ink token is the right pairing.
 .recommendation h3 {
-  color: var(--panel-bg);
+  color: var(--panel-text);
   margin-bottom: 10px;
 }
 

@@ -1,98 +1,202 @@
-/* General Menu Styles */
-.menu-container {
+/*
+ * Main navigation.
+ *
+ * What was wrong: the stylesheet styled `button` and nothing else, but four of the five
+ * items are `<a>`. They fell through to the global `a { color: var(--primary-color) }` and
+ * rendered as Material-blue links (#1976d2) next to one large pink gradient "Log Out" slab.
+ * A row of blue links plus one loud button is what made this read as an old page, and
+ * `routerLinkActive="active"` pointed at a class no rule ever defined, so nothing showed
+ * which page you were on.
+ *
+ * What it does now: the accent marks *where you are* instead of decorating every item
+ * (DESIGN.md, The One Voice Rule). Items rest quiet, the current one is pink with a solid
+ * underline, and sign-out is demoted out of the navigation rhythm rather than being the
+ * loudest thing in the bar.
+ */
+
+.menu {
   display: flex;
-  justify-content: center;
   align-items: center;
+  gap: 20px;
+
+  /* The app's single centred column (DESIGN.md §1). */
+  width: 80%;
+  max-width: 1400px;
   margin: 20px auto;
-  padding: 10px 0;
+  padding: 6px 10px;
+
   background: var(--menu-gradient);
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  max-width: 1400px; /* Maximum width of 1400px */
-  width: 80%; /* 80% of the available screen width */
+  font-family: 'Roboto Mono', ui-monospace, monospace;
 }
 
-/* Menu bar for larger screens */
-.menu-bar {
+.menu-links {
   display: flex;
-  justify-content: space-around;
-  width: 100%;
+  flex: 1;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* Button styles */
-button {
-  background: var(--button-gradient);
-  border: none;
+.menu-links li {
+  flex: 1;
+}
+
+/*
+ * Resting items are deliberately quiet. Weight and colour carry the state, not a gradient:
+ * five gradient slabs is what pushed the accent well past the 10% the One Voice Rule allows.
+ */
+.menu-links a {
+  position: relative;
+  display: block;
+  padding: 10px 14px;
   border-radius: 4px;
+
+  /*
+   * Rest is the panel ink held back with opacity, not a lighter colour. `--text-muted`
+   * reads at only 3.79:1 on the light theme's menu gradient, which is under the 4.5:1 a
+   * 15px label needs; dimming full-strength ink keeps the same quiet without that cost.
+   */
   color: var(--panel-text);
-  font-family: 'Roboto Mono', monospace;
-  font-size: 16px;
-  padding: 10px 20px;
-  cursor: pointer;
-  text-shadow: 0 0 5px var(--glow), 0 0 10px var(--glow);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: background-color 0.3s, box-shadow 0.3s;
+  opacity: 0.78;
+  font-size: 15px;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+
+  transition: opacity 180ms ease, color 180ms ease, background-color 180ms ease;
 }
 
-button:hover {
-  background: var(--button-gradient-hover);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+/* The underline is the "you are here" mark. It scales from the centre on hover and sits
+ * solid on the current page, so hovering previews the same signal the active state uses. */
+.menu-links a::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  bottom: 4px;
+  left: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform 180ms ease;
 }
 
-button:active {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  transform: translateY(2px);
+.menu-links a:hover {
+  opacity: 1;
+  background-color: rgba(127, 127, 127, 0.14);
 }
 
-/* Hide dropdown by default */
-.dropdown-menu {
-  display: none;
-  width: 100%;
+.menu-links a:hover::after {
+  transform: scaleX(0.6);
 }
 
-/* Dropdown content styles */
-.dropdown-content {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  background: transparent; /* Remove grey background for dropdown */
+/* Focus and hover share a treatment so keyboard users see what mouse users see; the ring
+ * itself is Horizon Blue, the system's "this is an edge" colour. */
+.menu-links a:focus-visible {
+  opacity: 1;
+  background-color: rgba(127, 127, 127, 0.14);
+  outline: 2px solid var(--neon-line);
+  outline-offset: 2px;
 }
 
-.dropdown-content button {
-  width: 100%;
-  border-radius: 4px;
-  margin-bottom: 10px; /* Add spacing between dropdown items */
-  text-align: left;
-  padding: 10px 15px;
-  background: var(--button-gradient); /* Apply gradient background */
+/* Tactile retro hardware: the item goes down when pressed (DESIGN.md §5). */
+.menu-links a:active {
+  transform: translateY(1px);
 }
 
-.dropdown-content.show {
-  display: flex;
+/*
+ * Three redundant signals for the current page, so it never rests on colour alone: accent
+ * ink, a solid underline, and bold weight. The bold also earns the accent its contrast —
+ * #ff0077 sits at 4.31:1 on the dark gradient, which clears the 3:1 bar for bold text at
+ * this size but would not clear 4.5:1 at regular weight.
+ */
+.menu-links a.is-current {
+  color: var(--accent);
+  opacity: 1;
+  font-weight: 700;
 }
 
-.dropdown-btn {
-  background: var(--button-gradient);
+.menu-links a.is-current::after {
+  transform: scaleX(1);
+}
+
+/*
+ * Sign-out is terminal, not a destination. It sits outside the link rhythm behind a 1px
+ * divider, stays muted at rest, and only firms up on interaction. It used to be the single
+ * most prominent control in the bar.
+ */
+.sign-out {
+  flex: 0 0 auto;
+  padding: 10px 14px;
   border: none;
-  border-radius: 4px;
+  border-left: 1px solid var(--border-strong);
+  border-radius: 0 4px 4px 0;
+
+  background: transparent;
   color: var(--panel-text);
-  font-family: 'Roboto Mono', monospace;
-  font-size: 16px;
-  padding: 10px 20px;
+  opacity: 0.7;
+  font-family: inherit;
+  font-size: 14px;
   cursor: pointer;
-  text-shadow: 0 0 5px var(--glow), 0 0 10px var(--glow);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: background-color 0.3s, box-shadow 0.3s;
-  width: 100%;
+
+  transition: opacity 180ms ease, background-color 180ms ease;
 }
 
-/* Media queries to switch between menu bar and dropdown */
+.sign-out:hover {
+  opacity: 1;
+  background-color: rgba(127, 127, 127, 0.14);
+}
+
+.sign-out:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--neon-line);
+  outline-offset: 2px;
+}
+
+.sign-out:active {
+  transform: translateY(1px);
+}
+
+/*
+ * Below 768px the links become a 2x2 grid and sign-out drops to its own full-width row.
+ * Four labels are shown outright rather than folded behind a hamburger: hiding four items
+ * behind a tap costs more than the vertical space it saves.
+ */
 @media (max-width: 768px) {
-  .menu-bar {
-    display: none; /* Hide the menu bar on small screens */
-  }
-  .dropdown-menu {
-    display: flex; /* Show the dropdown menu */
+  .menu {
     flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 90%;
+    padding: 10px;
+  }
+
+  .menu-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .sign-out {
+    border-left: none;
+    border-top: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding-top: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-links a,
+  .menu-links a::after,
+  .sign-out {
+    transition: none;
+  }
+
+  .menu-links a:active,
+  .sign-out:active {
+    transform: none;
   }
 }

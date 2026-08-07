@@ -8,8 +8,25 @@
       <h1>GoToTheF***gGym</h1>
       <h2>MememtoMori</h2>
     </div>
+    <!--
+      Inline SVG rather than the ☀️/🌙 emoji this used to render. Emoji are font-dependent:
+      they changed shape per platform, carried their own colour regardless of the theme, and
+      sat off the optical centre of the button.
+    -->
     <button class="theme-toggle" (click)="toggleTheme()" [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'">
-      <span class="theme-icon">{{ isDarkMode() ? '☀️' : '🌙' }}</span>
+      @if (isDarkMode()) {
+        <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4.2" />
+          <g stroke-linecap="round">
+            <path d="M12 2.6v2.4M12 19v2.4M21.4 12H19M5 12H2.6" />
+            <path d="M18.6 5.4 16.9 7.1M7.1 16.9l-1.7 1.7M18.6 18.6l-1.7-1.7M7.1 7.1 5.4 5.4" />
+          </g>
+        </svg>
+      } @else {
+        <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M20.4 14.6A8.6 8.6 0 0 1 9.4 3.6a8.6 8.6 0 1 0 11 11Z" />
+        </svg>
+      }
     </button>
   </div>
 </header>

@@ -1,35 +1,47 @@
 <!-- Per-view states (6.5): a failed or empty load used to leave stale zeroes on screen
      with the only explanation in the console. -->
-<p *ngIf="loading" class="dashboard-status">Loading your dashboard…</p>
-<p *ngIf="error" class="dashboard-status dashboard-error" role="alert">{{ error }}</p>
-<p *ngIf="!loading && !error && !hasProfile" class="dashboard-status">
+<p *ngIf="loading()" class="dashboard-status">Loading your dashboard…</p>
+<p *ngIf="error()" class="dashboard-status dashboard-error" role="alert">{{ error() }}</p>
+<p *ngIf="!loading() && !error() && !hasProfile()" class="dashboard-status">
   No profile data yet — log a weight and a training to get started.
 </p>
 
+<!--
+  Units and a progress track give the tiles something to differ by. Six identically-shaped
+  boxes reading only a bare number was the "every block is the same" problem: the variation
+  now comes from the data each tile actually holds, not from decoration.
+-->
 <div class="info-block">
-  <div>
+  <div class="stat">
     <h3>Age</h3>
-    <p class="value">{{ currentAge }}</p>
+    <p class="value">{{ currentAge() }}<span class="unit">years</span></p>
   </div>
-  <div>
+  <div class="stat">
     <h3>Weight</h3>
-    <p class="value">{{ weight }}</p>
+    <p class="value">{{ weight() }}<span class="unit">kg</span></p>
   </div>
-  <div>
+  <div class="stat">
     <h3>BMI</h3>
-    <p class="value">{{ bmi }}</p>
+    <p class="value">{{ bmi() }}</p>
   </div>
-  <div>
-    <h3>BMI Status:</h3>
-    <p class="value">{{ bmiStatus }}</p>
+  <div class="stat">
+    <h3>BMI status</h3>
+    <p class="value value--text">{{ bmiStatus() }}</p>
   </div>
-  <div>
-    <h3>#Days Trained</h3>
-    <p class="value">{{ totalDaysTrained }}</p>
+  <div class="stat">
+    <h3>Days trained</h3>
+    <p class="value">{{ totalDaysTrained() }}</p>
   </div>
-  <div>
-    <h3>% Days Trained</h3>
-    <p class="value">{{ percentageDaysTrained }}%</p>
+  <div class="stat">
+    <h3>Training rate</h3>
+    <p class="value">{{ percentageDaysTrained() }}<span class="unit">%</span></p>
+    <div
+      class="track"
+      role="img"
+      [attr.aria-label]="'Trained on ' + percentageDaysTrained() + '% of days since joining'"
+    >
+      <div class="track-fill" [style.width.%]="percentageDaysTrained()"></div>
+    </div>
   </div>
 </div>
 <!--
@@ -41,50 +53,54 @@
   <h2
     role="button"
     tabindex="0"
-    [attr.aria-expanded]="isChartVisible"
+    [attr.aria-expanded]="isChartVisible()"
     (click)="toggleLifeExpectancyChart()"
     (keydown.enter)="toggleLifeExpectancyChart()"
     (keydown.space)="toggleLifeExpectancyChart()"
-  >Weeks Already gone: {{ weeksGone }}</h2>
+  >Weeks Already gone: {{ weeksGone() }}</h2>
   <h2
     role="button"
     tabindex="0"
-    [attr.aria-expanded]="isChartVisible"
+    [attr.aria-expanded]="isChartVisible()"
     (click)="toggleLifeExpectancyChart()"
     (keydown.enter)="toggleLifeExpectancyChart()"
     (keydown.space)="toggleLifeExpectancyChart()"
-  >Weeks Left to Live: {{ weeksLeftToLive }}</h2>
+  >Weeks Left to Live: {{ weeksLeftToLive() }}</h2>
 </div>
 <!--
   The weight history chart was a complete, polished component that nothing ever rendered —
   the API only exposed the latest weight, so it had no data source until /weight_updates/history.
 -->
-<app-weight-history-chart [weightData]="weightHistory"></app-weight-history-chart>
+<app-weight-history-chart [weightData]="weightHistory()"></app-weight-history-chart>
 
 <!--
   A real dialog (6.4): role/aria-modal so assistive tech treats it as one, cdkTrapFocus to
-  keep Tab inside it and restore focus on close, Escape to dismiss, and a real <button> for
-  the close control rather than a clickable <span>.
+  keep Tab inside it and restore focus on close.
+
+  Dismissal is the backdrop or Escape — there is no close button by request. The click
+  handler sits on the backdrop and the panel stops propagation, so a click that lands on
+  the chart never closes it. `tabindex="-1"` on the panel matters more than it looks: with
+  the X gone there is no other focusable child, so this is what the focus trap captures and
+  what makes Escape reach the handler.
 -->
 <div
-  *ngIf="isChartVisible"
+  *ngIf="isChartVisible()"
   class="modal"
   role="dialog"
   aria-modal="true"
-  aria-labelledby="life-chart-title"
+  aria-label="Life expectancy chart"
+  (click)="onBackdropClick($event)"
   (keydown.escape)="toggleLifeExpectancyChart()"
 >
-  <div class="modal-content" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
-    <button
-      type="button"
-      class="close-btn"
-      aria-label="Close life expectancy chart"
-      (click)="toggleLifeExpectancyChart()"
-    >&times;</button>
-    <h3 id="life-chart-title">Life Expectancy Chart</h3>
+  <div
+    class="modal-content"
+    tabindex="-1"
+    cdkTrapFocus
+    [cdkTrapFocusAutoCapture]="true"
+  >
     <app-life-expectancy-chart
-      [currentAge]="currentAge"
-      [weeksLeftToLive]="weeksLeftToLive">
+      [currentAge]="currentAge()"
+      [weeksLeftToLive]="weeksLeftToLive()">
     </app-life-expectancy-chart>
   </div>
 </div>

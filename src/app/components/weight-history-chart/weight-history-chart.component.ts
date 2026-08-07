@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // Only the D3 modules this chart uses, rather than the whole meta-package (6.6).
 import { Selection, select, selectAll } from 'd3-selection';
@@ -21,24 +21,42 @@ interface WeightPoint {
   template: `
     <div class="weight-chart-container">
       <h3>Weight History</h3>
-      <div #chart class="chart"></div>
+      <div #chart class="chart" [class.chart--empty]="!weightData || weightData.length === 0"></div>
       <p *ngIf="!weightData || weightData.length === 0" class="no-data">
         No weight data available yet. Start logging your weight to see trends!
       </p>
     </div>
   `,
   styles: [`
+    /* Angular hosts default to display:inline, which made the block below sit in an
+       inline formatting context and ignore the auto margins that centre it. */
+    :host {
+      display: block;
+    }
+
+    /*
+     * The app's single centred column (DESIGN.md §1). Every other block on the dashboard —
+     * .info-block, .weeks-left, the status line — is 80% / 1400px / auto, but this one had
+     * "margin: 20px 0" and no width, so it ran full-bleed and sat wider than everything
+     * above it. It also used --card-background and --shadow-md, Material-era tokens that
+     * nothing else in the app uses; it now takes the panel surface and the Resting shadow.
+     */
     .weight-chart-container {
+      width: 80%;
+      max-width: 1400px;
+      margin: 20px auto;
       padding: 20px;
-      background: var(--card-background);
+      background: var(--panel-bg);
+      color: var(--panel-text);
       border-radius: 10px;
-      box-shadow: var(--shadow-md);
-      margin: 20px 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+      font-family: 'Roboto Mono', ui-monospace, monospace;
     }
 
     h3 {
       margin-top: 0;
-      color: var(--text-primary);
+      color: var(--panel-text);
       text-align: center;
     }
 
@@ -47,16 +65,26 @@ interface WeightPoint {
       min-height: 300px;
     }
 
+    /* Without this an empty chart still reserved 300px, so a user with no weigh-ins saw a
+       large blank box with the message stranded underneath it. */
+    .chart--empty {
+      min-height: 0;
+    }
+
+    /* --text-secondary is tuned for the page background, not the panel; on the light
+       theme's panel it lands under 4.5:1. Dimmed panel ink keeps the same recessive feel
+       without that. */
     .no-data {
       text-align: center;
-      color: var(--text-secondary);
+      color: var(--panel-text);
+      opacity: 0.75;
       font-style: italic;
     }
   `],
   // Redraws from ngOnChanges, not from change detection.
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WeightHistoryChartComponent implements OnInit, OnChanges {
+export class WeightHistoryChartComponent implements AfterViewInit, OnChanges {
   @Input() weightData: WeightHistory[] = [];
   @ViewChild('chart', { static: false }) chartElement!: ElementRef<HTMLDivElement>;
 
@@ -67,13 +95,33 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
   private width = 0;
   private height = 300;
 
-  ngOnInit(): void {
+  /**
+   * The chart is built here, not in `ngOnInit`.
+   *
+   * `chartElement` is a non-static `@ViewChild`, so it does not resolve until this hook.
+   * `createChart` was only ever called from `ngOnInit`, where it hit its own
+   * `if (!this.chartElement) return` guard every single time — `this.svg` was therefore
+   * never created, and the `updateChart` call in `ngOnChanges` then bailed on
+   * `if (!this.svg)`. There was no path that drew anything: the chart had never rendered,
+   * with data or without.
+   */
+  ngAfterViewInit(): void {
     this.createChart();
   }
 
+  /**
+   * Create-or-update, rather than update-only. Weight history arrives asynchronously, so
+   * the first meaningful data usually lands after the view exists but before any SVG does.
+   */
   ngOnChanges(): void {
-    if (this.chartElement && this.weightData && this.weightData.length > 0) {
+    if (!this.chartElement || !this.weightData || this.weightData.length === 0) {
+      return;
+    }
+
+    if (this.svg) {
       this.updateChart();
+    } else {
+      this.createChart();
     }
   }
 
@@ -146,7 +194,11 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
     svg.append('path')
       .datum(data)
       .attr('fill', 'none')
-      .attr('stroke', 'var(--primary-color)')
+      // `.style`, not `.attr`: var() resolves in a CSS property but not in an SVG
+      // presentation attribute, so `attr('stroke', 'var(--x)')` is simply invalid and the
+      // path fell back to the default. Custom properties inherit here, so the line follows
+      // the theme.
+      .style('stroke', 'var(--md-primary)')
       .attr('stroke-width', 3)
       .attr('d', line);
 
@@ -159,14 +211,14 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       .attr('cx', d => x(d.date))
       .attr('cy', d => y(d.weight))
       .attr('r', 5)
-      .attr('fill', 'var(--primary-color)')
-      .attr('stroke', 'var(--card-background)')
+      .style('fill', 'var(--md-primary)')
+      .style('stroke', 'var(--md-surface-container)')
       .attr('stroke-width', 2)
       // `event` is typed by d3's own listener signature; the datum comes from `.data(data)`.
       .on('mouseover', (event, d) => {
         select(event.currentTarget)
           .attr('r', 8)
-          .attr('fill', 'var(--primary-light)');
+          .style('fill', 'var(--md-p-70)');
 
         // Show tooltip
         this.showTooltip(event, d);
@@ -174,7 +226,7 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
       .on('mouseout', (event) => {
         select(event.currentTarget)
           .attr('r', 5)
-          .attr('fill', 'var(--primary-color)');
+          .style('fill', 'var(--md-primary)');
 
         this.hideTooltip();
       });
@@ -183,12 +235,12 @@ export class WeightHistoryChartComponent implements OnInit, OnChanges {
     svg.append('g')
       .attr('transform', `translate(0,${this.height})`)
       .call(axisBottom(x).ticks(5))
-      .attr('color', 'var(--text-secondary)');
+      .style('color', 'var(--md-on-surface-variant)');
 
     // Add Y axis
     svg.append('g')
       .call(axisLeft(y).ticks(5))
-      .attr('color', 'var(--text-secondary)');
+      .style('color', 'var(--md-on-surface-variant)');
 
     // Add axis labels
     svg.append('text')

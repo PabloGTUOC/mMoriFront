@@ -1,49 +1,73 @@
+/*
+ * The life grid — the app's signature surface.
+ *
+ * Two things were wrong beyond taste. The dots carried a 1.5px stroke at a 5px radius, so
+ * roughly half of every dot was outline; and none of these rules ever applied, because the
+ * D3 code set an inline fill and never assigned the classes they target. The grid was
+ * rendering white and green circles. Colour now lives here, and the stroke is gone.
+ *
+ * It is a sky surface, so it keeps the gradient and the glow (DESIGN.md, One Loud Surface).
+ */
 .chart-container {
-  max-width: 1400px; /* Maximum width of 1400px */
-  width: 80%; /* 80% of the available screen width */
-  margin: 20px auto;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--r-md);
   text-align: center;
-  font-family: 'Roboto Mono', monospace;
-  border: 2px solid var(--neon-line);
+  font-family: var(--font-mono);
+  border: 1px solid var(--neon-line);
   overflow: hidden;
-  background: var(--sky-gradient); /* Dark gradient mimicking a night sky */
+  background: var(--sky-gradient);
+  box-sizing: border-box;
 }
 
 .chart-container svg {
-  max-width: 90%; /* Changed from 80% to allow full width if needed */
-  display: block; /* Ensure the SVG takes the full container space */
-  margin: 0 auto; /* Center the SVG within the container */
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
   overflow: visible;
 }
 
-.chart-title {
-  color: var(--accent); /* Bright neon pink color matching weeks-left h2 */
-  text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent); /* Stronger glow effect */
-  font-size: 2em; /* Larger font size for the title */
-  margin-bottom: 15px; /* Space between title and chart */
-  letter-spacing: 2px; /* Slightly spaced letters for a retro look */
+/* `.chart-title` used to be styled here and targeted nothing: this template renders only
+   the chart div, and the heading above it belongs to the dialog. */
+
+/*
+ * `::ng-deep` is required here, not preference.
+ *
+ * D3 creates these circles at runtime, so they never receive the `_ngcontent-*` attribute
+ * that emulated encapsulation rewrites every selector in this file to require. Plain
+ * `.dot--lived` matched nothing and every dot fell back to the SVG default fill — which is
+ * why they all came out the same colour. Scoped under `:host`, so it cannot leak past this
+ * component.
+ *
+ * Lived weeks are spent, so they are solid. Remaining weeks are faint rather than a second
+ * bright colour: two saturated colours turned the grid into a pattern, and the point is the
+ * proportion between them, not the contest.
+ */
+:host ::ng-deep .dot {
+  stroke: none;
+  transition: fill var(--motion-short) var(--ease-standard),
+              opacity var(--motion-short) var(--ease-standard);
 }
 
-.chart-container .dot {
-  stroke-width: 1.5;
-  stroke: var(--accent); /* Bright neon border for each dot */
+:host ::ng-deep .dot--lived {
+  fill: var(--md-p-seed);
+  opacity: 0.95;
 }
 
-.chart-container .lived-dot {
-  fill: var(--accent); /* Neon pink for lived dots */
-  opacity: 0.8; /* Slight transparency for a glowing effect */
+:host ::ng-deep .dot--remaining {
+  fill: var(--on-sky-text);
+  opacity: 0.24;
 }
 
-.chart-container .remaining-dot {
-  fill: whitesmoke; /* Bright neon green for remaining dots */
-  opacity: 0.8; /* Slight transparency for a glowing effect */
-}
-
-.chart-container .dot:hover {
-  fill: var(--on-sky-text); /* White hover effect to highlight the dot */
-  cursor: pointer;
+:host ::ng-deep .dot:hover {
+  fill: var(--on-sky-text);
   opacity: 1;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host ::ng-deep .dot {
+    transition: none;
+  }
 }

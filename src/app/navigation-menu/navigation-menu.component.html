@@ -1,21 +1,27 @@
-<div class="menu-container">
-  <nav class="menu-bar">
-    <a routerLink="/home/daily" routerLinkActive="active">Today</a>
-    <a routerLink="/home/trainings" routerLinkActive="active">Trainings</a>
-    <a routerLink="/home/stretches" routerLinkActive="active">Stretches</a>
-    <a routerLink="/home/thoughts" routerLinkActive="active">Thoughts of the Day</a>
-    <button type="button" (click)="signOut()">Log Out</button>
-  </nav>
+<!--
+  One set of links, not two.
 
-  <!-- Dropdown Menu for Smaller Screens -->
-  <div class="dropdown-menu">
-    <button class="dropdown-btn" type="button" (click)="toggleDropdown()">☰ Menu</button>
-    <nav class="dropdown-content" [class.show]="dropdownOpen">
-      <a routerLink="/home/daily" routerLinkActive="active" (click)="closeDropdown()">Today</a>
-      <a routerLink="/home/trainings" routerLinkActive="active" (click)="closeDropdown()">Trainings</a>
-      <a routerLink="/home/stretches" routerLinkActive="active" (click)="closeDropdown()">Stretches</a>
-      <a routerLink="/home/thoughts" routerLinkActive="active" (click)="closeDropdown()">Thoughts of the Day</a>
-      <button type="button" (click)="signOut()">Log Out</button>
-    </nav>
-  </div>
-</div>
+  This used to render the whole nav twice — a bar and a hamburger dropdown — with CSS hiding
+  one. Both copies were always in the DOM, so assistive tech announced two navigations and
+  ten links, and every label change had to be made in two places or they drifted. The layout
+  now reflows with CSS from a single list, and the hamburger is gone: it was hiding four
+  short labels behind an extra tap.
+-->
+<nav class="menu" aria-label="Main">
+  <ul class="menu-links">
+    <li>
+      <a routerLink="/home/daily" routerLinkActive="is-current" ariaCurrentWhenActive="page">Today</a>
+    </li>
+    <li>
+      <a routerLink="/home/trainings" routerLinkActive="is-current" ariaCurrentWhenActive="page">Trainings</a>
+    </li>
+    <li>
+      <a routerLink="/home/stretches" routerLinkActive="is-current" ariaCurrentWhenActive="page">Stretches</a>
+    </li>
+    <li>
+      <a routerLink="/home/thoughts" routerLinkActive="is-current" ariaCurrentWhenActive="page">Thoughts</a>
+    </li>
+  </ul>
+
+  <button class="sign-out" type="button" (click)="signOut()">Log out</button>
+</nav>
