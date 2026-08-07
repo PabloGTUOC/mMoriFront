@@ -238,12 +238,30 @@ left to break.
 | `GET /moods` | `POST /moods` had no counterpart. The app asked how you felt every day, stored it, and offered no way to ever see it — data the user could not read. |
 | `DELETE /trainings/:id` | Nothing in the spec could be undone: no PATCH, no DELETE, on any of the sixteen routes. A session logged by mistake was permanent and permanently skewed `training_count`. |
 | `DELETE /weight_updates/:id` | Same-day submissions replace each other, so today's figure can be retyped — but a weigh-in filed against the wrong date was stuck, distorting the chart for as long as it existed. |
+| `GET /training-repository/discover`, `GET /stretches/discover` | Catalogues are per-user now, so this is the deliberate way to reach anyone else's. `?q=` searches by name; the term is regex-escaped before it reaches a RegExp. |
+| `POST /training-repository/:id/import`, `POST /stretches/:id/import` | Copies an entry into your own catalogue. A copy, not a reference, so the original author editing or deleting theirs cannot reach into yours. Importing twice is a no-op. |
+| `DELETE /training-repository/:id`, `DELETE /stretches/:id` | Removes one of your own entries. Junk in a catalogue used to be permanent for everybody. |
 | `POST /user_data/preview` | Onboarding asked eight questions and explained none of them, so the dashboard figure arrived from nowhere. Runs the same pipeline as `showUserData` on unsaved values and returns the adjustment itemised. A read in every sense but the verb: POST because the profile is in the body, not because anything persists. |
 
 Both deletes scope the query by `user_id` as well as `_id`, so ownership is enforced by the
 filter rather than by a check that a later caller could omit. A row belonging to someone else
 answers 404 exactly as a missing one does; distinguishing them would confirm the existence of
 other users' rows to anyone who could guess an id.
+
+### 3f. Catalogues are per-user, not global
+
+§4.8 and §4.10 list one catalogue everyone shares: `GET /training-repository` took no user at
+all. That made both a noticeboard nobody owned — junk accumulated permanently for everyone,
+and `POST /stretches` let any signed-in person put a video in an iframe in everybody's app,
+which was the most exploitable surface in the application.
+
+Each user now has their own. `/discover` and `/import` are the deliberate route across, and
+both list endpoints require a `user_id` where the spec's took none.
+
+`created_by` is still never returned. `created_by_name` — the Firebase display name,
+denormalised at write time — is the deliberate exception: a browsable pool has to say whose
+entry each one is, and a name describes a person where a uid addresses an account and would
+let anyone enumerate who exists.
 
 ### 4. `POST /moods` returns 400 instead of crashing
 

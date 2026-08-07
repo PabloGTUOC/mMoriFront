@@ -244,3 +244,43 @@ form button:disabled {
     transform: none;
   }
 }
+
+/* Step two shares the form's frame so onboarding reads as one surface across both steps. */
+.onboarding-step {
+  background: var(--md-surface-container);
+  border: 1px solid var(--md-outline-variant);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  max-width: 720px;
+  width: var(--app-column);
+  margin: var(--sp-5) auto var(--sp-8);
+  color: var(--md-on-surface);
+  font-family: var(--font-mono);
+}
+
+.onboarding-heading {
+  margin: var(--sp-5) 0 var(--sp-2);
+  font: var(--type-title);
+  color: var(--md-on-surface);
+}
+
+.onboarding-done {
+  display: block;
+  margin: var(--sp-6) auto 0;
+  padding: var(--sp-3) var(--sp-6);
+  border: none;
+  border-radius: var(--r-full);
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  font: var(--type-label);
+  cursor: pointer;
+}
+
+.onboarding-done:hover {
+  background: var(--accent-strong);
+}
+
+.onboarding-done:focus-visible {
+  outline: 2px solid var(--md-secondary);
+  outline-offset: 2px;
+}

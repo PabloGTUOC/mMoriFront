@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { TrainingRepositoryService } from '../services/training-repository.service';
 import { TrainingItemComponent } from '../training-item/training-item.component';
 import { CatalogueComponent } from '../shared/catalogue.component';
+import { CatalogueDiscoveryComponent } from '../shared/catalogue-discovery.component';
 import { TrainingRepositoryEntry, TrainingRepositoryPayload } from '../models';
 
 /**
@@ -18,7 +19,7 @@ import { TrainingRepositoryEntry, TrainingRepositoryPayload } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './training-repository.component.html',
   styleUrls: ['./training-repository.component.scss'],
-  imports: [CommonModule, TrainingItemComponent, ReactiveFormsModule],
+  imports: [CommonModule, TrainingItemComponent, ReactiveFormsModule, CatalogueDiscoveryComponent],
 })
 export class TrainingRepositoryComponent extends CatalogueComponent<
   TrainingRepositoryEntry,
@@ -39,6 +40,18 @@ export class TrainingRepositoryComponent extends CatalogueComponent<
 
   protected override create(payload: TrainingRepositoryPayload): Observable<unknown> {
     return this.trainingRepositoryService.addNewTraining(payload);
+  }
+
+  protected override discover(term: string): Observable<TrainingRepositoryEntry[]> {
+    return this.trainingRepositoryService.discoverTrainingRepository(term);
+  }
+
+  protected override importEntry(id: string): Observable<unknown> {
+    return this.trainingRepositoryService.importTrainingRepositoryEntry(id);
+  }
+
+  protected override remove(id: string): Observable<unknown> {
+    return this.trainingRepositoryService.deleteTrainingRepositoryEntry(id);
   }
 
   protected override buildForm(): FormGroup {

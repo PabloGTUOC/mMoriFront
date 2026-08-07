@@ -104,3 +104,12 @@ form button:hover {
 .toggle-add-form-btn:hover {
   background-color: var(--panel-bg-muted);
 }
+
+/* The two ways to fill a per-user catalogue sit together: write one, or import one. */
+.catalogue-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  justify-content: center;
+  margin-top: var(--sp-4);
+}

@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { Training } from '../models/training.model.js';
 import { ownedLookup } from '../lib/owned.js';
+import { searchPattern, withoutOwnerId } from '../lib/catalogue.js';
 import { TrainingRepository } from '../models/training-repository.model.js';
 import { UserData } from '../models/user-data.model.js';
 import {
@@ -33,9 +34,8 @@ import { documentId, serializeDocument, serializeDocuments, toDateOnly } from '.
  * spec-conformant clients and the live frontend both find what they expect.
  */
 function withTrainingNameAlias(doc: Record<string, unknown>): Record<string, unknown> {
-  // `created_by` is stored for traceability but never returned — see the model.
-  const { created_by: _createdBy, ...rest } = doc;
-  return { ...rest, training_name: doc['name'] };
+  // The owner uid is stripped; the author's display name is not — see lib/catalogue.ts.
+  return { ...withoutOwnerId(doc), training_name: doc['name'] };
 }
 
 /**
@@ -166,9 +166,25 @@ export async function trainingStats(req: Request, res: Response): Promise<Respon
   });
 }
 
-/** `GET /training-repository` — §4.8. Global catalogue, not user-scoped. */
-export async function listTrainingRepository(_req: Request, res: Response): Promise<Response> {
-  const entries = await TrainingRepository.find().sort({ created_at: 1, _id: 1 }).lean();
+/**
+ * `GET /training-repository` — §4.8, now **user-scoped**.
+ *
+ * The spec's catalogue was global: one list everyone saw and everyone wrote to. It is your
+ * own list now, with `GET /training-repository/discover` as the deliberate way to reach
+ * anyone else's. See lib/catalogue.ts for why.
+ *
+ * The empty-result envelope is unchanged — 200 with `success: false` and a `message` key —
+ * because the frontend branches on it.
+ */
+export async function listTrainingRepository(req: Request, res: Response): Promise<Response> {
+  const userId = queryParam(req.query['user_id']);
+  if (isBlank(userId)) {
+    return failWithError(res, HTTP.badRequest, 'UserId is missing');
+  }
+
+  const entries = await TrainingRepository.find({ created_by: userId })
+    .sort({ created_at: 1, _id: 1 })
+    .lean();
 
   if (entries.length === 0) {
     return failWithMessage(res, HTTP.ok, 'No training repository data found');
@@ -178,6 +194,105 @@ export async function listTrainingRepository(_req: Request, res: Response): Prom
     success: true,
     data: serializeDocuments(entries).map(withTrainingNameAlias),
   });
+}
+
+/**
+ * `GET /training-repository/discover?q=` — **an addition.** Everyone else's entries.
+ *
+ * The pool a new user is shown at signup, and what the "Search other users" control reads
+ * afterwards. Always someone else's: your own are on your own screen, and listing them here
+ * would invite importing a second copy of what you already have.
+ */
+export async function discoverTrainingRepository(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const userId = queryParam(req.query['user_id']);
+  if (isBlank(userId)) {
+    return failWithError(res, HTTP.badRequest, 'UserId is missing');
+  }
+
+  const pattern = searchPattern(req);
+  const entries = await TrainingRepository.find({
+    created_by: { $ne: userId },
+    ...(pattern
+      ? { $or: [{ name: pattern }, { type: pattern }, { description: pattern }] }
+      : {}),
+  })
+    .sort({ created_at: -1, _id: -1 })
+    .limit(100)
+    .lean();
+
+  return ok(res, {
+    success: true,
+    data: serializeDocuments(entries).map(withTrainingNameAlias),
+  });
+}
+
+/**
+ * `POST /training-repository/:id/import` — **an addition.**
+ *
+ * Copies someone else's entry into your catalogue. A copy, not a reference: once imported
+ * it is yours, and the original author editing or deleting theirs cannot reach into it.
+ *
+ * Importing the same entry twice is a no-op rather than an error. The button is in a
+ * browsable list, so pressing it again is a slip, not a request for a duplicate.
+ */
+export async function importTrainingRepositoryEntry(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const lookup = ownedLookup(req);
+  if (!lookup.ok) return failWithError(res, HTTP.badRequest, lookup.error);
+
+  const source = await TrainingRepository.findById(lookup.id).lean();
+  if (!source) return failWithError(res, HTTP.notFound, 'Not found');
+
+  const existing = await TrainingRepository.findOne({
+    created_by: lookup.userId,
+    name: source.name,
+  }).lean();
+
+  if (existing) {
+    return ok(res, {
+      success: true,
+      data: [withTrainingNameAlias(serializeDocument(existing))],
+    });
+  }
+
+  const copy = new TrainingRepository({
+    name: source.name,
+    type: source.type,
+    duration: source.duration,
+    calories: source.calories,
+    description: source.description,
+    created_by: lookup.userId,
+    created_by_name: req.auth?.name,
+  });
+
+  await copy.save();
+
+  return created(res, {
+    success: true,
+    data: [withTrainingNameAlias(serializeDocument(copy.toObject()))],
+  });
+}
+
+/** `DELETE /training-repository/:id` — **an addition.** Removes one of your own entries. */
+export async function deleteTrainingRepositoryEntry(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const lookup = ownedLookup(req);
+  if (!lookup.ok) return failWithError(res, HTTP.badRequest, lookup.error);
+
+  const deleted = await TrainingRepository.findOneAndDelete({
+    _id: lookup.id,
+    created_by: lookup.userId,
+  }).lean();
+
+  if (!deleted) return failWithError(res, HTTP.notFound, 'Not found');
+  return ok(res, { success: true });
 }
 
 /**
@@ -204,6 +319,7 @@ export async function createTrainingRepositoryEntry(
     calories: toIntegerOrUndefined(pick(params, 'calories', 'calories_burned')),
     description: toStringOrUndefined(pick(params, 'description')),
     created_by: req.auth?.uid,
+    created_by_name: req.auth?.name,
   });
 
   try {

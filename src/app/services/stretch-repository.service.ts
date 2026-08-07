@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -28,5 +28,21 @@ export class StretchRepositoryService {
 
   addNewStretch(stretch: StretchPayload): Observable<StretchResponse> {
     return this.http.post<StretchResponse>(`${this.apiUrl}/stretches`, { stretch });
+  }
+
+  /** Everyone else's stretches. See the training service for why this exists. */
+  discoverStretches(term: string): Observable<Stretch[]> {
+    const params = term ? new HttpParams().set('q', term) : undefined;
+    return this.http
+      .get<StretchResponse>(`${this.apiUrl}/stretches/discover`, { params })
+      .pipe(map((response) => response.data ?? []));
+  }
+
+  importStretch(id: string): Observable<unknown> {
+    return this.http.post(`${this.apiUrl}/stretches/${id}/import`, {});
+  }
+
+  deleteStretch(id: string): Observable<unknown> {
+    return this.http.delete(`${this.apiUrl}/stretches/${id}`);
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -34,5 +34,28 @@ export class TrainingRepositoryService {
     return this.http.post<TrainingRepositoryResponse>(`${this.apiUrl}/training-repository`, {
       training,
     });
+  }
+
+  /**
+   * Everyone else's entries, for the "Search other users" panel.
+   *
+   * Catalogues are per-user now; this is the deliberate way across. Results carry
+   * `created_by_name` so an entry can say whose it is, and never `created_by` — a name
+   * describes a person, a uid addresses an account.
+   */
+  discoverTrainingRepository(term: string): Observable<TrainingRepositoryEntry[]> {
+    const params = term ? new HttpParams().set('q', term) : undefined;
+    return this.http
+      .get<TrainingRepositoryResponse>(`${this.apiUrl}/training-repository/discover`, { params })
+      .pipe(map((response) => response.data ?? []));
+  }
+
+  /** Copies one into this user's catalogue. Importing twice is a no-op server-side. */
+  importTrainingRepositoryEntry(id: string): Observable<unknown> {
+    return this.http.post(`${this.apiUrl}/training-repository/${id}/import`, {});
+  }
+
+  deleteTrainingRepositoryEntry(id: string): Observable<unknown> {
+    return this.http.delete(`${this.apiUrl}/training-repository/${id}`);
   }
 }

@@ -32,8 +32,30 @@ export abstract class CatalogueComponent<TItem, TPayload> implements OnInit {
   readonly showAddForm = signal(false);
   form!: FormGroup;
 
+  /**
+   * Discovery state.
+   *
+   * Catalogues used to be global — one list everyone saw and wrote to. They are per-user
+   * now, so reaching anyone else's is a deliberate act: open the panel, search, import.
+   * What is imported is a copy, so the original author changing theirs cannot reach yours.
+   */
+  readonly showDiscovery = signal(false);
+  readonly discovered = signal<TItem[]>([]);
+  readonly discovering = signal(false);
+  readonly discoveryError = signal<string | null>(null);
+  readonly importing = signal<string | null>(null);
+
   /** Fetches the catalogue. The service unwraps the envelope, so this is a plain array. */
   protected abstract fetch(): Observable<TItem[]>;
+
+  /** Everyone else's entries, optionally filtered by a search term. */
+  protected abstract discover(term: string): Observable<TItem[]>;
+
+  /** Copies someone else's entry into this user's catalogue. */
+  protected abstract importEntry(id: string): Observable<unknown>;
+
+  /** Removes one of this user's own entries. */
+  protected abstract remove(id: string): Observable<unknown>;
 
   /** Creates one entry. The response is ignored; the list is refetched instead. */
   protected abstract create(payload: TPayload): Observable<unknown>;
@@ -82,6 +104,75 @@ export abstract class CatalogueComponent<TItem, TPayload> implements OnInit {
       error: (error) => {
         console.error(`Error adding ${this.itemLabel}`, error);
         this.error.set('Could not save. Please check the form and try again.');
+      },
+    });
+  }
+
+  toggleDiscovery(): void {
+    this.showDiscovery.update((open) => !open);
+    if (this.showDiscovery()) {
+      this.search('');
+    } else {
+      this.discovered.set([]);
+      this.discoveryError.set(null);
+    }
+  }
+
+  search(term: string): void {
+    this.discovering.set(true);
+    this.discoveryError.set(null);
+
+    this.discover(term).subscribe({
+      next: (items) => {
+        this.discovered.set(items);
+        this.discovering.set(false);
+      },
+      error: (error) => {
+        console.error(`Error searching ${this.itemLabel}`, error);
+        this.discoveryError.set('Could not search right now. Please try again.');
+        this.discovering.set(false);
+      },
+    });
+  }
+
+  /**
+   * Imports one entry, then drops it from the results.
+   *
+   * Removing it locally rather than refetching: discovery excludes your own entries, so a
+   * refetch would produce the same list minus one row anyway, and a request per import is a
+   * lot of network for a list someone is clicking through.
+   */
+  importItem(item: TItem): void {
+    const id = (item as { _id?: { $oid: string } })._id?.$oid;
+    if (!id || this.importing()) return;
+
+    this.importing.set(id);
+
+    this.importEntry(id).subscribe({
+      next: () => {
+        this.importing.set(null);
+        this.discovered.update((items) =>
+          items.filter((other) => (other as { _id?: { $oid: string } })._id?.$oid !== id)
+        );
+        this.load();
+      },
+      error: (error) => {
+        console.error(`Error importing ${this.itemLabel}`, error);
+        this.importing.set(null);
+        this.discoveryError.set('Could not import that one. Please try again.');
+      },
+    });
+  }
+
+  deleteItem(item: TItem): void {
+    const id = (item as { _id?: { $oid: string } })._id?.$oid;
+    if (!id) return;
+
+    this.remove(id).subscribe({
+      next: () => this.load(),
+      error: (error) => {
+        console.error(`Error removing ${this.itemLabel}`, error);
+        this.error.set('Could not remove that one. Please try again.');
       },
     });
   }

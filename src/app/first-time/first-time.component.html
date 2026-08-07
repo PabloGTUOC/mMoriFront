@@ -6,7 +6,7 @@
   move it. The hints are tied to their inputs with aria-describedby, so they are read out
   rather than being decoration for sighted users only.
 -->
-<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+<form *ngIf="step() === 'profile'" [formGroup]="userForm" (ngSubmit)="onSubmit()">
   <div class="intro">
     <h2>A few things about you</h2>
     <p>
@@ -125,3 +125,27 @@
 
   <button type="submit" [disabled]="userForm.invalid">Start</button>
 </form>
+
+<!--
+  Step two. Catalogues are per-user, so a new account starts with both empty — and an empty
+  training picker on the daily form is a poor first impression of an app you have just
+  finished describing yourself to. The profile is already saved by the time this shows, so
+  skipping costs nothing.
+-->
+<section *ngIf="step() === 'catalogue'" class="onboarding-step">
+  <div class="intro">
+    <h2>Start your catalogue</h2>
+    <p>
+      Take a copy of anything other people have already added. You can add your own, and
+      come back to this from the menu, at any time.
+    </p>
+  </div>
+
+  <h3 class="onboarding-heading">Trainings</h3>
+  <app-onboarding-catalogue mode="trainings"></app-onboarding-catalogue>
+
+  <h3 class="onboarding-heading">Stretches</h3>
+  <app-onboarding-catalogue mode="stretches"></app-onboarding-catalogue>
+
+  <button type="button" class="onboarding-done" (click)="finish()">Go to my dashboard</button>
+</section>

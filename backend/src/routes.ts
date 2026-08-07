@@ -6,6 +6,9 @@ import {
   createTraining,
   deleteTraining,
   createTrainingRepositoryEntry,
+  deleteTrainingRepositoryEntry,
+  discoverTrainingRepository,
+  importTrainingRepositoryEntry,
   initialTrainings,
   latestTrainings,
   listTrainingRepository,
@@ -17,7 +20,13 @@ import {
   latestWeight,
   weightHistory,
 } from './controllers/weight-updates.controller.js';
-import { createStretch, listStretches } from './controllers/stretches.controller.js';
+import {
+  createStretch,
+  deleteStretch,
+  discoverStretches,
+  importStretch,
+  listStretches,
+} from './controllers/stretches.controller.js';
 import { generateRecommendation, moodHistory, saveMood } from './controllers/moods.controller.js';
 import { requireAuth } from './middleware/require-auth.js';
 import { rateLimit } from './middleware/rate-limit.js';
@@ -70,8 +79,13 @@ router.get('/trainings/training-stats', trainingStats);
 router.delete('/trainings/:id', deleteTraining);
 
 // Training catalogue
+// Per-user now, not the spec's global list. `/discover` is the deliberate way to reach
+// anyone else's, and `/import` copies one into your own. See lib/catalogue.ts.
 router.get('/training-repository', listTrainingRepository);
+router.get('/training-repository/discover', discoverTrainingRepository);
 router.post('/training-repository', createTrainingRepositoryEntry);
+router.post('/training-repository/:id/import', importTrainingRepositoryEntry);
+router.delete('/training-repository/:id', deleteTrainingRepositoryEntry);
 
 // Weight
 router.post('/weight_updates', createWeightUpdate);
@@ -81,7 +95,10 @@ router.delete('/weight_updates/:id', deleteWeightUpdate);
 
 // Stretch catalogue
 router.get('/stretches', listStretches);
+router.get('/stretches/discover', discoverStretches);
 router.post('/stretches', createStretch);
+router.post('/stretches/:id/import', importStretch);
+router.delete('/stretches/:id', deleteStretch);
 
 // Mood + AI recommendation
 router.post('/moods', saveMood);

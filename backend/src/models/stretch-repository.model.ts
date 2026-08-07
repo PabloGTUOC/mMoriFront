@@ -26,6 +26,15 @@ const stretchRepositorySchema = new Schema(
      * own. Undefined for rows written before this existed, or while AUTH_MODE is optional.
      */
     created_by: { type: String },
+    /**
+     * The author's display name, denormalised at write time.
+     *
+     * Catalogues are per-user and importable, so the discovery pool has to say whose entry
+     * each one is. The uid cannot: it names an account rather than a person, and returning
+     * it is the leak `created_by` is withheld to avoid. Denormalised because there is no
+     * users collection to join against — identity lives in Firebase, not here.
+     */
+    created_by_name: { type: String },
     video_link: { type: String },
   },
   {

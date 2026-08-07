@@ -14,9 +14,29 @@
     <p *ngIf="!loading()">No trainings available.</p>
   </ng-template>
 
-  <button type="button" (click)="toggleAddForm()">
-    {{ showAddForm() ? 'Cancel' : 'Add New Training' }}
-  </button>
+  <!--
+    Two ways to fill a catalogue that is now yours alone: write one, or take a copy of
+    someone else's. The search panel is shared between both catalogues.
+  -->
+  <div class="catalogue-actions">
+    <button type="button" (click)="toggleDiscovery()">
+      {{ showDiscovery() ? 'Close search' : 'Search other users' }}
+    </button>
+    <button type="button" (click)="toggleAddForm()">
+      {{ showAddForm() ? 'Cancel' : 'Add New Training' }}
+    </button>
+  </div>
+
+  <app-catalogue-discovery
+    *ngIf="showDiscovery()"
+    [entries]="discovered()"
+    [loading]="discovering()"
+    [error]="discoveryError()"
+    [importingId]="importing()"
+    [itemLabel]="itemLabel"
+    (search)="search($event)"
+    (import)="importItem($any($event))"
+  ></app-catalogue-discovery>
 
   <form *ngIf="showAddForm()" [formGroup]="form" (ngSubmit)="submit()">
     <label for="trainingName">Training Name:</label>

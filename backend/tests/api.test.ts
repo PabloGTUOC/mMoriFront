@@ -461,6 +461,128 @@ describe.skipIf(mongo === null)('API integration', () => {
     });
   });
 
+  /**
+   * Catalogues were global — one list everyone saw and everyone wrote to. They are now
+   * per-user, with discovery and import as the deliberate way across.
+   */
+  describe('catalogue ownership (additive)', () => {
+    async function addTraining(user_id: string, name: string) {
+      const created = await request(app)
+        .post('/training-repository')
+        .send({ training: { user_id, name, type: 'Strength' } });
+      return created.body.data[0]._id.$oid as string;
+    }
+
+    it('lists only your own entries', async () => {
+      await addTraining('me', 'Push day');
+      await addTraining('someone-else', 'Their session');
+
+      const mine = await request(app).get('/training-repository').query({ user_id: 'me' });
+
+      expect(mine.body.data).toHaveLength(1);
+      expect(mine.body.data[0].name).toBe('Push day');
+    });
+
+    it('discovery shows everyone else and never yourself', async () => {
+      await addTraining('me', 'Push day');
+      await addTraining('someone-else', 'Their session');
+
+      const found = await request(app)
+        .get('/training-repository/discover')
+        .query({ user_id: 'me' });
+
+      expect(found.body.data.map((e: { name: string }) => e.name)).toEqual(['Their session']);
+    });
+
+    it('attributes an entry to its author by name, never by uid', async () => {
+      await addTraining('someone-else', 'Their session');
+
+      const found = await request(app)
+        .get('/training-repository/discover')
+        .query({ user_id: 'me' });
+
+      // AUTH_MODE=disabled names the dev identity; what matters is the shape.
+      expect(found.body.data[0]).toHaveProperty('created_by_name');
+      expect(found.body.data[0]).not.toHaveProperty('created_by');
+    });
+
+    it('searches by name', async () => {
+      await addTraining('someone-else', 'Hamstring work');
+      await addTraining('someone-else', 'Push day');
+
+      const found = await request(app)
+        .get('/training-repository/discover')
+        .query({ user_id: 'me', q: 'hamstring' });
+
+      expect(found.body.data.map((e: { name: string }) => e.name)).toEqual(['Hamstring work']);
+    });
+
+    /** A search box reaching a RegExp unescaped is how it becomes a way to pin the database. */
+    it('treats regex metacharacters as literal text', async () => {
+      await addTraining('someone-else', 'Push day');
+
+      const found = await request(app)
+        .get('/training-repository/discover')
+        .query({ user_id: 'me', q: '.*' });
+
+      expect(found.status).toBe(200);
+      expect(found.body.data).toEqual([]);
+    });
+
+    it('imports a copy that survives the original being deleted', async () => {
+      const id = await addTraining('someone-else', 'Their session');
+
+      const imported = await request(app)
+        .post(`/training-repository/${id}/import`)
+        .query({ user_id: 'me' });
+      expect(imported.status).toBe(201);
+
+      await request(app)
+        .delete(`/training-repository/${id}`)
+        .query({ user_id: 'someone-else' });
+
+      const mine = await request(app).get('/training-repository').query({ user_id: 'me' });
+      expect(mine.body.data).toHaveLength(1);
+      expect(mine.body.data[0].name).toBe('Their session');
+    });
+
+    it('importing the same entry twice is a no-op, not a duplicate', async () => {
+      const id = await addTraining('someone-else', 'Their session');
+
+      await request(app).post(`/training-repository/${id}/import`).query({ user_id: 'me' });
+      const second = await request(app)
+        .post(`/training-repository/${id}/import`)
+        .query({ user_id: 'me' });
+
+      expect(second.status).toBe(200);
+
+      const mine = await request(app).get('/training-repository').query({ user_id: 'me' });
+      expect(mine.body.data).toHaveLength(1);
+    });
+
+    it('will not delete another user’s catalogue entry', async () => {
+      const id = await addTraining('someone-else', 'Their session');
+
+      const response = await request(app)
+        .delete(`/training-repository/${id}`)
+        .query({ user_id: 'me' });
+
+      expect(response.status).toBe(404);
+    });
+
+    it('scopes the stretch catalogue the same way', async () => {
+      await request(app)
+        .post('/stretches')
+        .send({ stretch: { user_id: 'someone-else', name: 'Hamstring' } });
+
+      const mine = await request(app).get('/stretches').query({ user_id: 'me' });
+      expect(mine.body.data).toEqual([]);
+
+      const found = await request(app).get('/stretches/discover').query({ user_id: 'me' });
+      expect(found.body.data).toHaveLength(1);
+    });
+  });
+
   describe('stretch catalogue (§4.10–§4.11)', () => {
     it('reports an empty catalogue as success:true with an empty array', async () => {
       const response = await request(app).get('/stretches');

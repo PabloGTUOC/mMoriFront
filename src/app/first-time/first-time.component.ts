@@ -5,6 +5,7 @@ import { UserService} from "../services/user.service";
 import { Router} from "@angular/router";
 import { CommonModule } from '@angular/common';  // Import CommonModule here
 import { AdjustmentStep, UserDataPayload, UserDataPreviewResponse } from '../models';
+import { OnboardingCatalogueComponent } from './onboarding-catalogue.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -16,7 +17,8 @@ import { of } from 'rxjs';
   styleUrls: ['./first-time.component.css'],
   imports: [
     ReactiveFormsModule,
-    CommonModule
+    CommonModule,
+    OnboardingCatalogueComponent
   ],
   providers: [UserDataService]
 })
@@ -211,6 +213,16 @@ export class FirstTimeComponent implements OnInit {
    */
   readonly preview = signal<UserDataPreviewResponse | null>(null);
 
+  /**
+   * Signing up is two steps, not one.
+   *
+   * Catalogues are per-user, so a new account starts with both of them empty — and an empty
+   * training picker on the daily form is a poor first impression of an app you have just
+   * finished describing yourself to. The profile is saved at the end of step one, so
+   * nothing here risks losing it; the catalogue step is skippable.
+   */
+  readonly step = signal<'profile' | 'catalogue'>('profile');
+
   private readonly destroyRef = inject(DestroyRef);
 
   constructor(private fb: FormBuilder, private userDataService: UserDataService, private userService: UserService, private router: Router ) {}
@@ -274,6 +286,11 @@ export class FirstTimeComponent implements OnInit {
       });
   }
 
+  /** Leaves onboarding for the dashboard. The profile was saved at the end of step one. */
+  finish(): void {
+    this.router.navigate(['/home']);
+  }
+
   /** Plain-language labels for the adjustment the backend itemises. */
   stepLabel(step: AdjustmentStep): string {
     switch (step.key) {
@@ -317,6 +334,7 @@ export class FirstTimeComponent implements OnInit {
           this.userDataService.submitUserData(payload).subscribe({
             next: () => {
               this.userService.setUserNewStatus(false);
+              this.step.set('catalogue');
               // Was '/main', which is not a route — onboarding dead-ended here.
               this.router.navigate(['/home']);
             },

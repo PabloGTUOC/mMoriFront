@@ -1,7 +1,24 @@
 import type { Request, Response } from 'express';
 import { StretchRepository } from '../models/stretch-repository.model.js';
-import { failWithErrors, HTTP, isValidationError, ok, validationMessages } from '../lib/http.js';
-import { optionalWrapper, pick, toIntegerOrUndefined, toStringOrUndefined } from '../lib/params.js';
+import {
+  created,
+  failWithError,
+  failWithErrors,
+  HTTP,
+  isValidationError,
+  ok,
+  validationMessages,
+} from '../lib/http.js';
+import {
+  isBlank,
+  optionalWrapper,
+  pick,
+  queryParam,
+  toIntegerOrUndefined,
+  toStringOrUndefined,
+} from '../lib/params.js';
+import { ownedLookup } from '../lib/owned.js';
+import { searchPattern, withoutOwnerId } from '../lib/catalogue.js';
 import { serializeDocument, serializeDocuments } from '../lib/serialize.js';
 import { isValidYouTubeUrl } from '../lib/youtube.js';
 
@@ -12,9 +29,8 @@ import { isValidYouTubeUrl } from '../lib/youtube.js';
  * `{{ stretch.stretch_name }}`. Canonical storage stays `name`, mirrored on output.
  */
 function withStretchNameAlias(doc: Record<string, unknown>): Record<string, unknown> {
-  // `created_by` is stored for traceability but never returned — see the model.
-  const { created_by: _createdBy, ...rest } = doc;
-  return { ...rest, stretch_name: doc['name'] };
+  // The owner uid is stripped; the author's display name is not — see lib/catalogue.ts.
+  return { ...withoutOwnerId(doc), stretch_name: doc['name'] };
 }
 
 /**
@@ -23,13 +39,107 @@ function withStretchNameAlias(doc: Record<string, unknown>): Record<string, unkn
  * Note this differs from `GET /training-repository`, which reports an empty catalogue as
  * `success: false`. Both are preserved as-is.
  */
-export async function listStretches(_req: Request, res: Response): Promise<Response> {
-  const stretches = await StretchRepository.find().sort({ created_at: 1, _id: 1 }).lean();
+export async function listStretches(req: Request, res: Response): Promise<Response> {
+  const userId = queryParam(req.query['user_id']);
+  if (isBlank(userId)) {
+    return failWithError(res, HTTP.badRequest, 'UserId is missing');
+  }
+
+  const stretches = await StretchRepository.find({ created_by: userId })
+    .sort({ created_at: 1, _id: 1 })
+    .lean();
 
   return ok(res, {
     success: true,
     data: serializeDocuments(stretches).map(withStretchNameAlias),
   });
+}
+
+/**
+ * `GET /stretches/discover?q=` — **an addition.** Everyone else's stretches.
+ *
+ * This is the catalogue that carries a video rendered in an iframe, so scoping mattered
+ * most here: a global write surface meant any signed-in person could put a video in
+ * everyone's app. Reaching someone else's entry is now a deliberate act, and importing it
+ * is a second one.
+ */
+export async function discoverStretches(req: Request, res: Response): Promise<Response> {
+  const userId = queryParam(req.query['user_id']);
+  if (isBlank(userId)) {
+    return failWithError(res, HTTP.badRequest, 'UserId is missing');
+  }
+
+  const pattern = searchPattern(req);
+  const stretches = await StretchRepository.find({
+    created_by: { $ne: userId },
+    ...(pattern ? { $or: [{ name: pattern }, { description: pattern }] } : {}),
+  })
+    .sort({ created_at: -1, _id: -1 })
+    .limit(100)
+    .lean();
+
+  return ok(res, {
+    success: true,
+    data: serializeDocuments(stretches).map(withStretchNameAlias),
+  });
+}
+
+/**
+ * `POST /stretches/:id/import` — **an addition.** Copies an entry into your catalogue.
+ *
+ * A copy, not a reference: the original author editing or removing theirs cannot reach into
+ * yours. Importing twice is a no-op, since the button sits in a browsable list and pressing
+ * it again is a slip rather than a request for a duplicate.
+ */
+export async function importStretch(req: Request, res: Response): Promise<Response> {
+  const lookup = ownedLookup(req);
+  if (!lookup.ok) return failWithError(res, HTTP.badRequest, lookup.error);
+
+  const source = await StretchRepository.findById(lookup.id).lean();
+  if (!source) return failWithError(res, HTTP.notFound, 'Not found');
+
+  const existing = await StretchRepository.findOne({
+    created_by: lookup.userId,
+    name: source.name,
+  }).lean();
+
+  if (existing) {
+    return ok(res, {
+      success: true,
+      data: [withStretchNameAlias(serializeDocument(existing))],
+    });
+  }
+
+  const copy = new StretchRepository({
+    name: source.name,
+    type: source.type,
+    duration: source.duration,
+    description: source.description,
+    video_link: source.video_link,
+    created_by: lookup.userId,
+    created_by_name: req.auth?.name,
+  });
+
+  await copy.save();
+
+  return created(res, {
+    success: true,
+    data: [withStretchNameAlias(serializeDocument(copy.toObject()))],
+  });
+}
+
+/** `DELETE /stretches/:id` — **an addition.** Removes one of your own entries. */
+export async function deleteStretch(req: Request, res: Response): Promise<Response> {
+  const lookup = ownedLookup(req);
+  if (!lookup.ok) return failWithError(res, HTTP.badRequest, lookup.error);
+
+  const deleted = await StretchRepository.findOneAndDelete({
+    _id: lookup.id,
+    created_by: lookup.userId,
+  }).lean();
+
+  if (!deleted) return failWithError(res, HTTP.notFound, 'Not found');
+  return ok(res, { success: true });
 }
 
 /**
@@ -67,6 +177,7 @@ export async function createStretch(req: Request, res: Response): Promise<Respon
     description: toStringOrUndefined(pick(params, 'description')),
     video_link: videoLink,
     created_by: req.auth?.uid,
+    created_by_name: req.auth?.name,
   });
 
   try {

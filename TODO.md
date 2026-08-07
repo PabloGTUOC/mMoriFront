@@ -8,7 +8,7 @@ Nothing here blocks a local run — see [`README.md`](README.md) for that, and
 [`FRONTEND_IMPROVEMENT_PLAN.md`](FRONTEND_IMPROVEMENT_PLAN.md) is complete; the design
 system now lives in [`PRODUCT.md`](PRODUCT.md) and [`DESIGN.md`](DESIGN.md).
 
-**Baseline to preserve:** 86 frontend tests, 110 backend tests, 0 lint errors, 0 lint
+**Baseline to preserve:** 86 frontend tests, 119 backend tests, 0 lint errors, 0 lint
 warnings, 531 kB initial bundle (budget warns at 620).
 
 ```bash
@@ -172,6 +172,8 @@ Recorded so nobody "fixes" them by accident.
 | Response envelopes are inconsistent (`error` vs `message`, 200-not-404, `POST /stretches` returns 200) | Reproduced from the spec on purpose; clients branch on the exact shape | `backend/README.md` §Response conventions |
 | BMI band gaps **fixed**, diverging from the spec | The original ranges left holes where a BMI got the underweight penalty | `life-methods.service.ts` |
 | Header and life chart stay dark in both themes | The neon glow only reads on a dark backdrop; they are the app's signature | `src/styles/themes.scss` |
+| Catalogues are per-user; `created_by_name` **is** returned | A browsable pool has to say whose entry each one is. A name describes a person; a uid addresses an account and lets anyone enumerate who exists. This narrows, and does not cancel, the row below | `lib/catalogue.ts`, backend README §3f |
+| An import is a copy, not a reference | The original author editing or deleting theirs must not reach into yours | `trainings.controller.ts`, `stretches.controller.ts` |
 | `created_by` is stored but never returned | Provenance is for whoever operates the service; returning other users' uids would be its own small leak | `backend/src/models/*-repository.model.ts` |
 | A failed profile lookup resolves to `isNew: false` | Treating an unreachable API as "new user" would re-onboard an existing one and write a duplicate profile | `user.service.ts`, asserted in its spec |
 | Backend still accepts `user_id` from a caller | Keeps the API usable by other clients; `requireAuth` overwrites it with the verified uid and 403s on a mismatch | `require-auth.ts` |

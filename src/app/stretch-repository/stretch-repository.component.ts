@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { StretchRepositoryService } from '../services/stretch-repository.service';
 import { StretchItemComponent } from '../stretch-item/stretch-item.component';
 import { CatalogueComponent } from '../shared/catalogue.component';
+import { CatalogueDiscoveryComponent } from '../shared/catalogue-discovery.component';
 import { Stretch, StretchPayload } from '../models';
 
 /**
@@ -21,7 +22,7 @@ import { Stretch, StretchPayload } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './stretch-repository.component.html',
   styleUrl: './stretch-repository.component.scss',
-  imports: [CommonModule, StretchItemComponent, ReactiveFormsModule],
+  imports: [CommonModule, StretchItemComponent, ReactiveFormsModule, CatalogueDiscoveryComponent],
 })
 export class StretchRepositoryComponent extends CatalogueComponent<Stretch, StretchPayload> {
   override readonly itemLabel = 'stretches';
@@ -39,6 +40,18 @@ export class StretchRepositoryComponent extends CatalogueComponent<Stretch, Stre
 
   protected override create(payload: StretchPayload): Observable<unknown> {
     return this.stretchService.addNewStretch(payload);
+  }
+
+  protected override discover(term: string): Observable<Stretch[]> {
+    return this.stretchService.discoverStretches(term);
+  }
+
+  protected override importEntry(id: string): Observable<unknown> {
+    return this.stretchService.importStretch(id);
+  }
+
+  protected override remove(id: string): Observable<unknown> {
+    return this.stretchService.deleteStretch(id);
   }
 
   protected override buildForm(): FormGroup {

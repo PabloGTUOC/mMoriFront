@@ -27,6 +27,24 @@ import { logger } from '../lib/logger.js';
 export interface AuthContext {
   uid: string;
   email?: string;
+  /**
+   * A name to attribute shared work to.
+   *
+   * Catalogue entries are per-user and importable from other people, so a browsable pool
+   * has to say whose entry each one is. The uid cannot do that job — it identifies an
+   * account rather than describing a person, and publishing it is exactly the leak the
+   * `created_by`-is-never-returned rule exists to avoid.
+   *
+   * Falls back to the local part of the email, then to nothing. Never the uid.
+   */
+  name?: string;
+}
+
+/** Firebase's `name` claim if the account has a display name, else the email's local part. */
+export function displayNameFrom(claims: { name?: unknown; email?: string }): string | undefined {
+  if (typeof claims.name === 'string' && claims.name.trim()) return claims.name.trim();
+  if (claims.email) return claims.email.split('@')[0];
+  return undefined;
 }
 
 declare module 'express-serve-static-core' {
@@ -83,11 +101,21 @@ export async function requireAuth(
   next: NextFunction
 ): Promise<void> {
   if (env.authMode === 'disabled') {
-    // No verification. A request that names a user is trusted, which is the pre-Phase-4
-    // behaviour; one that does not — every request the current frontend makes — gets a
-    // fixed local identity, so the app is usable without Firebase credentials.
-    if (!claimedUserId(req)) {
-      req.auth = { uid: env.devUserId };
+    /*
+     * No verification. A request that names a user is trusted, which is the pre-Phase-4
+     * behaviour; one that does not — every request the current frontend makes — gets a
+     * fixed local identity, so the app is usable without Firebase credentials.
+     *
+     * `req.auth` is populated either way. It used to be left undefined whenever a request
+     * named a user, so `created_by: req.auth?.uid` silently stored nothing. That was
+     * invisible while catalogues were global and every entry was visible to everyone; now
+     * that ownership decides who sees an entry, an unset owner means an entry nobody owns.
+     */
+    const claimed = claimedUserId(req);
+    if (claimed) {
+      req.auth = { uid: claimed, name: claimed };
+    } else {
+      req.auth = { uid: env.devUserId, name: env.devUserId };
       applyVerifiedUserId(req, env.devUserId);
     }
     next();
