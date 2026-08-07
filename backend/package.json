@@ -15,7 +15,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed:life-expectancy": "tsx src/scripts/seed-life-expectancy.ts"
+    "seed:life-expectancy": "tsx src/scripts/seed-life-expectancy.ts",
+    "seed:life-expectancy:dist": "node dist/scripts/seed-life-expectancy.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

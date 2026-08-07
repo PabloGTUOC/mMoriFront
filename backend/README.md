@@ -42,8 +42,16 @@ Or run both services together:
 
 ```bash
 docker compose up --build
-docker compose run --rm api npm run seed:life-expectancy
+docker compose run --rm api npm run seed:life-expectancy:dist
 ```
+
+Compose defaults `AUTH_MODE` to `disabled`, so the stack comes up usable with no Firebase
+credentials — as one shared local account. Export `AUTH_MODE=required` (and
+`FIREBASE_SERVICE_ACCOUNT_JSON`) before `up` to exercise the real auth path.
+
+Note the `:dist` suffix on the seed command. The runtime image installs `npm ci --omit=dev`
+and copies only `dist` and `data`, so it has neither `tsx` nor `src`; the plain
+`seed:life-expectancy` script is the source-tree one and fails in a container.
 
 ## Scripts
 
@@ -54,7 +62,8 @@ docker compose run --rm api npm run seed:life-expectancy
 | `npm start` | Run the compiled server |
 | `npm run typecheck` | Type-check without emitting |
 | `npm test` | Run the test suite |
-| `npm run seed:life-expectancy` | Load the `life_expectancy` reference collection |
+| `npm run seed:life-expectancy` | Load the `life_expectancy` reference collection (source tree, via `tsx`) |
+| `npm run seed:life-expectancy:dist` | The same seeder from `dist/` — the one to use inside the container, which has no `tsx` |
 
 ## Configuration
 

@@ -1,7 +1,11 @@
 # Local development stack: the API plus the MongoDB it needs.
 #
 #   docker compose up --build
-#   docker compose run --rm api npm run seed:life-expectancy
+#   docker compose run --rm api npm run seed:life-expectancy:dist
+#
+# Note the `:dist` suffix. The runtime image installs `npm ci --omit=dev` and copies only
+# `dist` and `data`, so it has neither `tsx` nor `src` — the plain `seed:life-expectancy`
+# script is the source-tree one and fails in a container.
 #
 # The Angular frontend still runs on the host with `npm start` (port 4200) and talks to
 # http://localhost:3000, which is what `environment.ts` already points at.
@@ -31,8 +35,22 @@ services:
       PORT: '3000'
       MONGODB_URI: mongodb://mongo:27017/trainingappDB
       CORS_ORIGINS: http://localhost:4200
+      # LOCAL ONLY. `AUTH_MODE` defaults to `required`, which needs a Firebase service
+      # account; without one every user-scoped request answers 401 and the dashboard comes
+      # up empty. `disabled` skips Firebase entirely and treats every request as the single
+      # shared DEV_USER_ID account — there is no per-user separation and no verification of
+      # who is calling. Override it back to `required` (with FIREBASE_SERVICE_ACCOUNT_JSON
+      # set) for anything reachable by more than you, on this machine.
+      AUTH_MODE: ${AUTH_MODE:-disabled}
       # Set OPENAI_API_KEY in a .env file next to this one, or export it before `up`.
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # The service account is mounted as a file rather than inlined as JSON: the key
+      # contains newlines and quotes that do not survive shell/compose interpolation
+      # intact. Nothing breaks if the file is absent — Firebase Admin logs a warning and
+      # token verification stays unavailable, which only matters once AUTH_MODE=required.
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-service-account.json
+    volumes:
+      - ./secrets:/run/secrets:ro
     depends_on:
       mongo:
         condition: service_healthy

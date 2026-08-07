@@ -10,6 +10,12 @@ dist/
 .env.local
 .env.*.local
 
+# Firebase service account key. A real secret, unlike the web config in
+# src/environments/environment.ts. The directory is tracked so the compose mount has
+# something to bind to; its contents never are.
+secrets/*
+!secrets/.gitkeep
+
 # Test + tooling artefacts
 coverage/
 .vitest/
