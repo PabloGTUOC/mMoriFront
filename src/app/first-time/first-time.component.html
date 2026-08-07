@@ -1,38 +1,127 @@
+<!--
+  Every question now says what it is for.
+
+  The form asked for eight things and explained none of them, so the number it produces
+  arrived on the dashboard from nowhere. Country and gender choose the base figure; the rest
+  move it. The hints are tied to their inputs with aria-describedby, so they are read out
+  rather than being decoration for sighted users only.
+-->
 <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
-  <label for="dob">Date of Birth:</label>
-  <input type="date" id="dob" formControlName="dob" required>
+  <div class="intro">
+    <h2>A few things about you</h2>
+    <p>
+      These set the starting point for your life expectancy, and how far it moves from
+      there. You can change any of it later.
+    </p>
+  </div>
 
-  <label for="gender">Gender:</label>
-  <select id="gender" formControlName="gender" required>
-    <option value="" disabled>Select gender</option>
-    <option value="male">Male</option>
-    <option value="female">Female</option>
-    <option value="other">Other</option>
-  </select>
+  <label for="country">Country</label>
+  <div class="field">
+    <select id="country" formControlName="country_code" required aria-describedby="country-hint">
+      <option value="" disabled>Select country</option>
+      <option
+        *ngFor="let country of countries; trackBy: trackByCountryCode"
+        [value]="country.Country_Code"
+      >{{ country.Country }}</option>
+    </select>
+    <p id="country-hint" class="hint">Sets your starting figure, from national life-expectancy data.</p>
+  </div>
 
-  <label for="height">Height (cm):</label>
-  <input type="number" id="height" formControlName="height" required>
+  <label for="gender">Gender</label>
+  <div class="field">
+    <select id="gender" formControlName="gender" required aria-describedby="gender-hint">
+      <option value="" disabled>Select gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+      <option value="other">Other</option>
+    </select>
+    <p id="gender-hint" class="hint">
+      The reference data is split by gender, so this picks which figure your country
+      contributes.
+    </p>
+  </div>
 
-  <label for="weight">Weight (kg):</label>
-  <input type="number" id="weight" formControlName="weight" required>
+  <label for="dob">Date of birth</label>
+  <div class="field">
+    <input type="date" id="dob" formControlName="dob" required aria-describedby="dob-hint">
+    <p id="dob-hint" class="hint">Everything is measured from here: your age, and the weeks already behind you.</p>
+  </div>
 
-  <label for="trainingFrequency">Training Frequency (times per week):</label>
-  <input type="number" id="trainingFrequency" formControlName="trainingFrequency" required>
+  <label for="height">Height (cm)</label>
+  <div class="field">
+    <input type="number" id="height" formControlName="height" required aria-describedby="height-hint">
+    <p id="height-hint" class="hint">With your weight, this gives a BMI, which can subtract years.</p>
+  </div>
+
+  <label for="weight">Weight (kg)</label>
+  <div class="field">
+    <input type="number" id="weight" formControlName="weight" required aria-describedby="weight-hint">
+    <p id="weight-hint" class="hint">
+      Your starting weight. Later weigh-ins replace it in the calculation.
+    </p>
+  </div>
+
+  <label for="trainingFrequency">Training (sessions per week)</label>
+  <div class="field">
+    <input
+      type="number"
+      id="trainingFrequency"
+      formControlName="trainingFrequency"
+      min="0"
+      max="7"
+      required
+      aria-describedby="training-hint"
+    >
+    <p id="training-hint" class="hint">
+      The one answer that only adds years — unless it is zero, which subtracts four.
+    </p>
+  </div>
 
   <label for="smoker">Do you smoke?</label>
-  <input type="checkbox" id="smoker" formControlName="smoker">
+  <div class="field field--check">
+    <input type="checkbox" id="smoker" formControlName="smoker" aria-describedby="smoker-hint">
+    <p id="smoker-hint" class="hint">Subtracts ten years. The largest single term in the calculation.</p>
+  </div>
 
   <label for="drinker">Do you drink?</label>
-  <input type="checkbox" id="drinker" formControlName="drinker">
+  <div class="field field--check">
+    <input type="checkbox" id="drinker" formControlName="drinker" aria-describedby="drinker-hint">
+    <p id="drinker-hint" class="hint">Subtracts four years.</p>
+  </div>
 
-  <label for="country">Country:</label>
-  <select id="country" formControlName="country_code" required>
-    <option value="" disabled>Select country</option>
-    <option
-      *ngFor="let country of countries; trackBy: trackByCountryCode"
-      [value]="country.Country_Code"
-    >{{ country.Country }}</option>
-  </select>
+  <!--
+    The live figure. `aria-live="polite"` so it is announced when it settles rather than on
+    every keystroke — the value is debounced upstream for the same reason.
+  -->
+  <aside class="preview" aria-live="polite" *ngIf="preview()?.success">
+    <h3>Based on this</h3>
 
-  <button type="submit" [disabled]="userForm.invalid">Submit</button>
+    <p class="preview-anchor">
+      <span class="preview-value">{{ preview()?.weeks_left_to_live | number }}</span>
+      <span class="preview-label">weeks left</span>
+    </p>
+
+    <dl class="preview-steps">
+      <div class="preview-step">
+        <dt>Starting point</dt>
+        <dd>{{ preview()?.base_life_expectancy }} years</dd>
+      </div>
+      <div class="preview-step" *ngFor="let step of preview()?.steps; trackBy: trackByStep">
+        <dt>{{ stepLabel(step) }}</dt>
+        <dd [class.is-penalty]="step.years < 0" [class.is-bonus]="step.years > 0">
+          {{ stepValue(step) }}
+        </dd>
+      </div>
+      <div class="preview-step preview-step--total">
+        <dt>Life expectancy</dt>
+        <dd>{{ preview()?.adjusted_life_expectancy }} years</dd>
+      </div>
+    </dl>
+
+    <p class="preview-note">
+      An estimate from population averages, not a prediction about you.
+    </p>
+  </aside>
+
+  <button type="submit" [disabled]="userForm.invalid">Start</button>
 </form>

@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import { UserDataService} from "../services/user-data.service";
 import { UserService} from "../services/user.service";
 import { Router} from "@angular/router";
 import { CommonModule } from '@angular/common';  // Import CommonModule here
-import { UserDataPayload } from '../models';
+import { AdjustmentStep, UserDataPayload, UserDataPreviewResponse } from '../models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-first-time',
@@ -196,6 +199,20 @@ export class FirstTimeComponent implements OnInit {
   ];
 
 
+  /**
+   * The figure this form is actually asking for, updated as it is filled in.
+   *
+   * Onboarding asked eight questions and never said why any of them mattered. Country and
+   * gender choose the base; smoking, drinking, BMI and training frequency move it. Without
+   * showing that, the number on the dashboard afterwards arrives from nowhere.
+   *
+   * A signal rather than a plain field: this is assigned from an async callback, and the
+   * component is not on OnPush yet (TODO.md 3.1).
+   */
+  readonly preview = signal<UserDataPreviewResponse | null>(null);
+
+  private readonly destroyRef = inject(DestroyRef);
+
   constructor(private fb: FormBuilder, private userDataService: UserDataService, private userService: UserService, private router: Router ) {}
 
   ngOnInit(): void {
@@ -218,6 +235,67 @@ export class FirstTimeComponent implements OnInit {
       drinker: [false],
       country_code: ['', Validators.required]
     });
+
+    this.watchForPreview();
+  }
+
+  /**
+   * Recomputes as the user types.
+   *
+   * Debounced because this is a network call on every keystroke otherwise, and
+   * `distinctUntilChanged` on the serialised value because Angular emits on touch and blur
+   * as well as on actual edits. An incomplete profile answers `success: false`, which is
+   * the normal state here rather than an error worth showing.
+   */
+  private watchForPreview(): void {
+    this.userForm.valueChanges
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        switchMap((form) => {
+          if (!form.dob || !form.gender || !form.country_code) return of(null);
+          return this.userDataService.previewUserData({
+            dob: form.dob,
+            gender: form.gender,
+            height: Number(form.height),
+            weight: Number(form.weight),
+            training_frequency: Number(form.trainingFrequency),
+            smoking_status: !!form.smoker,
+            drinking_status: !!form.drinker,
+            country: form.country_code,
+          });
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (result) => this.preview.set(result),
+        // A preview that cannot be computed is not worth interrupting the form for.
+        error: () => this.preview.set(null),
+      });
+  }
+
+  /** Plain-language labels for the adjustment the backend itemises. */
+  stepLabel(step: AdjustmentStep): string {
+    switch (step.key) {
+      case 'smoking':
+        return 'Smoking';
+      case 'drinking':
+        return 'Drinking';
+      case 'bmi':
+        return 'Height and weight';
+      case 'training':
+        return 'Training frequency';
+    }
+  }
+
+  /** `+6`, `-10`, or `no change` — the sign carries the meaning, so it is never hidden. */
+  stepValue(step: AdjustmentStep): string {
+    if (step.years === 0) return 'no change';
+    return `${step.years > 0 ? '+' : ''}${step.years} years`;
+  }
+
+  trackByStep(_index: number, step: AdjustmentStep): string {
+    return step.key;
   }
 
     onSubmit(): void {

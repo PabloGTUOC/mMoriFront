@@ -652,6 +652,78 @@ describe.skipIf(mongo === null)('API integration', () => {
     });
   });
 
+  describe('POST /user_data/preview (additive)', () => {
+    /** `seedLifeExpectancy` puts ESP/Male at 83.2. */
+    const healthy = {
+      dob: '1990-05-10',
+      gender: 'Male',
+      height: 178,
+      weight: 75,
+      country: 'ESP',
+      smoking_status: false,
+      drinking_status: false,
+      training_frequency: 3,
+    };
+
+    it('computes a figure without saving anything', async () => {
+      await seedLifeExpectancy();
+      const response = await request(app)
+        .post('/user_data/preview')
+        .send({ user_data: { ...healthy, user_id: 'abc123' } });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.adjusted_life_expectancy).toBeGreaterThan(0);
+      expect(response.body.weeks_left_to_live).toBeGreaterThan(0);
+
+      // The whole point: nothing persisted.
+      const profile = await request(app)
+        .get('/user_data/user_data')
+        .query({ user_id: 'abc123' });
+      expect(profile.body.success).toBe(false);
+    });
+
+    it('itemises every adjustment, including the ones that changed nothing', async () => {
+      await seedLifeExpectancy();
+      const response = await request(app)
+        .post('/user_data/preview')
+        .send({ user_data: healthy });
+
+      expect(response.body.steps.map((s: { key: string }) => s.key)).toEqual([
+        'smoking',
+        'drinking',
+        'bmi',
+        'training',
+      ]);
+      // BMI 23.7 sits in the no-penalty band; 3 sessions a week is +6.
+      expect(response.body.steps).toContainEqual({ key: 'bmi', years: 0 });
+      expect(response.body.steps).toContainEqual({ key: 'training', years: 6 });
+      expect(response.body.steps).toContainEqual({ key: 'smoking', years: 0 });
+    });
+
+    it('the itemised steps add up to the adjusted figure', async () => {
+      await seedLifeExpectancy();
+      const response = await request(app)
+        .post('/user_data/preview')
+        .send({ user_data: { ...healthy, smoking_status: true, drinking_status: true } });
+
+      const total = response.body.steps.reduce(
+        (sum: number, step: { years: number }) => sum + step.years,
+        response.body.base_life_expectancy
+      );
+      expect(total).toBe(response.body.adjusted_life_expectancy);
+    });
+
+    it('answers success:false while the form is still incomplete', async () => {
+      const response = await request(app)
+        .post('/user_data/preview')
+        .send({ user_data: { gender: 'male', country: 'ESP' } });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ success: false, message: 'Not enough detail yet' });
+    });
+  });
+
   describe('GET /moods (additive)', () => {
     async function saveMood(user_id: string, mood: string, date: string) {
       await request(app).post('/moods').send({ mood_data: { user_id, mood, date } });

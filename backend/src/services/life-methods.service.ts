@@ -139,20 +139,52 @@ export function adjustLifeExpectancy(
   userData: LifeExpectancyInput,
   latestWeight: number | null = null
 ): number {
-  let adjusted = base;
+  return explainLifeExpectancy(base, userData, latestWeight).adjusted;
+}
 
-  // Step 1 — lifestyle
-  if (userData.smoking_status) adjusted -= 10;
-  if (userData.drinking_status) adjusted -= 4;
+/** One named term in the adjustment, in years. */
+export interface AdjustmentStep {
+  key: 'smoking' | 'drinking' | 'bmi' | 'training';
+  years: number;
+}
 
-  // Step 2 — BMI, using the most recent weight available
+export interface LifeExpectancyExplanation {
+  adjusted: number;
+  steps: AdjustmentStep[];
+}
+
+/**
+ * The same four adjustments, itemised.
+ *
+ * `adjustLifeExpectancy` delegates here rather than repeating the arithmetic, so the total
+ * and its explanation cannot drift apart — a breakdown that disagrees with the number it
+ * breaks down is worse than no breakdown.
+ *
+ * Every step is returned, including the zero-valued ones. The onboarding form uses this to
+ * show *why* a figure moved, and "BMI: no change" is as informative as a penalty; dropping
+ * it would leave the reader wondering whether it was considered at all.
+ */
+export function explainLifeExpectancy(
+  base: number,
+  userData: LifeExpectancyInput,
+  latestWeight: number | null = null
+): LifeExpectancyExplanation {
   const weightToUse = latestWeight ?? userData.weight;
-  adjusted += bmiAdjustment(calculateBmi(weightToUse, userData.height));
 
-  // Step 3 — training frequency
-  adjusted += trainingFrequencyAdjustment(userData.training_frequency);
+  const steps: AdjustmentStep[] = [
+    // Step 1 — lifestyle
+    { key: 'smoking', years: userData.smoking_status ? -10 : 0 },
+    { key: 'drinking', years: userData.drinking_status ? -4 : 0 },
+    // Step 2 — BMI, using the most recent weight available
+    { key: 'bmi', years: bmiAdjustment(calculateBmi(weightToUse, userData.height)) },
+    // Step 3 — training frequency
+    { key: 'training', years: trainingFrequencyAdjustment(userData.training_frequency) },
+  ];
 
-  return adjusted;
+  return {
+    adjusted: steps.reduce((total, step) => total + step.years, base),
+    steps,
+  };
 }
 
 /** §4.15 step 6 — the figure the recommendation prompt is built around. */

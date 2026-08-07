@@ -127,9 +127,11 @@ above the glass is sky, deep indigo shading to violet, lit by a neon horizon lin
 below it is instrumentation, plain panels holding plain numbers, arranged so they never
 compete with the view.
 
-The two registers are strictly separated and that separation is the entire system. The night
-sky appears on exactly two surfaces, the header and the life-expectancy chart, and it does
-not invert when the theme changes. Panels, forms, catalogues, and inputs are the deck: matte,
+The two registers are strictly separated and that separation is the entire system. **The sky
+is reserved for the life figure and nothing else** — the header, the dashboard's life panel
+with its grid, and the onboarding preview that shows the number being assembled. It does not
+invert when the theme changes. Counting the surfaces is the wrong test; asking whether the
+surface is about the shape of a life is the right one. Panels, forms, catalogues, and inputs are the deck: matte,
 functional, unglamorous, deliberately dull so that looking up still means something. A design
 that glows everywhere has nothing left to emphasise.
 
@@ -195,8 +197,8 @@ matters, and flat greys for everything doing actual work.
 
 ### Named Rules
 
-**The Sky Stays Dark Rule.** The header and the life-expectancy chart keep the night-sky
-gradient in *both* themes. The light theme lightens the panels, cards, inputs, and menus
+**The Sky Stays Dark Rule.** Every sky surface keeps the night-sky gradient in *both*
+themes. The light theme lightens the panels, cards, inputs, and menus
 around them and leaves the sky alone. The glow only reads against a dark backdrop; inverting
 these two surfaces cascades contrast failures through every glow effect in the app.
 

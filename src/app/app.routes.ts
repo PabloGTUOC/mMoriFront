@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { MainPageComponent } from './main-page/main-page.component';
-import { FirstTimeComponent } from './first-time/first-time.component';
 import { AuthGuard } from './guards/auth.guard';
 import { NewUserGuard } from './guards/new-user.guard';
 import { LogInComponent } from './log-in/log-in.component';
@@ -66,7 +65,11 @@ export const routes: Routes = [
   },
   {
     path: 'first-time',
-    component: FirstTimeComponent,
+    // Lazy: onboarding renders once per account and never again, but it was imported
+    // eagerly, so its ~180-country list and its form sat in the initial bundle of every
+    // page load for everyone who had already completed it.
+    loadComponent: () =>
+      import('./first-time/first-time.component').then((m) => m.FirstTimeComponent),
     canActivate: [AuthGuard],
   },
   {

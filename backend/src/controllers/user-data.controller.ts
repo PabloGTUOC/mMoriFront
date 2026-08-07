@@ -2,8 +2,11 @@ import type { Request, Response } from 'express';
 import { UserData } from '../models/user-data.model.js';
 import {
   adjustLifeExpectancy,
+  calculateAge,
+  explainLifeExpectancy,
   fetchBaseLifeExpectancy,
   fetchLatestWeight,
+  weeksLeftToLive,
 } from '../services/life-methods.service.js';
 import {
   created,
@@ -103,5 +106,72 @@ export async function showUserData(req: Request, res: Response): Promise<Respons
     user_data: serializeDocument(userData),
     base_life_expectancy: baseLifeExpectancy,
     adjusted_life_expectancy: adjustedLifeExpectancy,
+  });
+}
+
+/**
+ * `POST /user_data/preview` — **an addition to the spec.** Computes, saves nothing.
+ *
+ * Onboarding asks eight questions and never says why any of them matter. Country and gender
+ * choose the base figure; smoking, drinking, BMI and training frequency move it. A user
+ * filling that form has no way to see that the answers are connected to anything, so the
+ * number on the dashboard afterwards arrives with no explanation of where it came from.
+ *
+ * This runs the same pipeline as `showUserData` against unsaved values, and returns the
+ * adjustment itemised. It is a read in every sense but the verb: POST because the profile
+ * goes in the body, not because anything is persisted.
+ */
+export async function previewUserData(req: Request, res: Response): Promise<Response> {
+  const params = requireWrapper(req.body, 'user_data');
+
+  const profile = {
+    dob: toDateOrUndefined(pick(params, 'dob')),
+    gender: toStringOrUndefined(pick(params, 'gender')),
+    height: toNumberOrUndefined(pick(params, 'height')),
+    weight: toNumberOrUndefined(pick(params, 'weight')),
+    training_frequency: toIntegerOrUndefined(
+      pick(params, 'training_frequency', 'trainingFrequency')
+    ),
+    smoking_status: toBoolean(pick(params, 'smoking_status', 'smoker'), false),
+    drinking_status: toBoolean(pick(params, 'drinking_status', 'drinker'), false),
+    country: toStringOrUndefined(pick(params, 'country', 'country_code')),
+  };
+
+  // Enough to compute with. The form calls this as the user types, so an incomplete
+  // profile is the normal case rather than an error worth reporting.
+  if (
+    !profile.dob ||
+    !profile.gender ||
+    !profile.country ||
+    profile.height === undefined ||
+    profile.weight === undefined ||
+    profile.training_frequency === undefined
+  ) {
+    return ok(res, { success: false, message: 'Not enough detail yet' });
+  }
+
+  // Rebuilt from the narrowed accesses above: the guard narrows each property at its use
+  // site, but not the object as a whole.
+  const complete = {
+    country: profile.country,
+    gender: profile.gender,
+    height: profile.height,
+    weight: profile.weight,
+    training_frequency: profile.training_frequency,
+    smoking_status: profile.smoking_status,
+    drinking_status: profile.drinking_status,
+  };
+
+  const base = await fetchBaseLifeExpectancy(complete);
+  const { adjusted, steps } = explainLifeExpectancy(base, complete);
+  const age = calculateAge(profile.dob);
+
+  return ok(res, {
+    success: true,
+    base_life_expectancy: base,
+    adjusted_life_expectancy: adjusted,
+    age,
+    weeks_left_to_live: Math.max(0, Math.round(weeksLeftToLive(adjusted, age))),
+    steps,
   });
 }

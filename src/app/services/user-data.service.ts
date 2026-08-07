@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { CreatedResponse, TrainingPayload, UserDataPayload, WeightPayload } from '../models';
+import {
+  CreatedResponse,
+  TrainingPayload,
+  UserDataPayload,
+  UserDataPreviewResponse,
+  WeightPayload,
+} from '../models';
 
 /**
  * Write endpoints for profile, training sessions and weigh-ins.
@@ -22,6 +28,20 @@ export class UserDataService {
 
   submitUserData(data: UserDataPayload): Observable<CreatedResponse> {
     return this.http.post<CreatedResponse>(`${this.apiUrl}/user_data`, { user_data: data });
+  }
+
+  /**
+   * The same figure the dashboard shows, computed on unsaved values.
+   *
+   * A POST that persists nothing: the profile travels in the body, which is the only reason
+   * for the verb. Onboarding calls it as the form is filled so the user can see that the
+   * answers are connected to the number, rather than meeting it for the first time
+   * afterwards with no explanation of where it came from.
+   */
+  previewUserData(data: Partial<UserDataPayload>): Observable<UserDataPreviewResponse> {
+    return this.http.post<UserDataPreviewResponse>(`${this.apiUrl}/user_data/preview`, {
+      user_data: data,
+    });
   }
 
   submitTrainingData(data: TrainingPayload): Observable<CreatedResponse> {

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
-import { createUserData, showUserData } from './controllers/user-data.controller.js';
+import { createUserData, previewUserData, showUserData } from './controllers/user-data.controller.js';
 import {
   allTrainings,
   createTraining,
@@ -56,6 +56,9 @@ router.use(requireAuth);
 // User data
 router.post('/user_data', createUserData);
 router.get('/user_data/user_data', showUserData);
+// Additive: computes a profile's life expectancy without saving it, so onboarding can
+// show why each answer matters.
+router.post('/user_data/preview', previewUserData);
 
 // Training sessions
 router.post('/trainings', createTraining);

@@ -1,71 +1,246 @@
+/*
+ * Onboarding. A form that explains itself.
+ *
+ * Deck, not sky (DESIGN.md §1): this is where you answer questions, so it stays matte. The
+ * one exception is the live figure, which is the thing all the answers are for.
+ */
 form {
-  background: var(--panel-bg-strong);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-  max-width: 1400px; /* Maximum width of 1400px */
-  width: 80%; /* 80% of the available screen width */
-  margin: 20px auto;
-  color: var(--panel-text);
-  font-family: 'Roboto Mono', monospace;
+  background: var(--md-surface-container);
+  border: 1px solid var(--md-outline-variant);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  max-width: 720px;
+  width: var(--app-column);
+  margin: var(--sp-5) auto var(--sp-8);
+  color: var(--md-on-surface);
+  font-family: var(--font-mono);
+}
+
+.intro {
+  margin-bottom: var(--sp-5);
+}
+
+.intro h2 {
+  margin: 0 0 var(--sp-2);
+  font: var(--type-headline);
+  color: var(--md-on-surface);
+}
+
+.intro p {
+  margin: 0;
+  font: var(--type-body);
+  color: var(--md-on-surface-variant);
+  max-width: 60ch;
 }
 
 form label {
   display: block;
-  margin: 15px 0 5px;
+  margin: var(--sp-4) 0 var(--sp-1);
+  font: var(--type-label);
+  color: var(--md-on-surface);
+}
+
+.field {
+  margin-bottom: var(--sp-2);
+}
+
+/* The checkbox sits beside its hint rather than above it: a control that small looks
+   orphaned on its own row. */
+.field--check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.hint {
+  margin: var(--sp-1) 0 0;
+  font: var(--type-label);
+  font-weight: 400;
+  color: var(--md-on-surface-variant);
+  max-width: 60ch;
+}
+
+.field--check .hint {
+  margin: 0;
 }
 
 form input[type="date"],
 form input[type="number"],
-form select,
-form input[type="checkbox"] {
+form select {
   width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border-radius: 4px;
-  border: none;
-  background: var(--panel-bg);
-  color: var(--panel-text);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  padding: var(--sp-3);
+  border-radius: var(--r-xs);
+  border: 1px solid var(--md-outline);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface);
+  font: var(--type-body);
+  box-sizing: border-box;
 }
 
 form input[type="checkbox"] {
-  width: auto; /* Override for checkboxes */
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  accent-color: var(--md-primary);
+}
+
+form input:focus-visible,
+form select:focus-visible {
+  outline: 2px solid var(--md-secondary);
+  outline-offset: 1px;
+  border-color: var(--md-secondary);
+}
+
+/*
+ * The live figure — the only sky surface on this screen, because it is the one thing the
+ * eight questions exist to produce.
+ */
+.preview {
+  margin-top: var(--sp-6);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--sky-gradient);
+  color: var(--on-sky-text);
+}
+
+.preview h3 {
+  margin: 0 0 var(--sp-3);
+  font: var(--type-label);
+  color: var(--on-sky-text);
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.preview-anchor {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-4);
+}
+
+.preview-value {
+  font: var(--type-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+  color: var(--accent-bright);
+  text-shadow: 0 0 16px var(--accent-bright);
+  font-variant-numeric: tabular-nums;
+}
+
+.preview-label {
+  font: var(--type-label);
+  color: var(--on-sky-text);
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/*
+ * The itemised working. This is the part that teaches the model: it shows that the answers
+ * are terms in a sum rather than a form to get through.
+ */
+.preview-steps {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.preview-step {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-1) 0;
+}
+
+.preview-step dt {
+  font: var(--type-body);
+  color: var(--on-sky-text);
+  opacity: 0.85;
+}
+
+.preview-step dd {
+  margin: 0;
+  font: var(--type-body);
+  color: var(--on-sky-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.preview-step--total {
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.preview-step--total dt,
+.preview-step--total dd {
+  opacity: 1;
+  font-weight: 700;
+}
+
+/*
+ * Sign carried by more than colour: the text already reads "+6 years" or "-10 years", so
+ * these only reinforce it. Nobody has to distinguish the two to read the figure.
+ */
+.preview-step dd.is-penalty {
+  color: var(--md-p-80);
+}
+
+.preview-step dd.is-bonus {
+  color: var(--md-s-80);
+}
+
+.preview-note {
+  margin: var(--sp-4) 0 0;
+  font: var(--type-label);
+  font-weight: 400;
+  color: var(--on-sky-text);
+  opacity: 0.7;
+  max-width: 60ch;
 }
 
 form button {
   display: block;
-  background: var(--button-gradient);
+  background: var(--md-primary);
   border: none;
-  color: var(--panel-text);
-  padding: 10px 20px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 16px;
-  text-shadow: 0 0 5px var(--glow), 0 0 10px var(--glow);
-  border-radius: 4px;
-  margin: 20px auto 0;
+  color: var(--md-on-primary);
+  padding: var(--sp-3) var(--sp-6);
+  font: var(--type-label);
+  border-radius: var(--r-full);
+  margin: var(--sp-6) auto 0;
   cursor: pointer;
-  transition: background-color 0.3s, box-shadow 0.3s;
+  transition: background-color var(--motion-short) var(--ease-standard);
 }
 
-form button:hover {
-  background: var(--button-gradient-hover);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+form button:hover:not(:disabled) {
+  background: var(--accent-strong);
 }
 
-form button:active {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  transform: translateY(2px);
+form button:focus-visible {
+  outline: 2px solid var(--md-secondary);
+  outline-offset: 2px;
 }
 
+form button:active:not(:disabled) {
+  transform: translateY(1px);
+}
 
-/* Native <select> replaced the Material controls; match the existing field styling. */
-select {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  border: 1px solid var(--input-border);
-  background: var(--panel-bg);
-  color: var(--panel-text);
+form button:disabled {
+  background: var(--md-surface-container-highest);
+  color: var(--md-outline);
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  form button {
+    transition: none;
+  }
+
+  form button:active:not(:disabled) {
+    transform: none;
+  }
 }

@@ -41,3 +41,25 @@ export interface UserDataResponse {
   adjusted_life_expectancy?: number;
   message?: string;
 }
+
+/** One term of the life-expectancy adjustment, in years. */
+export interface AdjustmentStep {
+  key: 'smoking' | 'drinking' | 'bmi' | 'training';
+  years: number;
+}
+
+/**
+ * `POST /user_data/preview` — the same computation as the dashboard, on unsaved values.
+ *
+ * `success: false` is the normal state while the form is still being filled in, not an
+ * error: the endpoint is called as the user types.
+ */
+export interface UserDataPreviewResponse {
+  success: boolean;
+  base_life_expectancy?: number;
+  adjusted_life_expectancy?: number;
+  age?: number;
+  weeks_left_to_live?: number;
+  steps?: AdjustmentStep[];
+  message?: string;
+}

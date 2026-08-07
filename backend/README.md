@@ -238,6 +238,7 @@ left to break.
 | `GET /moods` | `POST /moods` had no counterpart. The app asked how you felt every day, stored it, and offered no way to ever see it — data the user could not read. |
 | `DELETE /trainings/:id` | Nothing in the spec could be undone: no PATCH, no DELETE, on any of the sixteen routes. A session logged by mistake was permanent and permanently skewed `training_count`. |
 | `DELETE /weight_updates/:id` | Same-day submissions replace each other, so today's figure can be retyped — but a weigh-in filed against the wrong date was stuck, distorting the chart for as long as it existed. |
+| `POST /user_data/preview` | Onboarding asked eight questions and explained none of them, so the dashboard figure arrived from nowhere. Runs the same pipeline as `showUserData` on unsaved values and returns the adjustment itemised. A read in every sense but the verb: POST because the profile is in the body, not because anything persists. |
 
 Both deletes scope the query by `user_id` as well as `_id`, so ownership is enforced by the
 filter rather than by a check that a later caller could omit. A row belonging to someone else

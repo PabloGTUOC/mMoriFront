@@ -8,8 +8,8 @@ Nothing here blocks a local run — see [`README.md`](README.md) for that, and
 [`FRONTEND_IMPROVEMENT_PLAN.md`](FRONTEND_IMPROVEMENT_PLAN.md) is complete; the design
 system now lives in [`PRODUCT.md`](PRODUCT.md) and [`DESIGN.md`](DESIGN.md).
 
-**Baseline to preserve:** 78 frontend tests, 106 backend tests, 0 lint errors, 0 lint
-warnings, 577 kB initial bundle (budget warns at 620).
+**Baseline to preserve:** 86 frontend tests, 110 backend tests, 0 lint errors, 0 lint
+warnings, 531 kB initial bundle (budget warns at 620).
 
 ```bash
 npm run lint && npm run test:ci && npm run build     # frontend
@@ -69,7 +69,7 @@ Current state, verified:
 | `DisplayDailyComponent` | **OnPush** | 13 signals |
 | `InputDailyComponent` | default | `trainings` is a signal; the rest are plain |
 | `ThoughtsComponent` | default | plain fields (`selectedMood`, `recommendationBlocks`) |
-| `FirstTimeComponent` | default | plain fields (`userId`) |
+| `FirstTimeComponent` | default | `preview` is a signal; `userId` still plain |
 | `HistoryComponent` | **OnPush** | signals throughout |
 
 Follow the pattern in `DisplayDailyComponent`: move async-updated fields to `signal()`
@@ -164,6 +164,8 @@ Recorded so nobody "fixes" them by accident.
 | `--glow` resolves to `transparent` | Glow was being spent on headings, labels and buttons alike, which made it read as texture. It survives only on the header and life chart, which reference `--accent-bright` directly | `themes.scss`, DESIGN.md §4 |
 | `--button-gradient` resolves to the *tonal* fill, not primary | Those components pair the fill with `--panel-text`; near-white on the raw seed is 2.94:1, the tonal container 8.71:1 | `themes.scss` |
 | Stat values are plain ink, not accent | Six pink numbers spent the whole One Voice budget on the stat grid; the accent is reserved for weeks-left | `display-daily.component.css` |
+| `adjustLifeExpectancy` delegates to `explainLifeExpectancy` | One implementation, so a breakdown cannot disagree with the number it breaks down | `life-methods.service.ts` |
+| The onboarding preview is a third sky surface | The sky is reserved for the life figure, not for a fixed count of surfaces. The preview *is* that figure, before the grid exists to show it | DESIGN.md §1 |
 | The grid is inline on the dashboard, and also in the dialog | PRODUCT.md principle 1: the grid is the product. Behind a click it was a feature of a fitness log rather than the frame around one. Same component at two `heightFraction` values | `display-daily.component.html`, DESIGN.md §5 |
 | The life-chart dialog has no close button | Requested. Dismissal is the backdrop or Escape; `tabindex="-1"` on the panel is what the focus trap captures with no focusable child | `display-daily.component.html` |
 | `:host ::ng-deep` on the life grid | D3 creates the circles at runtime, so they never receive the `_ngcontent` attribute emulated encapsulation rewrites every selector to require | `life-expectancy-chart.component.scss` |
