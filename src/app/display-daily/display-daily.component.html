@@ -7,6 +7,50 @@
 </p>
 
 <!--
+  The frame, not a feature.
+
+  The grid used to live behind a click on a heading, so the dashboard read as an ordinary
+  fitness log with a memento mori tucked inside it. PRODUCT.md principle 1 says the grid IS
+  the product and everything else feeds it or gets out of its way — so it sits at the top,
+  inline, with the figures it explains beside it. The dialog is still there for a close
+  look; this is the frame you see first.
+
+  The two headings that opened the dialog were <h2 role="button" tabindex="0">. The expand
+  control is a real <button> now, which is what it always was behaviourally.
+-->
+<section class="life" aria-labelledby="life-heading">
+  <h2 id="life-heading" class="sr-only">Your life in weeks</h2>
+
+  <div class="life-figures">
+    <p class="life-stat">
+      <span class="life-label">Weeks left</span>
+      <span class="life-value life-value--anchor">{{ weeksLeftToLive() }}</span>
+    </p>
+    <p class="life-stat">
+      <span class="life-label">Weeks lived</span>
+      <span class="life-value">{{ weeksGone() }}</span>
+    </p>
+
+    <button
+      type="button"
+      class="life-expand"
+      [attr.aria-expanded]="isChartVisible()"
+      (click)="toggleLifeExpectancyChart()"
+    >See it full size</button>
+  </div>
+
+  <!-- Roughly a third of the viewport inline; the dialog gives it 80%. -->
+  <div class="life-grid">
+    <app-life-expectancy-chart
+      class="bare"
+      [currentAge]="currentAge()"
+      [weeksLeftToLive]="weeksLeftToLive()"
+      [heightFraction]="0.36">
+    </app-life-expectancy-chart>
+  </div>
+</section>
+
+<!--
   Units and a progress track give the tiles something to differ by. Six identically-shaped
   boxes reading only a bare number was the "every block is the same" problem: the variation
   now comes from the data each tile actually holds, not from decoration.
@@ -43,29 +87,6 @@
       <div class="track-fill" [style.width.%]="percentageDaysTrained()"></div>
     </div>
   </div>
-</div>
-<!--
-  These headings open the life chart, so they need to be reachable and operable by
-  keyboard. Kept as <h2> with button semantics rather than swapped for <button> elements,
-  so the existing styling is untouched. Full dialog semantics are plan item 6.4.
--->
-<div class="weeks-left">
-  <h2
-    role="button"
-    tabindex="0"
-    [attr.aria-expanded]="isChartVisible()"
-    (click)="toggleLifeExpectancyChart()"
-    (keydown.enter)="toggleLifeExpectancyChart()"
-    (keydown.space)="toggleLifeExpectancyChart()"
-  >Weeks Already gone: {{ weeksGone() }}</h2>
-  <h2
-    role="button"
-    tabindex="0"
-    [attr.aria-expanded]="isChartVisible()"
-    (click)="toggleLifeExpectancyChart()"
-    (keydown.enter)="toggleLifeExpectancyChart()"
-    (keydown.space)="toggleLifeExpectancyChart()"
-  >Weeks Left to Live: {{ weeksLeftToLive() }}</h2>
 </div>
 <!--
   The weight history chart was a complete, polished component that nothing ever rendered —

@@ -356,8 +356,20 @@ nothing else. Applying it to every item spends the One Voice budget on decoratio
 nothing to say which page is open.
 
 ### The Life Grid (signature)
-The single most important surface in the app. A dot per week of an expected life, 52 columns
-wide, laid out on the night sky inside a 2px Horizon Blue frame.
+The single most important surface in the app, and **the first thing on the dashboard**. It
+used to sit behind a click on a heading, which made the memento mori a feature of a fitness
+log rather than the frame around one. A dot per week of an expected life, 52 columns wide,
+laid out on the night sky.
+
+It appears twice, same component and same data, differing only in the space it is given:
+inline at `heightFraction: 0.36` beside the figures it explains, and full size at `0.8` in
+the dialog. Inline it takes the `.bare` variant — the panel already supplies the sky, so its
+own gradient and Horizon Blue frame would be sky on sky inside a blue box. The dialog keeps
+the frame.
+
+**Weeks left is the anchor**: the largest figure on the page, `clamp(2.5rem, 6vw, 4rem)`, in
+Magenta Flare with a glow. Weeks lived sits beside it at the same size family but plain. The
+contrast between the two is the entire point, and giving both the accent would flatten it.
 
 - **Lived weeks:** filled Neon Pink at 0.8 opacity, 1.5px Neon Pink stroke.
 - **Remaining weeks:** filled whitesmoke at 0.8 opacity, same stroke.

@@ -71,3 +71,15 @@
     transition: none;
   }
 }
+
+/*
+ * Inline on the dashboard the grid already sits on a sky panel, so its own gradient, frame
+ * and padding would be sky on sky inside a blue box. `.bare` drops the container and leaves
+ * just the dots; the dialog keeps the framed treatment.
+ */
+:host(.bare) .chart-container {
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}

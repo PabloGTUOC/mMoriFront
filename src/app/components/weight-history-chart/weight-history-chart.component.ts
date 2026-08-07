@@ -36,7 +36,7 @@ interface WeightPoint {
 
     /*
      * The app's single centred column (DESIGN.md §1). Every other block on the dashboard —
-     * .info-block, .weeks-left, the status line — is 80% / 1400px / auto, but this one had
+     * .info-block, .life, the status line — is 80% / 1400px / auto, but this one had
      * "margin: 20px 0" and no width, so it ran full-bleed and sat wider than everything
      * above it. It also used --card-background and --shadow-md, Material-era tokens that
      * nothing else in the app uses; it now takes the panel surface and the Resting shadow.

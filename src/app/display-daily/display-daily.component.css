@@ -48,8 +48,9 @@
 
 /*
  * Values are plain ink, not accent. Six pink numbers spent the whole One Voice budget on
- * the stat grid and left the accent with nothing to distinguish; the one number that gets
- * the accent is weeks-left, on the sky surface below.
+ * the stat grid and left the accent with nothing to distinguish. The one figure that gets
+ * it is weeks-left, on the sky panel above — these tiles feed that number, so they must not
+ * compete with it.
  */
 .info-block .value {
   display: flex;
@@ -100,41 +101,126 @@
   }
 }
 
-/* A sky surface, so it keeps the glow. This and the header are the only two places the
-   app is allowed to be loud (DESIGN.md, One Loud Surface). */
-.weeks-left {
+/*
+ * The life panel: a sky surface, and the first thing on the page.
+ *
+ * Figures on one side, grid on the other. The grid's aspect is fixed by its data — 52
+ * columns against a life's worth of rows — so it is always tall and narrow; standing it
+ * beside the numbers it explains uses the width the panel actually has, instead of
+ * centring a thin column in a wide box.
+ */
+.life {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--sp-4);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-6);
   max-width: var(--app-column-max);
   width: var(--app-column);
-  margin: 0 auto var(--sp-5);
-  padding: var(--sp-5) var(--sp-4);
+  margin: var(--sp-5) auto;
+  padding: var(--sp-5);
   border-radius: var(--r-md);
   box-sizing: border-box;
-  text-align: center;
   background: var(--sky-gradient);
   box-shadow: var(--md-elev-2);
 }
 
-.weeks-left h2 {
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.life-figures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  align-items: flex-start;
+}
+
+.life-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
   margin: 0;
-  font: var(--type-headline);
+}
+
+.life-label {
+  font: var(--type-label);
+  color: var(--on-sky-text);
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.life-value {
+  font: var(--type-display);
+  color: var(--on-sky-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/*
+ * Weeks left is the anchor: the largest thing on the page, and the only figure carrying the
+ * glow. Weeks lived is the same size family but plain — the contrast between them is the
+ * whole point, and giving both the accent would flatten it.
+ */
+.life-value--anchor {
+  font-size: clamp(2.5rem, 6vw, 4rem);
   color: var(--accent-bright);
-  text-shadow: 0 0 12px var(--accent-bright);
+  text-shadow: 0 0 16px var(--accent-bright);
+}
+
+.life-expand {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--on-sky-text);
+  font: var(--type-label);
   cursor: pointer;
-  border-radius: var(--r-xs);
-  padding: var(--sp-2);
-  transition: background-color var(--motion-short) var(--ease-standard);
+  transition: background-color var(--motion-short) var(--ease-standard),
+              border-color var(--motion-short) var(--ease-standard);
 }
 
-.weeks-left h2:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+.life-expand:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.6);
 }
 
-.weeks-left h2:focus-visible {
+.life-expand:focus-visible {
   outline: 2px solid var(--neon-line);
   outline-offset: 2px;
+}
+
+.life-grid {
+  min-width: 0;
+}
+
+/* Below the breakpoint the grid stacks under the figures and centres. */
+@media (max-width: 720px) {
+  .life {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .life-figures {
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-expand {
+    transition: none;
+  }
 }
 /*
  * The life-chart dialog.
@@ -185,11 +271,12 @@
 }
 
 .dashboard-status {
-  max-width: 1400px;
-  width: 80%;
-  margin: 16px auto;
+  max-width: var(--app-column-max);
+  width: var(--app-column);
+  margin: var(--sp-4) auto;
   text-align: center;
-  color: var(--panel-text);
+  font: var(--type-body);
+  color: var(--md-on-surface-variant);
 }
 .dashboard-error {
   color: var(--accent);
