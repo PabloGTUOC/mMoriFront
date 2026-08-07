@@ -4,6 +4,7 @@ import {ThoughtsService} from "../services/thoughts.service";
 import { UserService } from '../services/user.service';
 import { MoodOption, MoodType } from '../models';
 import { RecommendationBlock, parseRecommendation } from '../shared/recommendation';
+import { toLocalIsoDate } from '../shared/dates';
 
 @Component({
   selector: 'app-thoughts',
@@ -40,7 +41,7 @@ export class ThoughtsComponent {
 
   saveMood() {
     const userId = this.userService.getUserId();
-    const currentDate = new Date().toISOString().split('T')[0]; // Get the current date
+    const currentDate = toLocalIsoDate(); // Local calendar date — see shared/dates.ts
 
     if (this.selectedMood && userId) {
       const moodData = { mood: this.selectedMood, date: currentDate };
@@ -58,7 +59,7 @@ export class ThoughtsComponent {
 
   requestRecommendation() {
     const userId = this.userService.getUserId();
-    const currentDate = new Date().toISOString().split('T')[0]; // Get the current date
+    const currentDate = toLocalIsoDate(); // Local calendar date — see shared/dates.ts
 
     if (this.selectedMood && userId) {
       const moodData = { mood: this.selectedMood, date: currentDate };

@@ -14,7 +14,7 @@ import { logger } from '../lib/logger.js';
  * "weeks left" instead of an error.
  *
  * Usage:
- *   npm run seed:life-expectancy                          # loads data/life_expectancy.sample.json
+ *   npm run seed:life-expectancy                          # loads data/life_expectancy.json
  *   npm run seed:life-expectancy -- ./my-dataset.json
  *   npm run seed:life-expectancy -- ./my-dataset.csv
  *
@@ -31,7 +31,7 @@ interface LifeExpectancyRow {
 
 const DEFAULT_DATASET = path.resolve(
   import.meta.dirname,
-  '../../data/life_expectancy.sample.json'
+  '../../data/life_expectancy.json'
 );
 
 async function main(): Promise<void> {
@@ -45,10 +45,19 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (target === DEFAULT_DATASET) {
+  /*
+   * Warn on the data, not on the filename.
+   *
+   * This keyed off `target === DEFAULT_DATASET`, so it shouted "those values are
+   * placeholders" on every run even after the bundled file had been replaced with real
+   * WHO figures. The `_readme` marker is what the shipped sample actually carries, so it
+   * is the honest signal.
+   */
+  if (raw.includes('"_readme"')) {
     logger.warn(
-      'Seeding from the bundled SAMPLE dataset. Those values are placeholders — ' +
-        'point this script at a real dataset before trusting any number the API returns.'
+      'This dataset still carries the sample `_readme` marker. Those values are ' +
+        'placeholders — point this script at a real dataset before trusting any number ' +
+        'the API returns.'
     );
   }
 

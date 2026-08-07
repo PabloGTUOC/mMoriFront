@@ -40,9 +40,19 @@ export class MetricsService {
     return 'Obese';
   }
 
-  /** Guards the first day, when no days have elapsed yet. */
+  /**
+   * Days trained as a percentage of days since joining, clamped to 0–100.
+   *
+   * The clamp is a backstop, not the fix. The real cause of rates above 100% was the
+   * backend counting training *rows* rather than distinct dates, so two sessions in one day
+   * counted as two days trained; that is corrected in `trainings.controller.ts`. But this
+   * value drives a progress bar, and a bar that renders past its own track because of some
+   * future upstream change is worth making impossible here too.
+   */
   calculatePercentage(trainedDays: number, totalDays: number): number {
-    return totalDays > 0 ? parseFloat(((trainedDays / totalDays) * 100).toFixed(2)) : 0;
+    if (totalDays <= 0) return 0;
+    const percentage = (trainedDays / totalDays) * 100;
+    return parseFloat(Math.min(100, Math.max(0, percentage)).toFixed(2));
   }
 
   /** Clamped at zero: past your estimate, "negative weeks left" is not a useful figure. */

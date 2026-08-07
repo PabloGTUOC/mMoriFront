@@ -8,8 +8,8 @@ Nothing here blocks a local run — see [`README.md`](README.md) for that, and
 [`FRONTEND_IMPROVEMENT_PLAN.md`](FRONTEND_IMPROVEMENT_PLAN.md) is complete; the design
 system now lives in [`PRODUCT.md`](PRODUCT.md) and [`DESIGN.md`](DESIGN.md).
 
-**Baseline to preserve:** 61 frontend tests, 94 backend tests passing (1 known failure, §2.1),
-0 lint errors, 0 lint warnings, 576 kB initial bundle (budget warns at 620).
+**Baseline to preserve:** 70 frontend tests, 97 backend tests, 0 lint errors, 0 lint
+warnings, 576 kB initial bundle (budget warns at 620).
 
 ```bash
 npm run lint && npm run test:ci && npm run build     # frontend
@@ -35,11 +35,8 @@ and signing in loads the dashboard with `AUTH_MODE=required`.
 
 ### 1.2 ~~Real life-expectancy data~~ — **done**
 226 real entries are loaded and a Spanish male profile returns `base_life_expectancy: 80.5`.
-
-One loose end: the file is still named `life_expectancy.sample.json`, so
-`seed:life-expectancy` prints *"Seeding from the bundled SAMPLE dataset — those values are
-placeholders"* on every run. The values are real; the warning goes by filename. Rename the
-file, or drop the warning.
+The dataset is `data/life_expectancy.json`, and the seeder's placeholder warning now keys on
+the sample `_readme` marker rather than the filename, so it no longer fires on real data.
 
 ### 1.3 Production API URL
 `src/environments/environment.ts` still has `apiUrl: 'http://localhost:3000'`. Either edit
@@ -56,20 +53,7 @@ Thoughts screen shows the mood but no recommendation; everything else works.
 
 ## 2. Known defects
 
-### 2.1 One backend test fails
-`backend/tests/api.test.ts:431` — *"accepts the unwrapped form payload and persists
-video_link"*. **The implementation is right and the test is wrong.** The fixture posts
-`?v=abc123`, a 6-character video id, but `src/lib/youtube.ts:17` requires exactly 11
-(`/^[A-Za-z0-9_-]{11}$/`), so the server correctly rejects it and `success` comes back false.
-
-The fixture predates the 11-character rule added by the P1.3 iframe-injection fix. Changing
-`abc123` to any 11-character id (`dQw4w9WgXcQ`) should be the whole fix — the rest of the
-assertion is correct, since the controller stores the raw `video_link` and rebuilds the
-embed URL only at render time.
-
-*Done when:* `cd backend && npm test` reports 95 passing.
-
-### 2.2 Dependabot reports 122 vulnerabilities on `master`
+### 2.1 Dependabot reports 122 vulnerabilities on `master`
 5 critical, 67 high, 43 moderate, 7 low, per the push output. Nothing has been triaged. Most
 are likely transitive dev dependencies, but that is an assumption, not a finding.
 
@@ -125,7 +109,7 @@ interceptor wraps it in `from()`. The modular SDK differs on both.
 
 *Done when:* no `@angular/fire/compat` import remains, the reload-keeps-you-signed-in
 behaviour still holds (verify in a browser), the two zone patches can be removed without the
-dashboard hanging, and 61 tests still pass.
+dashboard hanging, and 70 tests still pass.
 
 ### 4.2 Audit the screens that were never exercised
 Every bug found in the design-system session was the same shape: **code that looked correct,
@@ -187,4 +171,7 @@ Recorded so nobody "fixes" them by accident.
 | `created_by` is stored but never returned | Provenance is for whoever operates the service; returning other users' uids would be its own small leak | `backend/src/models/*-repository.model.ts` |
 | A failed profile lookup resolves to `isNew: false` | Treating an unreachable API as "new user" would re-onboard an existing one and write a duplicate profile | `user.service.ts`, asserted in its spec |
 | Backend still accepts `user_id` from a caller | Keeps the API usable by other clients; `requireAuth` overwrites it with the verified uid and 403s on a mismatch | `require-auth.ts` |
+| Dates are stamped from the **local** calendar, not UTC | `toISOString()` filed anything logged before the UTC offset against yesterday — 00:30 in Spain became the previous day | `src/app/shared/dates.ts` |
+| `training_count` is distinct days, `total_days_since_joining` includes the join day | Both diverge from BACKEND_SPEC. The first made two sessions in a day read as two days trained; the second made day-one training report 0% | `trainings.controller.ts`, backend README §3b–3c |
+| A same-day weigh-in replaces rather than appends | The spec appends and disambiguates on read. That left two points at one x on the chart and no way to fix a typo, since the API has no PATCH or DELETE | `weight-updates.controller.ts`, backend README §3d |
 | `README_ENHANCEMENTS.md` still exists | Kept as the record of what was claimed versus what was true — that gap is why the audit happened | — |

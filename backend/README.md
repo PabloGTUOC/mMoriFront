@@ -203,6 +203,33 @@ This implementation uses half-open ranges and handles `BMI < 19` explicitly, whi
 §5.5 itself recommends. Every band's intended penalty is unchanged. `tests/life-methods.test.ts`
 pins down both the bands and the former gap values.
 
+### 3b. `training_count` counts days, not sessions
+
+`GET /trainings/training-stats` used `countDocuments`, so it returned the number of training
+*rows*. The frontend labels that figure "Days trained" and divides it by
+`total_days_since_joining` for "Training rate" — so two sessions logged on one day counted
+as two days trained, and the rate could exceed 100%. It is now the count of distinct
+`training_date` values. Training twice in a day is legitimate; calling it two days is not.
+
+### 3c. `total_days_since_joining` counts the join day
+
+This was the bare day difference, matching Ruby's `(Date.today - date).to_i`, which is `0`
+on the day you sign up. The frontend divides by it, so a user who signed up and trained the
+same day saw "Training rate 0%" — the denominator claimed no days had happened yet. One
+had: today. The value is now inclusive.
+
+### 3d. `POST /weight_updates` replaces a same-day weigh-in
+
+The spec appends unconditionally, and §4.13 documents a `date desc, _id desc` ordering whose
+`_id` tiebreaker exists precisely to disambiguate same-day rows. That tiebreaker made the
+*read* deterministic while leaving the data wrong: the daily form submitted twice wrote two
+rows for one day, the history chart drew two points at the same x, and a typo could never be
+corrected because this API has no `PATCH` or `DELETE` anywhere.
+
+A second reading on the same date now replaces the first. The ordering and its tiebreaker
+are unchanged, so nothing that depended on the read shape breaks; there are simply no ties
+left to break.
+
 ### 4. `POST /moods` returns 400 instead of crashing
 
 §4.14 notes that omitting the `mood_data` key raised `NoMethodError` → **500**. That is a

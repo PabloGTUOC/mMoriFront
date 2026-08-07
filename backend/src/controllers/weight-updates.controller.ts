@@ -35,11 +35,24 @@ export async function createWeightUpdate(req: Request, res: Response): Promise<R
     return failWithError(res, HTTP.badRequest, 'UserId is missing');
   }
 
-  const document = new WeightUpdate({
-    user_id: toStringOrUndefined(pick(params, 'user_id')),
-    weight: toNumberOrUndefined(pick(params, 'weight')),
-    date: toDateOrUndefined(pick(params, 'date')),
-  });
+  const userId = toStringOrUndefined(pick(params, 'user_id'));
+  const weight = toNumberOrUndefined(pick(params, 'weight'));
+  const date = toDateOrUndefined(pick(params, 'date'));
+
+  /*
+   * One weigh-in per day: a second reading on the same date replaces the first.
+   *
+   * Appending meant the daily form, submitted twice, wrote two rows for one day. The
+   * history chart then drew two points at the same x, which reads as a vertical jump, and
+   * a typo could never be corrected — there is no PATCH or DELETE anywhere in this API.
+   * Re-weighing yourself and replacing the earlier figure is what a user expects; keeping
+   * both is not.
+   */
+  const existing =
+    userId && date ? await WeightUpdate.findOne({ user_id: userId, date }) : null;
+
+  const document = existing ?? new WeightUpdate({ user_id: userId, date });
+  document.weight = weight as number;
 
   try {
     await document.save();

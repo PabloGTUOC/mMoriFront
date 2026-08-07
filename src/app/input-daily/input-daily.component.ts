@@ -7,6 +7,7 @@ import { forkJoin } from "rxjs";
 import { TrainingRepositoryService } from "../services/training-repository.service";
 import { CommonModule } from '@angular/common';
 import { TrainingRepositoryEntry } from '../models';
+import { toLocalIsoDate } from '../shared/dates';
 
 
 @Component({
@@ -68,7 +69,8 @@ export class InputDailyComponent implements OnInit {
   submitData(): void {
     if (this.dailyForm.valid) {
       const formData = this.dailyForm.value;
-      const today = new Date().toISOString().split('T')[0];
+      // Local calendar date, not UTC — see shared/dates.ts.
+      const today = toLocalIsoDate();
       // Canonical backend field names. This used to send `date` and `training`, which the
       // API does not permit, so the row saved with nulls and the session's type was lost.
       const training_data = {

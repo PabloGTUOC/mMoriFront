@@ -294,8 +294,26 @@ describe.skipIf(mongo === null)('API integration', () => {
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.training_count).toBe(1);
-      expect(response.body.total_days_since_joining).toBe(0); // created moments ago
+      // The join day counts as day one. This asserted 0, which made the frontend's
+      // "% days trained" read 0% for a user who signed up and trained the same day.
+      expect(response.body.total_days_since_joining).toBe(1);
       expect(response.body.first_login_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('counts days trained, not sessions logged', async () => {
+      await request(app).post('/user_data').send({ user_data: profile });
+      // Two sessions on one day, one on another: two days trained, not three.
+      for (const training_date of ['2024-06-14', '2024-06-14', '2024-06-15']) {
+        await request(app)
+          .post('/trainings')
+          .send({ training: { user_id: 'abc123', training_date } });
+      }
+
+      const response = await request(app)
+        .get('/trainings/training-stats')
+        .query({ user_id: 'abc123' });
+
+      expect(response.body.training_count).toBe(2);
     });
 
     it('is the only endpoint that returns a real 404', async () => {
@@ -424,7 +442,7 @@ describe.skipIf(mongo === null)('API integration', () => {
       const response = await request(app).post('/stretches').send({
         stretch_name: 'Hamstring stretch',
         description: 'Hold for 60 seconds',
-        video_link: 'https://www.youtube.com/watch?v=abc123',
+        video_link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       });
 
       expect(response.status).toBe(200);
@@ -434,7 +452,7 @@ describe.skipIf(mongo === null)('API integration', () => {
       expect(list.body.data[0]).toMatchObject({
         name: 'Hamstring stretch',
         stretch_name: 'Hamstring stretch',
-        video_link: 'https://www.youtube.com/watch?v=abc123',
+        video_link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       });
     });
   });
@@ -454,7 +472,13 @@ describe.skipIf(mongo === null)('API integration', () => {
       expect(response.body).toEqual({ success: true, weight: 77.4, date: '2024-08-10' });
     });
 
-    it('breaks same-day ties by insertion order, latest wins', async () => {
+    /**
+     * This used to be "breaks same-day ties by insertion order, latest wins" — three rows
+     * for one date, read back newest-first. There are no ties now: a second reading on the
+     * same day replaces the first, so the history chart cannot draw two points at one x
+     * and a mistyped figure can be corrected by re-entering it.
+     */
+    it('replaces a same-day weigh-in rather than appending one', async () => {
       for (const weight of [80, 81, 82]) {
         await request(app)
           .post('/weight_updates')
@@ -466,6 +490,27 @@ describe.skipIf(mongo === null)('API integration', () => {
         .query({ user_id: 'abc123' });
 
       expect(response.body.weight).toBe(82);
+
+      // One row, not three.
+      const history = await request(app)
+        .get('/weight_updates/history')
+        .query({ user_id: 'abc123' });
+
+      expect(history.body.data).toEqual([{ date: '2024-08-10', weight: 82 }]);
+    });
+
+    it('keeps weigh-ins on different days as separate entries', async () => {
+      for (const [date, weight] of [['2024-08-10', 80], ['2024-08-11', 79]] as const) {
+        await request(app)
+          .post('/weight_updates')
+          .send({ weight_update: { user_id: 'abc123', date, weight } });
+      }
+
+      const history = await request(app)
+        .get('/weight_updates/history')
+        .query({ user_id: 'abc123' });
+
+      expect(history.body.data).toHaveLength(2);
     });
 
     it('answers 200 with success:false when there is no weight history', async () => {

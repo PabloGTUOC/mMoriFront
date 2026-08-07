@@ -66,6 +66,19 @@ describe('MetricsService', () => {
     it('returns 0 rather than dividing by zero on the first day', () => {
       expect(service.calculatePercentage(0, 0)).toBe(0);
     });
+
+    it('reports 100 for someone who has trained every day since joining', () => {
+      expect(service.calculatePercentage(9, 9)).toBe(100);
+    });
+
+    // The bar this drives cannot render past its own track.
+    it('clamps above 100', () => {
+      expect(service.calculatePercentage(12, 9)).toBe(100);
+    });
+
+    it('clamps below 0', () => {
+      expect(service.calculatePercentage(-3, 9)).toBe(0);
+    });
   });
 
   describe('week conversions', () => {

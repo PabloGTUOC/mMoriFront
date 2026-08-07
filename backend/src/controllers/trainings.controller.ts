@@ -144,12 +144,23 @@ export async function trainingStats(req: Request, res: Response): Promise<Respon
   }
 
   const firstLoginDate = firstLogin.created_at ?? new Date();
-  const trainingCount = await Training.countDocuments({ user_id: userId });
+
+  /*
+   * Distinct dates, not row count.
+   *
+   * This was `countDocuments`, so it counted *sessions*. The frontend labels the figure
+   * "Days trained" and divides it by the days since joining for "Training rate" — so two
+   * sessions logged on one day counted as two days trained, and the rate could exceed
+   * 100%. Training an afternoon as well as a morning is legitimate; claiming it was two
+   * days is not.
+   */
+  const trainedDates = await Training.distinct('training_date', { user_id: userId });
+  const trainingCount = trainedDates.filter((date) => typeof date === 'string' && date).length;
 
   return ok(res, {
     success: true,
     training_count: trainingCount,
-    total_days_since_joining: daysBetween(firstLoginDate, new Date()),
+    total_days_since_joining: daysSinceJoining(firstLoginDate, new Date()),
     first_login_date: toDateOnly(firstLoginDate),
   });
 }
@@ -209,9 +220,17 @@ export async function createTrainingRepositoryEntry(
   });
 }
 
-/** Whole days between two instants, matching Ruby's `(Date.today - date).to_i`. */
-function daysBetween(from: Date, to: Date): number {
+/**
+ * Days elapsed since joining, **counting the join day itself**.
+ *
+ * This used to be the bare difference, matching Ruby's `(Date.today - date).to_i`, which
+ * is 0 on the day you sign up. The frontend divides by it, so a user who signed up and
+ * trained on the same day saw "Training rate 0%" — the denominator said no days had
+ * happened yet. One day has happened: today. A deviation from BACKEND_SPEC, recorded in
+ * backend/README.md alongside the BMI band fix.
+ */
+function daysSinceJoining(from: Date, to: Date): number {
   const startOfDay = (value: Date) =>
     Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate());
-  return Math.floor((startOfDay(to) - startOfDay(from)) / 86_400_000);
+  return Math.floor((startOfDay(to) - startOfDay(from)) / 86_400_000) + 1;
 }
