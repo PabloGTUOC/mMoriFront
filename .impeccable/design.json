@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-07T00:00:00.000Z",
+  "title": "Design System: mMori",
+  "extensions": {
+    "colorMeta": {
+      "neon-pink": {
+        "role": "primary",
+        "displayName": "Neon Pink",
+        "canonical": "#ff0077",
+        "tonalRamp": ["#2b0014", "#4d0024", "#800039", "#b3004f", "#e6006f", "#ff0077", "#ff4d9e", "#ffb3d4"]
+      },
+      "neon-blue": {
+        "role": "secondary",
+        "displayName": "Horizon Blue",
+        "canonical": "#0088ff",
+        "tonalRamp": ["#00172b", "#00294d", "#004480", "#0066b3", "#0088ff", "#33a1ff", "#80c4ff", "#cce6ff"]
+      },
+      "violet": {
+        "role": "secondary",
+        "displayName": "Deck Violet",
+        "canonical": "#590fb7",
+        "tonalRamp": ["#150429", "#22064a", "#360a70", "#490c94", "#590fb7", "#7a00cc", "#a45ce0", "#d6b3f0"]
+      },
+      "neon-magenta": {
+        "role": "tertiary",
+        "displayName": "Magenta Flare",
+        "canonical": "#ff08f8",
+        "tonalRamp": ["#2b0029", "#4d004a", "#800077", "#b300a8", "#e600d9", "#ff08f8", "#ff66fa", "#ffc2fd"]
+      },
+      "signal-sand": {
+        "role": "tertiary",
+        "displayName": "Signal Sand",
+        "canonical": "#ffcc00",
+        "tonalRamp": ["#2b2200", "#4d3d00", "#806600", "#b38f00", "#e6b800", "#ffcc00", "#ffdd4d", "#ffefb3"]
+      },
+      "sky-deep": {
+        "role": "neutral",
+        "displayName": "Sky Deep",
+        "canonical": "#0f0c29",
+        "tonalRamp": ["#050409", "#0f0c29", "#191540", "#242058", "#302b63", "#4a4487", "#7d77b3", "#c4c1dd"]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "canonical": "#333333",
+        "tonalRamp": ["#121212", "#1e1e1e", "#222222", "#2c2c2c", "#333333", "#555555", "#888888", "#cccccc"]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Ground",
+        "canonical": "#121212",
+        "tonalRamp": ["#000000", "#0a0a0a", "#121212", "#1e1e1e", "#2c2c2c", "#3a3a3a", "#666666", "#b3b3b3"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The app name in the header. Once per page." },
+      "headline": { "displayName": "Headline", "purpose": "The life-chart title. The only element carrying the 2px retro letter-spacing." },
+      "title": { "displayName": "Title", "purpose": "Tagline and section headings." },
+      "body": { "displayName": "Body", "purpose": "All prose, buttons, inputs, list items." },
+      "label": { "displayName": "Label", "purpose": "Form labels. Separated from fields by weight, not colour." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 2px 4px rgba(0,0,0,0.3)", "purpose": "Panels, headings, list items, value readouts. The default for anything sitting on the page." },
+      { "name": "raised", "value": "0 4px 8px rgba(0,0,0,0.3)", "purpose": "Buttons and the navigation bar. Anything actionable." },
+      { "name": "container", "value": "0 4px 10px rgba(0,0,0,0.3)", "purpose": "The header. Full-width signature surfaces." },
+      { "name": "container-deep", "value": "0 4px 10px rgba(0,0,0,0.7)", "purpose": "The life chart, which sits deepest because it is the thing being looked at." },
+      { "name": "lifted", "value": "0 6px 12px rgba(0,0,0,0.5)", "purpose": "Hover state only." },
+      { "name": "pressed", "value": "0 2px 4px rgba(0,0,0,0.5)", "purpose": "Active state, paired with translateY(2px)." },
+      { "name": "glow-value", "value": "text-shadow: 0 0 5px var(--glow)", "purpose": "Semantic, not structural. Marks a number the user came to read." },
+      { "name": "glow-accent", "value": "text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent)", "purpose": "The life chart title and card headings." },
+      { "name": "glow-header", "value": "text-shadow: 0 0 5px #ff08f8, 0 0 15px #ff08f8", "purpose": "The app name only. The single brightest element in the app." }
+    ],
+    "motion": [
+      { "name": "state-standard", "value": "background-color 0.3s, box-shadow 0.3s", "purpose": "Default for button and control state changes." },
+      { "name": "theme-swap", "value": "background-color 0.3s ease, color 0.3s ease", "purpose": "The light/dark transition on body." },
+      { "name": "press", "value": "transform: translateY(2px)", "purpose": "Instant physical feedback on :active. Not eased." },
+      { "name": "toggle-pop", "value": "all 0.3s ease with transform: scale(1.1)", "purpose": "The circular theme toggle on hover." }
+    ],
+    "breakpoints": [
+      { "name": "chart-compact", "value": "920px" },
+      { "name": "nav-collapse", "value": "768px" }
+    ],
+    "layout": [
+      { "name": "column", "value": "width: 80%; max-width: 1400px; margin: 0 auto", "purpose": "Every top-level container. The app's single centred column." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one button style in the app. Gradient face, hard corners, physically depresses on press.",
+      "html": "<button class=\"ds-btn-primary\">Log training</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(to right, #ff0077 0%, #590fb7 100%); border: none; border-radius: 4px; color: #ffffff; font-family: 'Roboto Mono', ui-monospace, monospace; font-size: 16px; padding: 10px 20px; cursor: pointer; text-shadow: 0 0 5px rgba(255,0,120,0.75), 0 0 10px rgba(255,0,120,0.75); box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: background-color 0.3s, box-shadow 0.3s; } .ds-btn-primary:hover, .ds-btn-primary:focus-visible { background: linear-gradient(to right, #ff0077 0%, #7a00cc 100%); box-shadow: 0 6px 12px rgba(0,0,0,0.5); outline: 2px solid #08f; outline-offset: 2px; } .ds-btn-primary:active { box-shadow: 0 2px 4px rgba(0,0,0,0.5); transform: translateY(2px); } @media (prefers-reduced-motion: reduce) { .ds-btn-primary { transition: none; } .ds-btn-primary:active { transform: none; } }"
+    },
+    {
+      "name": "Disabled Button",
+      "kind": "button",
+      "refersTo": "button-disabled",
+      "description": "Flat, no gradient, no glow. Disabled state drops every signature treatment at once.",
+      "html": "<button class=\"ds-btn-disabled\" disabled>Log training</button>",
+      "css": ".ds-btn-disabled { background: #555555; border: none; border-radius: 4px; color: #aaaaaa; font-family: 'Roboto Mono', ui-monospace, monospace; font-size: 16px; padding: 10px 20px; cursor: not-allowed; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The matte default surface. Deliberately plain so the sky surfaces stay special.",
+      "html": "<div class=\"ds-panel\"><h3>Push day</h3><p>45 min &middot; 320 kcal</p></div>",
+      "css": ".ds-panel { background: #333333; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-family: 'Roboto Mono', ui-monospace, monospace; text-align: center; color: #ffffff; } .ds-panel h3 { color: #ff0077; text-shadow: 0 0 10px #ff0077; margin: 0 0 10px; font-size: 1.25em; } .ds-panel p { margin: 5px 0; font-size: 1.1em; }"
+    },
+    {
+      "name": "Value Readout",
+      "kind": "custom",
+      "refersTo": "value-readout",
+      "description": "A number the user came to read. The only element type permitted to glow.",
+      "html": "<div class=\"ds-readout\"><span class=\"ds-readout-label\">Weeks left</span><span class=\"ds-readout-value\">2,143</span></div>",
+      "css": ".ds-readout { font-family: 'Roboto Mono', ui-monospace, monospace; display: flex; flex-direction: column; gap: 5px; } .ds-readout-label { background: #333333; color: #ffffff; padding: 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); text-shadow: 0 0 5px rgba(255,0,120,0.75); text-align: center; } .ds-readout-value { font-size: 2em; color: #ff0077; text-shadow: 0 0 5px rgba(255,0,120,0.75); padding: 5px; background-color: #222222; border-radius: 4px; text-align: center; }"
+    },
+    {
+      "name": "Sky Surface",
+      "kind": "custom",
+      "refersTo": "sky-surface",
+      "description": "The header and life chart. Stays dark in both themes; the neon only reads against it.",
+      "html": "<header class=\"ds-sky\"><h1>mMori</h1><h2>MementoMori</h2></header>",
+      "css": ".ds-sky { background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e); color: #ffffff; padding: 20px; text-align: center; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-bottom: 5px solid #08f; font-family: 'Roboto Mono', ui-monospace, monospace; } .ds-sky h1 { font-size: 24px; margin: 0; text-shadow: 0 0 5px #ff08f8, 0 0 15px #ff08f8; } .ds-sky h2 { font-size: 48px; margin: 0; text-shadow: 0 0 5px #ff08f8, 0 0 15px #ff08f8; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Two-column form row: label left, field right. Label separated by weight, not colour.",
+      "html": "<div class=\"ds-field\"><label for=\"ds-w\">Weight</label><input id=\"ds-w\" type=\"number\" value=\"75\"></div>",
+      "css": ".ds-field { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; align-items: center; font-family: 'Roboto Mono', ui-monospace, monospace; } .ds-field label { color: #ffffff; font-weight: 700; } .ds-field input { width: 100%; padding: 10px; border: 1px solid #444444; border-radius: 4px; font-size: 1em; font-family: inherit; background: #1e1e2e; color: #ffffff; } .ds-field input:focus-visible { outline: 2px solid #08f; outline-offset: 1px; border-color: #08f; }"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "refersTo": "panel",
+      "description": "Quiet links in a gradient container; the accent marks the current page only. 2x2 grid below 768px, no hamburger.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main\"><ul><li><a href=\"#\">Today</a></li><li><a href=\"#\" class=\"is-current\" aria-current=\"page\">Trainings</a></li><li><a href=\"#\">Stretches</a></li><li><a href=\"#\">Thoughts</a></li></ul><button class=\"ds-nav-out\" type=\"button\">Log out</button></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 20px; padding: 6px 10px; background: linear-gradient(to right, rgba(30,30,46,0.95), rgba(20,20,34,0.95)); border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); font-family: 'Roboto Mono', ui-monospace, monospace; } .ds-nav ul { display: flex; flex: 1; gap: 4px; margin: 0; padding: 0; list-style: none; } .ds-nav li { flex: 1; } .ds-nav a { position: relative; display: block; padding: 10px 14px; border-radius: 4px; color: #ffffff; opacity: 0.78; font-size: 15px; text-align: center; text-decoration: none; white-space: nowrap; transition: opacity 180ms ease, background-color 180ms ease; } .ds-nav a::after { content: ''; position: absolute; right: 14px; bottom: 4px; left: 14px; height: 2px; border-radius: 2px; background: currentColor; transform: scaleX(0); transition: transform 180ms ease; } .ds-nav a:hover, .ds-nav a:focus-visible { opacity: 1; background-color: rgba(127,127,127,0.14); } .ds-nav a:hover::after { transform: scaleX(0.6); } .ds-nav a:focus-visible { outline: 2px solid #08f; outline-offset: 2px; } .ds-nav a:active { transform: translateY(1px); } .ds-nav a.is-current { color: #ff0077; opacity: 1; font-weight: 700; } .ds-nav a.is-current::after { transform: scaleX(1); } .ds-nav-out { flex: 0 0 auto; padding: 10px 14px; border: none; border-left: 1px solid #888888; border-radius: 0 4px 4px 0; background: transparent; color: #ffffff; opacity: 0.7; font-family: inherit; font-size: 14px; cursor: pointer; transition: opacity 180ms ease, background-color 180ms ease; } .ds-nav-out:hover { opacity: 1; background-color: rgba(127,127,127,0.14); } @media (prefers-reduced-motion: reduce) { .ds-nav a, .ds-nav a::after, .ds-nav-out { transition: none; } .ds-nav a:active { transform: none; } }"
+    },
+    {
+      "name": "Theme Toggle",
+      "kind": "button",
+      "refersTo": "theme-toggle",
+      "description": "The one circular element in the system. Glass over the night sky, top-right of the header.",
+      "html": "<button class=\"ds-toggle\" aria-label=\"Switch to light mode\">☀️</button>",
+      "css": ".ds-toggle { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; width: 50px; height: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.3s ease; backdrop-filter: blur(10px); } .ds-toggle:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); transform: scale(1.1); } @media (prefers-reduced-motion: reduce) { .ds-toggle { transition: none; } .ds-toggle:hover { transform: none; } }"
+    },
+    {
+      "name": "Life Grid",
+      "kind": "custom",
+      "refersTo": "sky-surface",
+      "description": "The signature. One dot per week of an expected life, 52 columns wide, on the night sky.",
+      "html": "<div class=\"ds-grid\"><h2 class=\"ds-grid-title\">YOUR LIFE IN WEEKS</h2><svg width=\"260\" height=\"80\" role=\"img\" aria-label=\"Weeks lived and remaining\"><g><circle class=\"ds-dot ds-lived\" cx=\"10\" cy=\"10\" r=\"5\"/><circle class=\"ds-dot ds-lived\" cx=\"25\" cy=\"10\" r=\"5\"/><circle class=\"ds-dot ds-lived\" cx=\"40\" cy=\"10\" r=\"5\"/><circle class=\"ds-dot ds-lived\" cx=\"55\" cy=\"10\" r=\"5\"/><circle class=\"ds-dot ds-remaining\" cx=\"70\" cy=\"10\" r=\"5\"/><circle class=\"ds-dot ds-remaining\" cx=\"85\" cy=\"10\" r=\"5\"/><circle class=\"ds-dot ds-remaining\" cx=\"100\" cy=\"10\" r=\"5\"/><circle class=\"ds-dot ds-remaining\" cx=\"115\" cy=\"10\" r=\"5\"/></g></svg></div>",
+      "css": ".ds-grid { background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e); border: 2px solid #08f; border-radius: 8px; padding: 10px; text-align: center; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.7); font-family: 'Roboto Mono', ui-monospace, monospace; } .ds-grid-title { color: #ff0077; text-shadow: 0 0 10px #ff0077, 0 0 20px #ff0077; font-size: 2em; margin: 0 0 15px; letter-spacing: 2px; } .ds-dot { stroke-width: 1.5; stroke: #ff0077; opacity: 0.8; } .ds-lived { fill: #ff0077; } .ds-remaining { fill: whitesmoke; } .ds-dot:hover { fill: #ffffff; opacity: 1; cursor: pointer; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Observation Deck",
+    "overview": "You come here to look at something larger than yourself. The system is built around a single act: standing at a window at night and seeing the whole shape of a life at once. Everything above the glass is sky, deep indigo shading to violet, lit by a neon horizon line. Everything below it is instrumentation, plain panels holding plain numbers, arranged so they never compete with the view.\n\nThe two registers are strictly separated and that separation is the entire system. The night sky appears on exactly two surfaces, the header and the life-expectancy chart, and it does not invert when the theme changes. Panels, forms, catalogues, and inputs are the deck: matte, functional, unglamorous, deliberately dull so that looking up still means something. A design that glows everywhere has nothing left to emphasise.\n\nDensity is generous rather than tight. Every major container is 80% of the viewport capped at 1400px, centred, with 20px of air between blocks, which gives the app a consistent unhurried column down the middle of the screen. Nothing is packed. The system explicitly rejects the rounded-blue-card language of corporate fitness apps, the elevation-and-grey of a default Material dashboard, and the black-and-grey severity of a death clock.",
+    "keyCharacteristics": [
+      "Night sky on two surfaces only; matte panels everywhere else",
+      "One typeface, monospaced, at every size",
+      "Neon glow reserved for meaning, never for decoration",
+      "Structural shadows that separate surfaces without floating them",
+      "Controls that physically depress when pressed",
+      "A single centred column: 80% width, 1400px maximum"
+    ],
+    "rules": [
+      { "name": "The Sky Stays Dark Rule", "body": "The header and the life-expectancy chart keep the night-sky gradient in both themes. The light theme lightens the panels, cards, inputs, and menus around them and leaves the sky alone. The glow only reads against a dark backdrop; inverting these two surfaces cascades contrast failures through every glow effect in the app.", "section": "colors" },
+      { "name": "The Glow Means Meaning Rule", "body": "Neon glow (text-shadow) marks a value, never a container and never a label. If a glowing element is not a number the user came to read, remove the glow. Decorative glow is the fastest way to turn this system into the doom-clock aesthetic it exists to avoid.", "section": "colors" },
+      { "name": "The One Voice Rule", "body": "Neon Pink covers no more than 10% of any screen. Its rarity is what makes a number feel like it matters.", "section": "colors" },
+      { "name": "The One Typeface Rule", "body": "Roboto Mono, everywhere, no exceptions. Every stylesheet in the project already specifies it. Adding a second family to 'warm things up' breaks the instrument-panel consistency that makes the numbers readable.", "section": "typography" },
+      { "name": "The Load What You Specify Rule", "body": "A font declared in CSS and absent from index.html is not a design choice, it is a silent fallback to whatever the operating system supplies, and the app will look different on every machine. Roboto Mono must be loaded. Fonts that no stylesheet references must be removed from index.html.", "section": "typography" },
+      { "name": "The Two Vocabularies Rule", "body": "Shadow separates; glow signifies. If you are reaching for a shadow to make something feel important, you want a glow. If you are reaching for a glow to lift a surface off the background, you want a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the night sky on the header and life chart in both themes, and lighten only the panels around them.",
+      "Do reserve Neon Pink (#ff0077) for values, and keep it under 10% of any screen.",
+      "Do use Roboto Mono at every size, and make sure index.html actually loads it.",
+      "Do separate surfaces with shadow and mark values with glow, never the reverse.",
+      "Do give every button a translateY(2px) press with the Pressed shadow. The physical response is the component character.",
+      "Do hold every top-level container to width: 80%; max-width: 1400px; margin: 0 auto.",
+      "Do pair :hover and :focus in one rule so keyboard and mouse get the same feedback.",
+      "Do give the 0.3s transitions and the chart animation a prefers-reduced-motion path."
+    ],
+    "donts": [
+      "Don't build a generic Material dashboard: no elevation cards floating on grey, no #1976d2 blue primary, no icon-heading-text card grids. Material was removed from this project deliberately; do not let its conventions return by habit.",
+      "Don't drift toward corporate fitness SaaS: no rounded blue cards, no badge grids, no chirpy encouragement, no progress rings.",
+      "Don't produce doom-scroll morbidity: the life grid is a fact, not a threat. No countdown timers, no red, no skulls, no black-and-grey severity.",
+      "Don't add gamified retention: no streaks, no confetti, no achievement badges, no re-engagement nudges. An app about finite time must not manufacture urgency about itself.",
+      "Don't apply glow to containers, labels, borders, or buttons-at-rest. Glow marks values.",
+      "Don't use Magenta Flare (#ff08f8) anywhere but the header text glow.",
+      "Don't set a label's colour to a panel background token. .input-block label currently resolves to #333 on the dark ground, which is very close to invisible. Labels take --panel-text or --text-primary.",
+      "Don't introduce a second typeface, and don't leave font links in index.html that no stylesheet references.",
+      "Don't put anything other than the life grid on the sky gradient.",
+      "Don't use border-left or border-right greater than 1px as a coloured accent stripe. The only thick borders in this system are the header's bottom line and the chart's frame, both Horizon Blue, both structural."
+    ]
+  }
+}

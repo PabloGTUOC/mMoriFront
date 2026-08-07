@@ -1,113 +1,89 @@
-// Light Theme Variables
-:root,
-.light-theme {
-  --primary-color: #1976d2;
-  --primary-dark: #115293;
-  --primary-light: #4791db;
-
-  --background-color: #ffffff;
-  --surface-color: #f5f5f5;
-  --card-background: #ffffff;
-
-  --text-primary: #212121;
-  --text-secondary: #757575;
-  --text-disabled: #9e9e9e;
-
-  --border-color: #e0e0e0;
-  --divider-color: #bdbdbd;
-
-  --success-color: #4caf50;
-  --warning-color: #ff9800;
-  --error-color: #f44336;
-  --info-color: #2196f3;
-
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
-
-  /* Synthwave tokens — light */
-  --panel-bg: #f2f2f7;
-  --panel-bg-strong: #e7e7ef;
-  --panel-bg-muted: #d8d8e2;
-  --panel-text: #1b1b2f;
-  --accent: #c2005c;
-  --accent-strong: #a30049;
-  --glow: rgba(194, 0, 92, 0.25);
-  --surface-raised: #ffffff;
-  --surface-raised-text: #1b1b2f;
-  --border-strong: #b9b9c6;
-  --text-muted: #6b6b7b;
-  --input-bg: #ffffff;
-  --input-panel-bg: #f9f9f9;
-  --input-border: #ccc;
-  --menu-gradient: linear-gradient(to right, rgba(235, 235, 224, 0.9), rgba(220, 220, 210, 0.9));
-  --button-gradient: linear-gradient(to right, #c2005c 0%, #590fb7 100%);
-  --button-gradient-hover: linear-gradient(to right, #c2005c 0%, #7a00cc 100%);
-  --spinner-backdrop: #6690ba;
-}
-
-// Dark Theme Variables
-.dark-theme {
-  --primary-color: #90caf9;
-  --primary-dark: #5d99c6;
-  --primary-light: #b3dff9;
-
-  --background-color: #121212;
-  --surface-color: #1e1e1e;
-  --card-background: #2c2c2c;
-
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --text-disabled: #666666;
-
-  --border-color: #3a3a3a;
-  --divider-color: #4a4a4a;
-
-  --success-color: #66bb6a;
-  --warning-color: #ffa726;
-  --error-color: #ef5350;
-  --info-color: #42a5f5;
-
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
-
-  /* Synthwave tokens — dark. These are the values the app shipped with. */
-  --panel-bg: #333;
-  --panel-bg-strong: #222;
-  --panel-bg-muted: #555;
-  --panel-text: #ffffff;
-  --accent: #ff0077;
-  --accent-strong: #e6006f;
-  --glow: rgba(255, 0, 120, 0.75);
-  --surface-raised: #1e1e2e;
-  --surface-raised-text: #ffffff;
-  --border-strong: #888;
-  --text-muted: #aaa;
-  --input-bg: #2a2a3a;
-  --input-panel-bg: #24243a;
-  --input-border: #444;
-  --menu-gradient: linear-gradient(to right, rgba(30, 30, 46, 0.95), rgba(20, 20, 34, 0.95));
-  --button-gradient: linear-gradient(to right, #ff0077 0%, #590fb7 100%);
-  --button-gradient-hover: linear-gradient(to right, #ff0077 0%, #7a00cc 100%);
-  --spinner-backdrop: #2a3a52;
-}
-
-
-/* ---------------------------------------------------------------------------
- * Synthwave tokens (FRONTEND_IMPROVEMENT_PLAN.md 6.1)
+/* ===========================================================================
+ * Design tokens — Material 3 architecture, mMori's own skin.
  *
- * The 20 variables above were defined and then used by nothing: all 14 component
- * stylesheets hardcoded their colours, and because view encapsulation gives component
- * rules higher specificity than the global theme rules, the toggle changed little more
- * than the body background. These tokens are the ones the components actually need.
+ * The structure here is M3's: reference tonal palettes, semantic surface/on-surface
+ * roles, state-layer opacities, a spacing and shape scale, motion tokens. The *values*
+ * are not Google's. Every ramp is generated in OKLCH from the app's own seed (#ff0077),
+ * so the system is systematic without looking like a stock Material app — which is still
+ * an explicit anti-reference in PRODUCT.md.
  *
- * The "night sky" surfaces — the header and the life-expectancy chart — stay dark in both
- * themes on purpose. They are the app's signature, the neon glow only reads against a dark
- * backdrop, and flipping them would cascade contrast problems through every glow effect.
- * Light mode lightens the panels, cards, inputs and menus around them.
- * ------------------------------------------------------------------------ */
+ * Tones are CIE L*, mapped to OKLCH L as (tone + 16) / 116. Chroma falls off toward both
+ * extremes so nothing clips out of sRGB.
+ *
+ * The legacy token names (--panel-bg, --accent, --button-gradient, …) are kept at the
+ * bottom as aliases onto these roles. Fifteen component stylesheets reference them, and
+ * re-pointing the aliases updates all of them at once rather than by hand.
+ * ======================================================================== */
+
 :root {
+  /* ---- Reference palettes ------------------------------------------------ */
+  /* primary — seeded from #ff0077 */
+  --md-p-0:   #000000;  --md-p-10:  #53000f;  --md-p-20:  #7b0020;
+  --md-p-30:  #a00034;  --md-p-40:  #c3004a;  --md-p-50:  #e20062;
+  --md-p-60:  #fc2f7c;  --md-p-70:  #ff6799;  --md-p-80:  #ff98b8;
+  --md-p-90:  #ffcbda;  --md-p-95:  #ffe5ec;  --md-p-99:  #fffafb;
+  --md-p-100: #ffffff;
+  /* the raw seed. Sits near tone 55 and is the app's signature, so it is kept exact
+     rather than snapped to a tone stop. */
+  --md-p-seed: #ff0077;
+
+  /* neutral — the brand hue at 5.5% chroma, so greys lean pink rather than blue */
+  --md-n-0:   #000000;  --md-n-6:   #171213;  --md-n-10:  #201a1b;
+  --md-n-12:  #241d1f;  --md-n-17:  #2f2829;  --md-n-20:  #362e2f;
+  --md-n-22:  #3b3234;  --md-n-24:  #403638;  --md-n-90:  #e6e1e2;
+  --md-n-92:  #ebe7e8;  --md-n-94:  #f0eded;  --md-n-95:  #f2f0f0;
+  --md-n-99:  #fcfcfc;  --md-n-100: #ffffff;
+
+  /* neutral-variant — same hue at 13% chroma, for outlines and secondary text */
+  --md-nv-30: #564044;  --md-nv-50: #896f74;  --md-nv-60: #a2898e;
+  --md-nv-80: #d3c1c5;
+
+  /* secondary — Horizon Blue, the system's "this is an edge" colour */
+  --md-s-40:  #0058cb;  --md-s-80:  #8ecaff;
+
+  /* ---- Shape ------------------------------------------------------------- */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-full: 999px;
+
+  /* ---- Spacing — 4px base, no more ad-hoc 5/10/15 ------------------------ */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  /* ---- Type scale — one family, hierarchy from size and weight ----------- */
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+  --type-display: 700 2.25rem/1.15 var(--font-mono);
+  --type-headline: 500 1.5rem/1.25 var(--font-mono);
+  --type-title: 500 1.125rem/1.35 var(--font-mono);
+  --type-body: 400 0.9375rem/1.55 var(--font-mono);
+  --type-label: 500 0.8125rem/1.4 var(--font-mono);
+
+  /* ---- State layers — M3 applies these as an overlay on the base colour --- */
+  --state-hover: 0.08;
+  --state-focus: 0.10;
+  --state-pressed: 0.10;
+
+  /* ---- Motion — product register wants 150-250ms ------------------------- */
+  --motion-short: 150ms;
+  --motion-medium: 250ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+
+  /* ---- Layout ------------------------------------------------------------ */
+  --app-column: 80%;
+  --app-column-max: 1400px;
+
+  /* ---- The two sky surfaces --------------------------------------------- */
+  /* Header and life chart. Dark in both themes on purpose: the glow only reads against
+     a dark backdrop, and these are the app's signature (DESIGN.md, Sky Stays Dark). */
   --sky-gradient: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
   --on-sky-text: #ffffff;
   --neon-line: #08f;
@@ -117,60 +93,250 @@
   --spinner-sand: #ffcc00;
 }
 
-// Apply theme colors globally
-body {
-  background-color: var(--background-color);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+/* ===========================================================================
+ * Semantic roles
+ * ======================================================================== */
+
+:root,
+.light-theme {
+  --md-surface: var(--md-n-99);
+  --md-surface-container-lowest: var(--md-n-100);
+  --md-surface-container-low: var(--md-n-95);
+  --md-surface-container: var(--md-n-94);
+  --md-surface-container-high: var(--md-n-92);
+  --md-surface-container-highest: var(--md-n-90);
+
+  --md-on-surface: var(--md-n-10);
+  --md-on-surface-variant: var(--md-nv-30);
+  --md-outline: var(--md-nv-50);
+  --md-outline-variant: var(--md-nv-80);
+
+  --md-primary: var(--md-p-40);
+  --md-on-primary: var(--md-n-100);
+  --md-primary-container: var(--md-p-90);
+  --md-primary-container-hover: var(--md-p-80);
+  --md-on-primary-container: var(--md-p-10);
+
+  --md-secondary: var(--md-s-40);
+
+  /* State-layer tint. Derived from on-surface so it works on any container. */
+  --md-state-tint: 32, 26, 27;
+
+  --md-elev-1: 0 1px 2px rgba(0, 0, 0, 0.10), 0 1px 3px 1px rgba(0, 0, 0, 0.06);
+  --md-elev-2: 0 1px 2px rgba(0, 0, 0, 0.12), 0 2px 6px 2px rgba(0, 0, 0, 0.08);
+  --md-elev-3: 0 4px 8px 3px rgba(0, 0, 0, 0.10), 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
-// Card styling
+.dark-theme {
+  --md-surface: var(--md-n-6);
+  --md-surface-container-lowest: var(--md-n-0);
+  --md-surface-container-low: var(--md-n-10);
+  --md-surface-container: var(--md-n-12);
+  --md-surface-container-high: var(--md-n-17);
+  --md-surface-container-highest: var(--md-n-20);
+
+  --md-on-surface: var(--md-n-90);
+  --md-on-surface-variant: var(--md-nv-80);
+  --md-outline: var(--md-nv-60);
+  --md-outline-variant: var(--md-nv-30);
+
+  /* The seed itself, not tone 80. This is the identity, and it still measures 4.50:1
+     on the dark surface. Its on-colour has to be near-black: white lands at 3.81:1. */
+  --md-primary: var(--md-p-seed);
+  --md-on-primary: var(--md-p-0);
+  --md-primary-container: var(--md-p-20);
+  --md-primary-container-hover: var(--md-p-30);
+  --md-on-primary-container: var(--md-p-90);
+
+  --md-secondary: var(--md-s-80);
+
+  --md-state-tint: 230, 225, 226;
+
+  --md-elev-1: 0 1px 2px rgba(0, 0, 0, 0.30), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --md-elev-2: 0 1px 2px rgba(0, 0, 0, 0.30), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --md-elev-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.30);
+}
+
+/* ===========================================================================
+ * Legacy aliases
+ *
+ * Every one of these is referenced by at least one component stylesheet. Re-pointing
+ * them here is what moves the whole app onto the new system in one step.
+ * ======================================================================== */
+
+:root,
+.light-theme,
+.dark-theme {
+  --background-color: var(--md-surface);
+  --surface-color: var(--md-surface-container-low);
+  --card-background: var(--md-surface-container);
+
+  --text-primary: var(--md-on-surface);
+  --text-secondary: var(--md-on-surface-variant);
+  --text-muted: var(--md-on-surface-variant);
+  --text-disabled: var(--md-outline);
+
+  --border-color: var(--md-outline-variant);
+  --border-strong: var(--md-outline);
+  --divider-color: var(--md-outline-variant);
+  --input-border: var(--md-outline);
+
+  --primary-color: var(--md-primary);
+  --primary-dark: var(--md-p-30);
+  --primary-light: var(--md-p-70);
+
+  --accent: var(--md-primary);
+  --accent-strong: var(--md-p-50);
+
+  --panel-bg: var(--md-surface-container);
+  --panel-bg-strong: var(--md-surface-container-high);
+  --panel-bg-muted: var(--md-surface-container-highest);
+  --panel-text: var(--md-on-surface);
+
+  --surface-raised: var(--md-surface-container-low);
+  --surface-raised-text: var(--md-on-surface);
+  --input-bg: var(--md-surface-container-lowest);
+  --input-panel-bg: var(--md-surface-container-low);
+
+  /*
+   * Gradients are gone. Buttons were a pink-to-violet ramp on every control, which is the
+   * single strongest "2012" signal the app had.
+   *
+   * These resolve to the M3 *tonal* fill, not the full-strength primary. The components
+   * that use them pair the fill with `color: var(--panel-text)`, and near-white on the raw
+   * seed measures 2.94:1 — the tonal container takes the same pairing to 8.71:1. Tonal is
+   * also the right emphasis level for these: they are ordinary form and nav actions, and
+   * One Voice allows at most one full-strength primary per screen.
+   */
+  --button-gradient: var(--md-primary-container);
+  --button-gradient-hover: var(--md-primary-container-hover);
+  --menu-gradient: var(--md-surface-container);
+
+  /*
+   * Decorative glow is off. `text-shadow: 0 0 5px var(--glow)` was applied to headings,
+   * labels and buttons alike, which is what made the glow read as texture instead of
+   * meaning. It survives only on the two sky surfaces, which use --accent-bright and
+   * --accent directly (DESIGN.md, Glow Means Meaning).
+   */
+  --glow: transparent;
+
+  --success-color: #2e7d32;
+  --warning-color: #b26a00;
+  --error-color: #b3261e;
+  --info-color: var(--md-secondary);
+
+  --shadow-sm: var(--md-elev-1);
+  --shadow-md: var(--md-elev-2);
+  --shadow-lg: var(--md-elev-3);
+
+  --spinner-backdrop: var(--md-surface-container-high);
+}
+
+.dark-theme {
+  --success-color: #7ddc82;
+  --warning-color: #ffb95c;
+  --error-color: #f2b8b5;
+}
+
+/* ===========================================================================
+ * Base elements
+ * ======================================================================== */
+
+body {
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
+  font: var(--type-body);
+  transition: background-color var(--motion-medium) var(--ease-standard),
+              color var(--motion-medium) var(--ease-standard);
+}
+
 .card,
 .info-block,
 .modal-content {
-  background-color: var(--card-background);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-  box-shadow: var(--shadow-md);
+  background-color: var(--md-surface-container);
+  color: var(--md-on-surface);
+  border-color: var(--md-outline-variant);
+  box-shadow: var(--md-elev-1);
 }
 
-// Input and form elements
 input,
 textarea,
-select,
-.mat-mdc-form-field {
-  background-color: var(--surface-color);
-  color: var(--text-primary);
-  border-color: var(--border-color);
+select {
+  background-color: var(--md-surface-container-lowest);
+  color: var(--md-on-surface);
+  border: 1px solid var(--md-outline);
+  border-radius: var(--r-xs);
+  font: var(--type-body);
 }
 
-// Links
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--md-secondary);
+  outline-offset: 1px;
+  border-color: var(--md-secondary);
+}
+
 a {
-  color: var(--primary-color);
+  color: var(--md-primary);
 
   &:hover {
-    color: var(--primary-light);
+    color: var(--md-p-50);
   }
 }
 
-// Buttons
-button {
-  &.primary {
-    background-color: var(--primary-color);
-    color: var(--text-primary);
+/*
+ * One filled button, flat. Variants rather than a gradient carry emphasis: this is the
+ * high-emphasis one, and DESIGN.md's One Voice Rule means at most one per screen.
+ */
+button.primary {
+  background-color: var(--md-primary);
+  color: var(--md-on-primary);
+  border: none;
+  border-radius: var(--r-full);
+  padding: var(--sp-3) var(--sp-5);
+  font: var(--type-label);
+  cursor: pointer;
+  transition: background-color var(--motion-short) var(--ease-standard),
+              box-shadow var(--motion-short) var(--ease-standard);
 
-    &:hover {
-      background-color: var(--primary-dark);
-    }
+  &:hover {
+    background-color: var(--md-p-50);
+    box-shadow: var(--md-elev-1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--md-secondary);
+    outline-offset: 2px;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    background-color: var(--md-surface-container-highest);
+    color: var(--md-outline);
+    cursor: not-allowed;
   }
 }
 
-// Headers
 h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary);
+  color: var(--md-on-surface);
+  text-wrap: balance;
 }
 
-// Dividers
 hr {
-  border-color: var(--divider-color);
+  border-color: var(--md-outline-variant);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  button.primary {
+    transition: none;
+  }
+
+  button.primary:active {
+    transform: none;
+  }
 }

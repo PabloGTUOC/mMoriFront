@@ -6,13 +6,28 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!--
+    Roboto Mono is the system typeface (DESIGN.md §3): 23 component stylesheets specify it.
+    It was never loaded, so every one of them silently fell back to the OS monospace and the
+    app rendered differently on each machine. Weights: 400 body, 500 display, 700 labels.
+
+    Press Start 2P and Material Icons used to be loaded here and no stylesheet referenced
+    either — Angular Material was removed in FRONTEND_IMPROVEMENT_PLAN 6.6. Both are gone.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;family=Roboto+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#1976d2">
+  <!--
+    Sky Deep, the top stop of the header gradient, so the browser chrome continues the night
+    sky instead of butting a Material blue against it. Correct in both themes: the header
+    stays dark in light mode too (DESIGN.md, The Sky Stays Dark Rule).
+  -->
+  <meta name="theme-color" content="#0f0c29">
 </head>
-<body class="mat-typography">
+<!-- `class="mat-typography"` was here until Angular Material was removed (6.6). Nothing
+     defines that class any more, so it styled nothing. -->
+<body>
   <app-root></app-root>
   <noscript>Please enable JavaScript to continue using this application.</noscript>
 </body>
