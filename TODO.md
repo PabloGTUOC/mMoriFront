@@ -3,12 +3,13 @@
 Everything still outstanding, written so a fresh session can pick any item up cold. Each
 entry says **where**, **why it matters**, and **how to know it worked**.
 
-Nothing here is blocking a local run — see [`README.md`](README.md) for that. The six-phase
-audit in [`FRONTEND_IMPROVEMENT_PLAN.md`](FRONTEND_IMPROVEMENT_PLAN.md) is complete; this is
-what was deliberately left, plus what the work itself uncovered.
+Nothing here blocks a local run — see [`README.md`](README.md) for that, and
+[`backend/README.md`](backend/README.md) for the Docker stack. The six-phase audit in
+[`FRONTEND_IMPROVEMENT_PLAN.md`](FRONTEND_IMPROVEMENT_PLAN.md) is complete; the design
+system now lives in [`PRODUCT.md`](PRODUCT.md) and [`DESIGN.md`](DESIGN.md).
 
-**Baseline to preserve:** 61 frontend tests, 62 backend tests, 0 lint errors, 0 lint
-warnings, 571 kB initial bundle. Any change should leave those the same or better.
+**Baseline to preserve:** 61 frontend tests, 94 backend tests passing (1 known failure, §2.1),
+0 lint errors, 0 lint warnings, 576 kB initial bundle (budget warns at 620).
 
 ```bash
 npm run lint && npm run test:ci && npm run build     # frontend
@@ -19,29 +20,26 @@ cd backend && npm run typecheck && npm test && npm run build
 
 ## 1. Configuration — nobody but the owner can do these
 
-Not code. The app runs locally without them (`AUTH_MODE=disabled`), but it is not
-meaningful or deployable until they are done.
-
-### 1.1 Firebase Admin credentials
+### 1.1 Firebase Admin credentials — *in progress*
 `AUTH_MODE` defaults to `required`; without credentials every user-scoped request answers
 401. Firebase Console → Project Settings → Service Accounts → Generate new private key, for
-project `trainingapp-44fb4`. Put the JSON in `FIREBASE_SERVICE_ACCOUNT_JSON` in
-`backend/.env`, or point `GOOGLE_APPLICATION_CREDENTIALS` at the file.
-**Never commit it** — unlike the web config, this one is a real secret.
+project `trainingapp-44fb4`.
 
-*Done when:* signing in and loading the dashboard works with `AUTH_MODE=required`.
+Save it as **`backend/secrets/firebase-service-account.json`**. That path is gitignored and
+compose mounts the directory read-only at `/run/secrets`; the key is passed as a *file*
+rather than inline JSON because it contains newlines and quotes that do not survive shell
+and compose interpolation. Then set `AUTH_MODE=required` in `backend/.env`.
 
-### 1.2 Real life-expectancy data
-`backend/data/life_expectancy.sample.json` is **placeholder data** — six countries of round
-illustrative numbers. The signup form offers ~180 countries, so most users currently get a
-base of 0 and a meaningless "weeks left", with no error anywhere.
+*Done when:* `docker compose logs api | grep -i firebase` says `Firebase Admin initialised`,
+and signing in loads the dashboard with `AUTH_MODE=required`.
 
-Source: WHO Global Health Observatory (life expectancy at birth) or World Bank
-`SP.DYN.LE00.MA.IN` / `SP.DYN.LE00.FE.IN`. Shape and loader:
-`npm run seed:life-expectancy -- ./real-data.csv` — see
-[`backend/README.md`](backend/README.md#reference-data).
+### 1.2 ~~Real life-expectancy data~~ — **done**
+226 real entries are loaded and a Spanish male profile returns `base_life_expectancy: 80.5`.
 
-*Done when:* a Spanish male profile returns a plausible `base_life_expectancy`, not 0.
+One loose end: the file is still named `life_expectancy.sample.json`, so
+`seed:life-expectancy` prints *"Seeding from the bundled SAMPLE dataset — those values are
+placeholders"* on every run. The values are real; the warning goes by filename. Rename the
+file, or drop the warning.
 
 ### 1.3 Production API URL
 `src/environments/environment.ts` still has `apiUrl: 'http://localhost:3000'`. Either edit
@@ -56,71 +54,133 @@ Thoughts screen shows the mood but no recommendation; everything else works.
 
 ---
 
-## 2. Code — small, self-contained
+## 2. Known defects
 
-### 2.1 Finish `OnPush` on the last four components
-`DisplayDailyComponent`, `InputDailyComponent`, `ThoughtsComponent`, `FirstTimeComponent`
-still hold async state in plain fields and run default change detection. They are **correct as
-they are** — just not optimised.
+### 2.1 One backend test fails
+`backend/tests/api.test.ts:431` — *"accepts the unwrapped form payload and persists
+video_link"*. **The implementation is right and the test is wrong.** The fixture posts
+`?v=abc123`, a 6-character video id, but `src/lib/youtube.ts:17` requires exactly 11
+(`/^[A-Za-z0-9_-]{11}$/`), so the server correctly rejects it and `success` comes back false.
 
-Follow the pattern already used in `CatalogueComponent`: move async-updated fields to
-`signal()` *first*, add `()` in the template, then add
-`changeDetection: ChangeDetectionStrategy.OnPush`. Assigning a plain field under OnPush leaves
-a completed request invisible on screen, which is why the signal step comes first.
+The fixture predates the 11-character rule added by the P1.3 iframe-injection fix. Changing
+`abc123` to any 11-character id (`dQw4w9WgXcQ`) should be the whole fix — the rest of the
+assertion is correct, since the controller stores the raw `video_link` and rebuilds the
+embed URL only at render time.
+
+*Done when:* `cd backend && npm test` reports 95 passing.
+
+### 2.2 Dependabot reports 122 vulnerabilities on `master`
+5 critical, 67 high, 43 moderate, 7 low, per the push output. Nothing has been triaged. Most
+are likely transitive dev dependencies, but that is an assumption, not a finding.
+
+---
+
+## 3. Code — small, self-contained
+
+### 3.1 Finish `OnPush` on the last three components
+Current state, verified:
+
+| Component | Change detection | Async state |
+|---|---|---|
+| `DisplayDailyComponent` | **OnPush** | 13 signals |
+| `InputDailyComponent` | default | `trainings` is a signal; the rest are plain |
+| `ThoughtsComponent` | default | plain fields (`selectedMood`, `recommendationBlocks`) |
+| `FirstTimeComponent` | default | plain fields (`userId`) |
+
+Follow the pattern in `DisplayDailyComponent`: move async-updated fields to `signal()`
+*first*, add `()` in the template, then add `changeDetection: ChangeDetectionStrategy.OnPush`.
+Assigning a plain field under OnPush leaves a completed request invisible on screen, which is
+why the signal step comes first.
 
 ⚠️ `OnPush` faults are **runtime-only** — unit tests that call `detectChanges()` by hand will
-not catch them. Verify in a browser (`npm start`, then exercise the view).
+not catch them. Verify in a browser. That is exactly why `InputDailyComponent` got a signal
+but not the strategy.
 
-### 2.2 Two stale `TODO` comments
+### 3.2 Two stale `TODO` comments
 - `src/app/services/error-handler.service.ts:106` — "Integrate with error monitoring service".
   Either wire up Sentry or delete the placeholder. Its unused `_error` parameter is
   underscore-prefixed to keep lint quiet; it is the argument Sentry would take.
 - `src/environments/environment.ts:8` — resolved by item 1.3; delete the comment then.
 
-**The lint warnings are gone** — the count is 0, and the run is clean. Keep it there: the
-`any`s in the D3 charts were replaced with `Selection<SVGGElement, unknown, null, undefined>`
-and a local `WeightPoint`, and D3's own callback types now infer the datum, so new chart code
-should not need an annotation at all.
+### 3.3 `DESIGN.md` frontmatter is partly stale
+The prose sections were updated when the M3 token layer landed, but the frontmatter still
+lists some pre-M3 colour values. Re-running `/impeccable document` would regenerate it from
+the code, along with `.impeccable/design.json`.
 
 ---
 
-## 3. Code — larger, optional
+## 4. Code — larger
 
-### 3.1 Firebase `compat` → modular SDK
-The last piece of plan item 6.6, deliberately skipped. It touches `AuthService`,
-`UserService` and `AuthInterceptor` at once, and the bundle saving is smaller than the wins
-already taken (Material and Bootstrap removal took the initial bundle from 926 kB to 571 kB).
+### 4.1 Firebase `compat` → modular SDK — *now more than a tidy-up*
+The last piece of plan item 6.6, deliberately skipped as a bundle-size trade. It has since
+cost real bugs: the compat layer resolves its promises **outside the Angular zone**, which is
+why the dashboard hung on "Loading…" and the training dropdown stayed empty until an
+unrelated click. That is patched at both entry points (`enterZone` in `AuthInterceptor`,
+`zone.run` in `UserService.initializeSession`), but the patches are guards around a layer
+that should not need them.
 
-Note the compat quirks the current code depends on: `afAuth.authState` is an Observable but
-`afAuth.currentUser` is a **Promise** — the interceptor wraps it in `from()`. The modular SDK
-differs on both.
+Seven files import `@angular/fire/compat`. Note the quirks the current code depends on:
+`afAuth.authState` is an Observable but `afAuth.currentUser` is a **Promise** — the
+interceptor wraps it in `from()`. The modular SDK differs on both.
 
 *Done when:* no `@angular/fire/compat` import remains, the reload-keeps-you-signed-in
-behaviour still holds (verify in a browser), and 61 tests still pass.
+behaviour still holds (verify in a browser), the two zone patches can be removed without the
+dashboard hanging, and 61 tests still pass.
 
-### 3.2 Rate limiter state is in-memory
+### 4.2 Audit the screens that were never exercised
+Every bug found in the design-system session was the same shape: **code that looked correct,
+was never run, and silently did nothing.**
+
+- The weight chart built its SVG in `ngOnInit`, but its `@ViewChild` does not resolve until
+  `ngAfterViewInit` — it had never rendered, with data or without.
+- The life grid set an inline fill of `'white'` / `'green'` and never applied the classes its
+  stylesheet targeted, so every `.dot` rule was dead.
+- The nav set `routerLinkActive="active"` against a class no rule defined.
+- Colours were set with `attr('fill', 'var(--x)')`, which is invalid — `var()` resolves in a
+  CSS property, not an SVG presentation attribute.
+- Three labels were coloured with a *surface* token, landing at 1.06:1 on the light theme.
+
+`ThoughtsComponent`, both catalogue views and `FirstTimeComponent` have not had that pass.
+Assume the same class of defect until checked.
+
+### 4.3 Catalogue behaviour is not directly tested
+`CatalogueComponent` owns the fetch / toggle / submit / refetch cycle for both catalogues, but
+its subclasses only have creation smoke tests. A spec for `load()` and `submit()` on the base
+class would cover both views at once. Cheap, and it guards a shared code path — see 4.2.
+
+### 4.4 Rate limiter state is in-memory
 `backend/src/middleware/rate-limit.ts` is correct for one instance and wrong for several —
 each replica would enforce its own quota. Move to Redis **only if** the API is ever scaled
 out. Documented in the file itself.
 
-### 3.3 Backend integration tests skip without MongoDB
-31 of them. They run in CI against a service container, and locally against
-`TEST_MONGODB_URI` or an in-memory server. In a sandbox with neither they skip — by design,
-so the other 62 still run. If `npm test` reports skips, that is why.
+---
 
-### 3.4 Catalogue behaviour is not directly tested
-`CatalogueComponent` owns the fetch / toggle / submit / refetch cycle for both catalogues, but
-its subclasses only have creation smoke tests. A spec for `load()` and `submit()` on the base
-class would cover both views at once. Cheap, and it guards a shared code path.
+## 5. Verification debt
+
+**No UI work from the design-system session was ever seen in a browser.** The Chrome
+extension would not connect, so the M3 token layer, the navigation rebuild, the stat tiles,
+the life-chart dialog, the weight chart rendering for the first time, and every dot colour
+rest on unit tests, contrast arithmetic and code reading — not on looking at them.
+
+Contrast was computed for every state that changed, in both themes, and all pairs pass. That
+is not the same as the layout being right.
+
+Treat the first day of real use as a bug hunt.
 
 ---
 
-## 4. Decisions to revisit, not bugs
+## 6. Decisions to revisit, not bugs
 
 Recorded so nobody "fixes" them by accident.
 
 | Decision | Why | Where |
 |---|---|---|
+| M3 *architecture*, not Angular Material | The token structure is M3's; the library is not. Adding it costs back the ~355 kB its removal saved and returns the look PRODUCT.md names as an anti-reference | `src/styles/themes.scss` |
+| `--glow` resolves to `transparent` | Glow was being spent on headings, labels and buttons alike, which made it read as texture. It survives only on the header and life chart, which reference `--accent-bright` directly | `themes.scss`, DESIGN.md §4 |
+| `--button-gradient` resolves to the *tonal* fill, not primary | Those components pair the fill with `--panel-text`; near-white on the raw seed is 2.94:1, the tonal container 8.71:1 | `themes.scss` |
+| Stat values are plain ink, not accent | Six pink numbers spent the whole One Voice budget on the stat grid; the accent is reserved for weeks-left | `display-daily.component.css` |
+| The life-chart dialog has no close button | Requested. Dismissal is the backdrop or Escape; `tabindex="-1"` on the panel is what the focus trap captures with no focusable child | `display-daily.component.html` |
+| `:host ::ng-deep` on the life grid | D3 creates the circles at runtime, so they never receive the `_ngcontent` attribute emulated encapsulation rewrites every selector to require | `life-expectancy-chart.component.scss` |
 | Response envelopes are inconsistent (`error` vs `message`, 200-not-404, `POST /stretches` returns 200) | Reproduced from the spec on purpose; clients branch on the exact shape | `backend/README.md` §Response conventions |
 | BMI band gaps **fixed**, diverging from the spec | The original ranges left holes where a BMI got the underweight penalty | `life-methods.service.ts` |
 | Header and life chart stay dark in both themes | The neon glow only reads on a dark backdrop; they are the app's signature | `src/styles/themes.scss` |
